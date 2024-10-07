@@ -1,33 +1,33 @@
-﻿export class Response<T> {
+﻿export class Result<T> {
 
-    private data?: T;
-    public message?: string;
-    public resultCode: ResultCode;
+    private readonly data?: T;
+    public message: string;
+    public code: ResultCode;
 
-    constructor(value: ResponseData<T>) {
-        this.data = value.data;
-        this.message = value.message;
-        this.resultCode = value.resultCode;
+    constructor(resultCode: ResultCode, message: string, data?: T) {
+        this.data = data;
+        this.message = message;
+        this.code = resultCode;
     }
 
     public isError() {
-        return this.resultCode === Result.Error;
+        return this.code === Code.Error;
     }
 
     public isSuccess() {
-        return this.resultCode === Result.Ok;
+        return this.code === Code.Ok;
     }
 
     public isUnauthorized() {
-        return this.resultCode === Result.Unauthorized;
+        return this.code === Code.Unauthorized;
     }
 
     public isNotFound() {
-        return this.resultCode === Result.NotFound;
+        return this.code === Code.NotFound;
     }
 
     public isPermissionDenied() {
-        return this.resultCode === Result.PermissionDenied;
+        return this.code === Code.PermissionDenied;
     }
 
     /**
@@ -49,7 +49,7 @@ export declare interface ResponseData<T> {
     resultCode: ResultCode;
 }
 
-export const Result = {
+export const Code = {
     Ok: 10,
     Unauthorized: 20,
     NotFound: 30,
@@ -57,4 +57,22 @@ export const Result = {
     Error: 50,
 } as const;
 
-type ResultCode = (typeof Result)[keyof typeof Result];
+type ResultCode = (typeof Code)[keyof typeof Code];
+
+export class Response<T> {
+    private readonly data?: T;
+    public message: string;
+    public code: ResultCode;
+
+    constructor(resultCode: ResultCode, message: string, data?: T) {
+        this.data = data;
+        this.message = message;
+        this.code = resultCode;
+    }
+}
+
+export const Unauthorized = <T>(data?: T, message?:string) => new Response(Code.Unauthorized, message ? message : "Not authorized", data);
+export const NotFound = <T>(data?: T, message?:string) => new Response(Code.NotFound, message ? message : `${typeof data} not found`, data);
+export const PermissionDenied = <T>(data?: T, message?:string) => new Response(Code.PermissionDenied, message ? message : "Permission denied", data);
+export const InternalError = <T>(data?: T, message?:string) => new Response(Code.Error, message ? message : "Internal server error", data);
+export const Ok = <T>(data: T, message?:string) => new Response(Code.Ok, message ? message : "Ok", data);
