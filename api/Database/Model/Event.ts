@@ -17,6 +17,12 @@ Event.init(
             autoIncrement: true,
         },
         name: DataTypes.STRING,
+        cancelled: {
+            type: DataTypes.TINYINT,
+            validate: {
+                isIn: [[0, 1]]
+            }
+        }
     },
     {
         tableName: "events",

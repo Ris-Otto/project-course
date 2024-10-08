@@ -1,4 +1,5 @@
 import { Hono } from 'npm:hono'
+import { prettyJSON } from 'npm:hono/pretty-json'
 import { cors } from 'npm:hono/cors';
 import * as config from "./config.ts";
 import Event from "./Database/Model/Event.ts";
@@ -20,6 +21,7 @@ app.use("/*", cors({
   credentials: true,
   allowMethods: ['POST', 'GET', 'PUT', 'DELETE', 'OPTIONS'],
 }));
+app.use(prettyJSON())
 
 app.route("/user", users);
 

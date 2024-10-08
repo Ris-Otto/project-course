@@ -1,7 +1,7 @@
 ﻿import { BelongsToManyGetAssociationsMixin, DataTypes, Model } from "npm:sequelize";
 import Event from "./Event.ts"
 import sequelize from "../database.ts";
-import bcrypt from "npm:bcrypt";
+import * as bcrypt from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
 
 class User extends Model {
     declare name: string;
@@ -10,7 +10,7 @@ class User extends Model {
     declare id: number;
     declare password: string;
     declare events?: Event[];
-    declare authenticate: (enteredPassword: string) => boolean;
+    declare authenticate: (enteredPassword: string) => Promise<boolean>;
     declare getEvents: BelongsToManyGetAssociationsMixin<Event>;
 }
 
@@ -40,12 +40,15 @@ User.init(
     }
 )
 
-User.prototype.authenticate = function (enteredPassword: string): boolean {
-    return bcrypt.compare(this.password, enteredPassword);
+User.prototype.authenticate = async function (enteredPassword: string): Promise<boolean> {
+    return await bcrypt.compare(this.password, enteredPassword);
 }
 
 User.addHook("beforeCreate",
-    (user: User) => (user.password = bcrypt.hashSync(user.password, 12))
+    async (user: User) => {
+        const salt = await bcrypt.genSalt(12);
+        user.password = await bcrypt.hash(user.password, salt);
+    }
 )
 
 

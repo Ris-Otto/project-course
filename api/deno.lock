@@ -6,11 +6,11 @@
       "jsr:@std/dotenv": "jsr:@std/dotenv@0.225.2",
       "jsr:@std/dotenv@^0.225.2": "jsr:@std/dotenv@0.225.2",
       "npm:@hono/zod-validator": "npm:@hono/zod-validator@0.4.1_hono@4.6.3_zod@3.23.8",
-      "npm:bcrypt@^5.1.1": "npm:bcrypt@5.1.1",
+      "npm:bcrypt": "npm:bcrypt@5.1.1",
       "npm:hono": "npm:hono@4.6.3",
       "npm:mysql2@^3.11.3": "npm:mysql2@3.11.3",
+      "npm:sequelize": "npm:sequelize@6.37.4",
       "npm:sequelize-auto@^0.8.8": "npm:sequelize-auto@0.8.8_sequelize@6.37.4",
-      "npm:sequelize-bcrypt@^1.2.0": "npm:sequelize-bcrypt@1.2.0",
       "npm:sequelize-cli@^6.6.2": "npm:sequelize-cli@6.6.2",
       "npm:sequelize@^6.37.4": "npm:sequelize@6.37.4"
     },
@@ -142,10 +142,6 @@
           "@mapbox/node-pre-gyp": "@mapbox/node-pre-gyp@1.0.11",
           "node-addon-api": "node-addon-api@5.1.0"
         }
-      },
-      "bcryptjs@2.4.3": {
-        "integrity": "sha512-V/Hy/X9Vt7f3BbPJEi8BdVFMByHi+jNXrYkW3huaybV/kQ0KJg0Y6PkEMbn+zeT+i+SiKZ/HMqJGIIt4LZDqNQ==",
-        "dependencies": {}
       },
       "bluebird@3.7.2": {
         "integrity": "sha512-XpNj6GDQzdfW+r2Wnn7xiSAd7TM3jzkxGXBGTtWKuSXv1xUV+azxAm8jdWZN06QTQk+2N2XB9jRDkvbmQmcRtg==",
@@ -774,13 +770,6 @@
           "yargs": "yargs@16.2.0"
         }
       },
-      "sequelize-bcrypt@1.2.0": {
-        "integrity": "sha512-Zu3Cn5bNIJ507eFoGjgtdQosBsVzd6OZPp15sCM1YjbzVNh8ujy5K3oYb4QzCiLtsbeJVEBFuoU3Tag4u32l7w==",
-        "dependencies": {
-          "bcryptjs": "bcryptjs@2.4.3",
-          "sequelize": "sequelize@6.37.4"
-        }
-      },
       "sequelize-cli@6.6.2": {
         "integrity": "sha512-V8Oh+XMz2+uquLZltZES6MVAD+yEnmMfwfn+gpXcDiwE3jyQygLt4xoI0zG8gKt6cRcs84hsKnXAKDQjG/JAgg==",
         "dependencies": {
@@ -1013,16 +1002,20 @@
       }
     }
   },
-  "remote": {},
+  "remote": {
+    "https://deno.land/x/bcrypt@v0.4.1/mod.ts": "ff09bdae282583cf5f7d87efe37ddcecef7f14f6d12e8b8066a3058db8c6c2f7",
+    "https://deno.land/x/bcrypt@v0.4.1/src/bcrypt/base64.ts": "b8266450a4f1eb6960f60f2f7986afc4dde6b45bd2d7ee7ba10789e67e17b9f7",
+    "https://deno.land/x/bcrypt@v0.4.1/src/bcrypt/bcrypt.ts": "ec221648cc6453ea5e3803bc817c01157dada06aa6f7a0ba6b9f87aae32b21e2",
+    "https://deno.land/x/bcrypt@v0.4.1/src/main.ts": "08d201b289c8d9c46f8839c69cd6625b213863db29775c7a200afc3b540e64f8",
+    "https://deno.land/x/bcrypt@v0.4.1/src/worker.ts": "5a73bdfee9c9e622f47c9733d374b627dce52fb3ec1e74c8226698b3fc57ffac"
+  },
   "workspace": {
     "dependencies": [
       "jsr:@hono/hono@^4.6.3",
       "jsr:@std/dotenv@^0.225.2",
       "npm:@hono/zod-validator",
-      "npm:bcrypt@^5.1.1",
       "npm:mysql2@^3.11.3",
       "npm:sequelize-auto@^0.8.8",
-      "npm:sequelize-bcrypt@^1.2.0",
       "npm:sequelize-cli@^6.6.2",
       "npm:sequelize@^6.37.4"
     ]
