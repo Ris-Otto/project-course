@@ -1,11 +1,15 @@
 ﻿import { DataTypes, Model } from "sequelize";
 import sequelize from "../database.ts";
-import Event from "./Event.ts"
-import User from "./User.ts";
+import {Artist} from "./User.ts";
+import Event from "./Event.ts";
 
-class EventUserMapping extends Model {}
+class EventMapping extends Model {
+    declare id: number;
+    declare artist: Artist;
+    declare event: Event
+}
 
-EventUserMapping.init(
+EventMapping.init(
     {
         id: {
             type: DataTypes.INTEGER,
@@ -14,11 +18,9 @@ EventUserMapping.init(
         }
     },
     {
-        tableName: "event_user_mapping",
+        tableName: "event_mapping",
         sequelize: sequelize,
     }
 )
 
-EventUserMapping.hasOne(User);
-EventUserMapping.hasOne(Event);
-export default EventUserMapping;
+export default EventMapping;

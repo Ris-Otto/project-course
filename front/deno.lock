@@ -6,6 +6,7 @@
       "npm:@types/react-dom@^18.3.0": "npm:@types/react-dom@18.3.0",
       "npm:@types/react@^18.3": "npm:@types/react@18.3.9",
       "npm:@vitejs/plugin-react@^4.2.1": "npm:@vitejs/plugin-react@4.3.1_vite@5.4.8_@babel+core@7.25.2",
+      "npm:axios@^1.7.7": "npm:axios@1.7.7",
       "npm:react": "npm:react@18.3.1",
       "npm:react-dom": "npm:react-dom@18.3.1_react@18.3.1",
       "npm:react-dom@^18.2.0": "npm:react-dom@18.3.1_react@18.3.1",
@@ -437,6 +438,18 @@
           "color-convert": "color-convert@1.9.3"
         }
       },
+      "asynckit@0.4.0": {
+        "integrity": "sha512-Oei9OH4tRh0YqU3GxhX79dM/mwVgvbZJaSNaRk+bshkj0S5cfHcgYakreBjrHwatXKbz+IoIdYLxrKim2MjW0Q==",
+        "dependencies": {}
+      },
+      "axios@1.7.7": {
+        "integrity": "sha512-S4kL7XrjgBmvdGut0sN3yJxqYzrDOnivkBiN0OFs6hLiUam3UPvswUo0kqGyhqUZGEOytHyumEdXsAkgCOUf3Q==",
+        "dependencies": {
+          "follow-redirects": "follow-redirects@1.15.9",
+          "form-data": "form-data@4.0.0",
+          "proxy-from-env": "proxy-from-env@1.1.0"
+        }
+      },
       "browserslist@4.24.0": {
         "integrity": "sha512-Rmb62sR1Zpjql25eSanFGEhAxcFwfA1K0GuQcLoaJBAcENegrQut3hYdhXFF1obQfiDyqIW/cLM5HSJ/9k884A==",
         "dependencies": {
@@ -468,6 +481,12 @@
         "integrity": "sha512-72fSenhMw2HZMTVHeCA9KCmpEIbzWiQsjN+BHcBbS9vr1mtt+vJjPdksIBNUmKAW8TFUDPJK5SUU3QhE9NEXDw==",
         "dependencies": {}
       },
+      "combined-stream@1.0.8": {
+        "integrity": "sha512-FQN4MRfuJeHf7cBbBMJFXhKSDq+2kAArBlmRBvcvFE5BB1HZKXtSFASDhdlz9zOYwxh8lDdnvmMOe/+5cdoEdg==",
+        "dependencies": {
+          "delayed-stream": "delayed-stream@1.0.0"
+        }
+      },
       "convert-source-map@2.0.0": {
         "integrity": "sha512-Kvp459HrV2FEJ1CAsi1Ku+MY3kasH19TFykTz2xWmMeq6bk2NU3XXvfJ+Q61m0xktWwt+1HSYf3JZsTms3aRJg==",
         "dependencies": {}
@@ -481,6 +500,10 @@
         "dependencies": {
           "ms": "ms@2.1.3"
         }
+      },
+      "delayed-stream@1.0.0": {
+        "integrity": "sha512-ZySD7Nf91aLB0RxL4KGrKHBXl7Eds1DAmEdcoVawXnLD7SDhpNgtuII2aAkg7a7QS41jxPSZ17p4VdGnMHk3MQ==",
+        "dependencies": {}
       },
       "electron-to-chromium@1.5.29": {
         "integrity": "sha512-PF8n2AlIhCKXQ+gTpiJi0VhcHDb69kYX4MtCiivctc2QD3XuNZ/XIOlbGzt7WAjjEev0TtaH6Cu3arZExm5DOw==",
@@ -522,6 +545,18 @@
         "integrity": "sha512-vbRorB5FUQWvla16U8R/qgaFIya2qGzwDrNmCZuYKrbdSUMG6I1ZCGQRefkRVhuOkIGVne7BQ35DSfo1qvJqFg==",
         "dependencies": {}
       },
+      "follow-redirects@1.15.9": {
+        "integrity": "sha512-gew4GsXizNgdoRyqmyfMHyAmXsZDk6mHkSxZFCzW9gwlbtOW44CDtYavM+y+72qD/Vq2l550kMF52DT8fOLJqQ==",
+        "dependencies": {}
+      },
+      "form-data@4.0.0": {
+        "integrity": "sha512-ETEklSGi5t0QMZuiXoA/Q6vcnxcLQP5vdugSpuAyi6SVGi2clPPp+xgEhuMaHC+zGgn31Kd235W35f7Hykkaww==",
+        "dependencies": {
+          "asynckit": "asynckit@0.4.0",
+          "combined-stream": "combined-stream@1.0.8",
+          "mime-types": "mime-types@2.1.35"
+        }
+      },
       "fsevents@2.3.3": {
         "integrity": "sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==",
         "dependencies": {}
@@ -562,6 +597,16 @@
           "yallist": "yallist@3.1.1"
         }
       },
+      "mime-db@1.52.0": {
+        "integrity": "sha512-sPU4uV7dYlvtWJxwwxHD0PuihVNiE7TyAbQ5SWxDCB9mUYvOgroQOwYQQOKPJ8CIbE+1ETVlOoK1UC2nU3gYvg==",
+        "dependencies": {}
+      },
+      "mime-types@2.1.35": {
+        "integrity": "sha512-ZDY+bPm5zTTF+YpCrAU9nK0UgICYPT0QtT1NZWFv4s++TNkcgVaT0g6+4R2uI4MjQjzysHB1zxuWL50hzaeXiw==",
+        "dependencies": {
+          "mime-db": "mime-db@1.52.0"
+        }
+      },
       "ms@2.1.3": {
         "integrity": "sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==",
         "dependencies": {}
@@ -585,6 +630,10 @@
           "picocolors": "picocolors@1.1.0",
           "source-map-js": "source-map-js@1.2.1"
         }
+      },
+      "proxy-from-env@1.1.0": {
+        "integrity": "sha512-D+zkORCbA9f1tdWRK0RaCR3GPv50cMxcrz4X8k5LTSUD1Dkw47mKJEZQNunItRTkWwgtaUSo1RVFRIG9ZXiFYg==",
+        "dependencies": {}
       },
       "react-dom@18.3.1_react@18.3.1": {
         "integrity": "sha512-5m4nQKp+rZRb09LNH59GM4BxTh9251/ylbKIbpe7TpGxfJ+9kv6BLkLBXIjjspbgbnIBNqlI23tRnTWT0snUIw==",
@@ -694,6 +743,7 @@
   "workspace": {
     "dependencies": [
       "npm:@types/react-dom@^18.3.0",
+      "npm:axios@^1.7.7",
       "npm:react-dom@^18.3.1",
       "npm:react-router-dom@^6.26.2",
       "npm:react@^18.3.1"

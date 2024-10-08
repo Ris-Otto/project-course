@@ -4,10 +4,10 @@
     public message: string;
     public code: ResultCode;
 
-    constructor(resultCode: ResultCode, message: string, data?: T) {
-        this.data = data;
-        this.message = message;
-        this.code = resultCode;
+    constructor(response: ResponseData<T>) {
+        this.data = response.data;
+        this.message = response.message;
+        this.code = response.resultCode;
     }
 
     public isError() {

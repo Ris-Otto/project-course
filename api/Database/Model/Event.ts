@@ -1,12 +1,14 @@
-﻿import { BelongsToManyGetAssociationsMixin, DataTypes, Model } from "sequelize";
+﻿import { DataTypes, Model } from "sequelize";
 import sequelize from "../database.ts";
-import User from "./User.ts";
+import {Artist, Venue} from "./User.ts";
+import Pricing from "./Pricing.ts";
 
 class Event extends Model {
     declare id: number;
     declare name: string;
-    declare users: User[];
-    declare getUsers: BelongsToManyGetAssociationsMixin<User>;
+    declare venue: Venue;
+    declare artists: Artist[];
+    declare pricing: Pricing;
 }
 
 Event.init(
