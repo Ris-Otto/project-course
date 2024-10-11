@@ -7,7 +7,7 @@
     constructor(response: ResponseData<T>) {
         this.data = response.data;
         this.message = response.message;
-        this.code = response.resultCode;
+        this.code = response.code;
     }
 
     public isError() {
@@ -46,7 +46,7 @@
 export declare interface ResponseData<T> {
     data?: T;
     message: string;
-    resultCode: ResultCode;
+    code: ResultCode;
 }
 
 export const Code = {
@@ -71,8 +71,8 @@ export class Response<T> {
     }
 }
 
-export const Unauthorized = <T>(data?: T, message?:string) => new Response(Code.Unauthorized, message ? message : "Not authorized", data);
+export const Unauthorized = (message?:string) => new Response(Code.Unauthorized, message ? message : "Not authorized", null);
 export const NotFound = <T>(data?: T, message?:string) => new Response(Code.NotFound, message ? message : `${typeof data} not found`, data);
 export const PermissionDenied = <T>(data?: T, message?:string) => new Response(Code.PermissionDenied, message ? message : "Permission denied", data);
 export const InternalError = <T>(data?: T, message?:string) => new Response(Code.Error, message ? message : "Internal server error", data);
-export const Ok = <T>(data: T, message?:string) => new Response(Code.Ok, message ? message : "Ok", data);
+export const Ok = <T>(data?: T, message?:string) => new Response(Code.Ok, message ? message : "Ok", data);

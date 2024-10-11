@@ -36,7 +36,7 @@ class Venue extends Model {
     declare country: string;
     declare businessId: string;
     declare name: string;
-    declare businessEmail: string;
+    declare email: string;
     declare contactEmail: string;
     declare contactName: string;
     declare id: number;
@@ -56,6 +56,10 @@ User.init(
         name: DataTypes.STRING,
         email: {
             type: DataTypes.STRING,
+            unique: true,
+            validate: {
+                isEmail: true,
+            }
         },
         password: {
           type: DataTypes.STRING(256),
@@ -110,7 +114,7 @@ Venue.init(
             autoIncrement: true,
         },
         name: DataTypes.STRING,
-        businessEmail: {
+        email: {
             type: DataTypes.STRING,
         },
         password: {

@@ -1,32 +1,39 @@
-import { useState } from 'react'
+import { createBrowserRouter, Route, createRoutesFromElements, RouterProvider } from "react-router-dom"
+import { ToastContainer } from 'react-toastify';
+import Login from "./components/Login/Login.tsx";
+import { Auth } from "./components/Auth.tsx";
+import { Register } from "./components/Register/Register.tsx";
+import { ThemeProvider } from "styled-components";
+import Home from "./components/Home/Home.tsx";
+import BandRegistration from "./components/Register/BandRegistration.tsx";
+import VenueRegistration from "./components/Register/VenueRegistration.tsx";
+import {DarkTheme} from "./theme.ts";
+import {GlobalStyles} from "./global.ts";
+import DesignTest from "./Test.tsx";
 
-import './App.css'
+const theme = new DarkTheme();
 
 function App() {
-  const [count, setCount] = useState<number>(0);
+    const router = createBrowserRouter(
+        createRoutesFromElements(
+            <Route path={"/"} element={<Auth />}>
+                <Route path="login" element={<Login />}/>
+                <Route path="register" element={<Register />}/>
+                <Route path="register/band" element={<BandRegistration />}/>
+                <Route path="register/venue" element={<VenueRegistration />}/>
+                <Route path="home" element={<Home />}/>
+                <Route path="test" element={<DesignTest />} />
+            </Route>
+        )
+    )
 
-  return (
-    <>
-      <img src="/vite-deno.svg" alt="Vite with Deno" />
-        <div>
-            <a href="https://vitejs.dev" target="_blank">
-                <img src="/vite.svg" className="logo" alt="Vite logo"/>
-            </a>
-        </div>
-        <h1>Vite + React</h1>
-        <div className="card">
-        <button onClick={() => setCount((count:number) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    return (
+        <ThemeProvider theme={theme}>
+            <GlobalStyles />
+            <ToastContainer />
+            <RouterProvider router={router} />
+        </ThemeProvider>
+    )
 }
 
 export default App
