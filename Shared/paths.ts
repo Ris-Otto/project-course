@@ -5,6 +5,7 @@ const Paths = {
     auth: "/auth",
     user: {
         register: "/auth/register",
+        events: "user/events"
     },
     band: {
         register: "/auth/register/band",

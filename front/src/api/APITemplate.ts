@@ -14,9 +14,8 @@ const instance = axios.create({
 
 
 export async function postRequest<
-    TResponse,
-    TData extends Record<string, {}>
->(path: string, data: TData): Promise<Result<TResponse>> {
+    TResponse
+>(path: string, data?: Record<string, {}>): Promise<Result<TResponse>> {
     const response = await instance.post<ResponseData<TResponse>>(
         path,
         data,

@@ -1,19 +1,16 @@
 ﻿import {Hono} from "npm:hono";
-import type { JwtVariables } from "npm:hono/jwt";
 import type { Context, Next } from "npm:hono";
 import {User} from "../Database/Model/User.ts";
 import {Ok, Unauthorized} from "../../Shared/Result.ts";
-import {generateJWTAccessToken, verifyJWTAccessToken} from "../Middleware/JWTMiddleware.ts";
+import {generateJWTAccessToken, verifyAndDecodeToken, verifyJWTAccessToken} from "../Middleware/JWTMiddleware.ts";
 import {
     getCookie,
     setCookie,
     deleteCookie,
 } from 'npm:hono/cookie'
 
-type Variables = JwtVariables
 
-
-const auth = new Hono<{ Variables: Variables }>();
+const auth = new Hono();
 
 auth.post("/", authenticate, );
 auth.post("/register", registerUser);
@@ -33,16 +30,15 @@ function registerVenue(c: Context) {
 }
 
 async function authenticate (c: Context, next: Next) {
-    const payload = c.get("jwtPayload");
+    const payload = getCookie(c, "access_token");
+    if(!payload) return c.text("no token");
+    const token = await verifyAndDecodeToken(payload);
 
-    try {
-        const verifiedToken = await verifyJWTAccessToken(payload);
-    } catch (err) {
-        return c.text("balls")
+    if(token === null) {
+        return c.json(Unauthorized())
     }
 
-
-
+    return c.json(Ok());
 }
 
 async function registerUser(c: Context) {
@@ -55,7 +51,7 @@ async function registerUser(c: Context) {
 
 async function login(c: Context) {
     const { email, password } = await c.req.json<User>();
-    console.log(email, password);
+
     const user = await User.findOne({ where: { email: email } });
 
     if (!user) {
@@ -72,7 +68,7 @@ async function login(c: Context) {
     const payload = await generateJWTAccessToken(user);
 
     setCookie(c, "access_token", payload);
-    return c.json(Ok(user));
+    return c.json(Ok({ name: user.name, email: user.email, type: 0}));
 }
 
 async function logout(c: Context) {

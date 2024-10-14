@@ -6,6 +6,7 @@ import { User } from "../../../../api/Database/Model/User.ts";
 import { StyledLogin } from "./Login.styled.ts";
 import { Form, Button } from "react-bootstrap";
 import Paths from "../../../../Shared/paths.ts";
+import type { UserPayload } from "../../../../Shared/Types.ts";
 
 function LoginForm(){
 
@@ -16,7 +17,7 @@ function LoginForm(){
     async function handleLogin(e: React.FormEvent<HTMLFormElement>){
         e.preventDefault()
         const requestBody = {email, password}
-        const response = await postRequest<User, {email: string, password: string}>(Paths.login, requestBody)
+        const response = await postRequest<UserPayload>(Paths.login, requestBody)
         if(response.isSuccess()) {
             navigate("/home");
         }
