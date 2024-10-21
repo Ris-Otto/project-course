@@ -5,12 +5,14 @@ import {useNavigate} from "react-router-dom";
 import {checkToken} from "../api/auth.ts";
 import { useAtom } from "jotai";
 import { user } from "../store.ts";
+import {LogoutButton} from "./Login/Logout.tsx";
 
 export function Auth() {
     const navigate = useNavigate();
-    const [, setU] = useAtom(user);
+    const [u, setU] = useAtom(user);
     useEffect(() => {
         const check = async () => {
+
             const res = await checkToken();
             if (res.isSuccess()) {
                 //Successful, set the user state from the data received
@@ -19,10 +21,26 @@ export function Auth() {
                 //If the authentication failed, redirect to the login page with a state containing the path
                 //the user tried accessing
                 setU(null);
+                if(!RequiresAuth(globalThis.location.pathname)) {
+
+                    return;
+                }
                 navigate("/login");
             }
         };
         check();
     }, [])
-    return <Outlet />
+
+    useEffect(() => {console.log(u)}, [u])
+    return <>
+        <Outlet />
+        <div style={{ bottom: "5%", right: "5%", position: "absolute"}}>
+            {u ? (<LogoutButton />): null}
+        </div>
+    </>
+}
+
+function RequiresAuth(path: string) {
+    return path != "/home" && !path.includes("/register");
+
 }

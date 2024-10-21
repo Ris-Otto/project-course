@@ -10,3 +10,12 @@ export type UserPayload = {
     type: number;
     exp: number;
 }
+
+export function ResolveUserType(user: UserType) {
+    if(user instanceof User) {
+        return 0;
+    } else if (user instanceof Artist) {
+        return 1;
+    }
+    return 2;
+}

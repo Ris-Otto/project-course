@@ -5,7 +5,7 @@ import { Auth } from "./components/Auth.tsx";
 import { Register } from "./components/Register/Register.tsx";
 import { ThemeProvider } from "styled-components";
 import Home from "./components/Home/Home.tsx";
-import BandRegistration from "./components/Register/BandRegistration.tsx";
+import ArtistRegistration from "./components/Register/ArtistRegistration.tsx";
 import VenueRegistration from "./components/Register/VenueRegistration.tsx";
 import {DarkTheme} from "./theme.ts";
 import {GlobalStyles} from "./global.ts";
@@ -19,7 +19,7 @@ function App() {
             <Route path={"/"} element={<Auth />}>
                 <Route path="login" element={<Login />}/>
                 <Route path="register" element={<Register />}/>
-                <Route path="register/band" element={<BandRegistration />}/>
+                <Route path="register/band" element={<ArtistRegistration />}/>
                 <Route path="register/venue" element={<VenueRegistration />}/>
                 <Route path="home" element={<Home />}/>
                 <Route path="test" element={<DesignTest />} />

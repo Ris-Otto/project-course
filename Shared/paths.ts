@@ -5,6 +5,8 @@ const Paths = {
     auth: "/auth",
     user: {
         register: "/auth/register",
+        logout: "/auth/logout",
+        login: "/auth/login",
         events: "user/events"
     },
     band: {
@@ -13,7 +15,7 @@ const Paths = {
     venue: {
         register: "/auth/register/venue",
     },
-    login: "/auth/login",
+
 } as const;
 
 export default Paths;

@@ -35,6 +35,7 @@
      */
     public get response(): T {
         if (this.data === undefined || this.data === null) {
+            console.log(this);
             throw new Error(
                 "Can't unwrap a null|undefined response. Only use when 'isSuccess()' is true."
             );

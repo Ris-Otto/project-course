@@ -17,16 +17,18 @@ function LoginForm(){
     async function handleLogin(e: React.FormEvent<HTMLFormElement>){
         e.preventDefault()
         const requestBody = {email, password}
-        const response = await postRequest<UserPayload>(Paths.login, requestBody)
+        const response = await postRequest<UserPayload>(Paths.user.login, requestBody)
         if(response.isSuccess()) {
+            setEmail("");
             navigate("/home");
         }
+        setPassword("");
     }
 
     return (
+        <StyledLogin className="top-level-component">
         <div className="container" style={{marginTop:"10vh"}}>
-            <StyledLogin>
-            <form onSubmit={handleLogin}>
+            <Form onSubmit={handleLogin}>
                 <h2>Login to your account</h2>
                 <Form.Group className="mb-3">
                 <Form.Label>Email</Form.Label>
@@ -36,11 +38,13 @@ function LoginForm(){
                     <Form.Label>Password</Form.Label>
                     <Form.Control type="password" value={password} onChange={(e) => setPassword(e.target.value)}/>
                 </Form.Group>
-                <Button type="submit" className="btn btn-primary">LOG IN</Button>
-                <p style={{marginTop:"2vh"}}>Don't have an account? <Link to={'/register'}>Create an account</Link></p>
-            </form>
-            </StyledLogin>
+                <Button type="submit" className="mt-3 register-btn">Sign in</Button>
+                <div className="mt-3">Don't have an account?
+                    {" "}<Link to={'/register'} className="nav-link">Create an account</Link>
+                </div>
+            </Form>
         </div>
+        </StyledLogin>
     )
 }
 

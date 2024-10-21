@@ -49,13 +49,6 @@ export const GlobalStyles = createGlobalStyle<{
     min-width: 100vw;
   }
 
-  #hamburger-icon {
-    height: 0vh;
-    @media (max-width: ${({ theme }) => theme.tablet}) {
-      height: 10vh;
-    }
-  }
-
   .container {
     margin-bottom: 0;
   }
@@ -84,25 +77,30 @@ export const GlobalStyles = createGlobalStyle<{
   
   a {
     text-decoration: none;
-    color: ${({ theme }) => theme.lightGreen};
+    color: ${({ theme }) => theme.yellow};
     &:hover {
       text-decoration: underline;
-      color: ${({ theme }) => theme.lightGreenHover};
+      color: ${({ theme }) => theme.darkYellow};
     }
   }
   
   .btn-primary, .btn-success, .btn-primary:disabled, .btn-success:disabled {
     background-color: ${({ theme }) => theme.yellow};
-    border-color: ${({ theme }) => theme.darkYellow};
+    border-color: ${({ theme }) => theme.yellow};
     color: ${({ theme }) => theme.darkText};
     &:focus {
-      box-shadow: ${({ theme }) => theme.btnPrimaryFocusBoxShadow};
+      box-shadow: ${({ theme }) => theme.darkYellow};
     }
+      &:hover {
+          background-color: ${({ theme }) => theme.darkYellow};
+          border-color: ${({ theme }) => theme.darkYellow};
+          color: ${({ theme }) => theme.darkText};
+      }
   }
 
   .btn-outline-primary, .btn-outline-success, .btn-outline-primary:disabled, .btn-outline-success:disabled {
-    border-color: ${({ theme }) => theme.lightGreen};
-    color: ${({ theme }) => theme.lightGreen};
+    border-color: ${({ theme }) => theme.yellow};
+    color: ${({ theme }) => theme.yellow};
   }
 
   .btn-primary:hover, .btn-primary:focus, .btn-primary:active, .btn-primary.active, .open>.dropdown-toggle.btn-primary, .show>.dropdown-toggle.btn-primary,
@@ -113,15 +111,19 @@ export const GlobalStyles = createGlobalStyle<{
 
   .btn-outline-primary:hover, .btn-outline-primary:focus, .btn-outline-primary:active, .btn-outline-primary.active, .open>.dropdown-toggle.btn-outline-primary, .show>.dropdown-toggle.btn-outline-primary,
   .btn-outline-success:hover, .btn-outline-success:focus, .btn-outline-success:active, .btn-outline-success.active, .open>.dropdown-toggle.btn-outline-success, .show>.dropdown-toggle.btn-outline-success {
-    background-color: ${({ theme }) => theme.lightGreen};
-    border-color: ${({ theme }) => theme.lightGreen};
+    background-color: ${({ theme }) => theme.darkYellow};
+    border-color: ${({ theme }) => theme.darkYellow};
   }
 
   .nav-link {
-    color: ${({ theme }) => theme.darkYellow};
+    color: ${({ theme }) => theme.yellow};
+    background: none !important;
+    border: none;
+    padding: 0 !important;
+    display: inline;
 
     &:hover {
-      color: ${({ theme }) => theme.lightGreen};
+      color: ${({ theme }) => theme.darkYellow};
     }
   }
   `;

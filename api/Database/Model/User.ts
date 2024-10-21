@@ -10,11 +10,16 @@ class User extends Model {
     declare email: string;
     declare id: number;
     declare password: string;
-    declare active: 0 | 1;
+    declare verified: 0 | 1;
     declare authenticate: (enteredPassword: string) => Promise<boolean>;
 }
 
-class Artist extends User {
+class Artist extends Model {
+    declare name: string;
+    declare email: string;
+    declare id: number;
+    declare password: string;
+    declare authenticate: (enteredPassword: string) => Promise<boolean>;
     declare verified: 0 | 1;
     declare members: Member[];
     declare events: Event[];
@@ -65,7 +70,7 @@ User.init(
           type: DataTypes.STRING(256),
 
         },
-        active: {
+        verified: {
             type: DataTypes.BOOLEAN,
             comment: "0 if user has not verified email, 1 otherwise"
         }
@@ -173,21 +178,35 @@ ArtistMembersMapping.init(
 )
 
 User.prototype.authenticate = async function (enteredPassword: string): Promise<boolean> {
-    return await bcrypt.compare(this.password, enteredPassword);
+    return await bcrypt.compare(enteredPassword, this.password);
 }
 
 Artist.prototype.authenticate = async function (enteredPassword: string): Promise<boolean> {
-    return await bcrypt.compare(this.password, enteredPassword);
+    return await bcrypt.compare(enteredPassword, this.password);
 }
 
 Venue.prototype.authenticate = async function (enteredPassword: string): Promise<boolean> {
-    return await bcrypt.compare(this.password, enteredPassword);
+    return await bcrypt.compare(enteredPassword, this.password);
 }
 
 User.addHook("beforeCreate",
     async (user: User) => {
         const salt = await bcrypt.genSalt(12);
         user.password = await bcrypt.hash(user.password, salt);
+    }
+)
+
+Venue.addHook("beforeCreate",
+    async (venue: Venue) => {
+        const salt = await bcrypt.genSalt(12);
+        venue.password = await bcrypt.hash(venue.password, salt);
+    }
+)
+
+Artist.addHook("beforeCreate",
+    async (artist: Artist) => {
+        const salt = await bcrypt.genSalt(12);
+        artist.password = await bcrypt.hash(artist.password, salt);
     }
 )
 

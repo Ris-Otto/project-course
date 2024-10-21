@@ -4,7 +4,7 @@ import sequelize from "../database.ts";
 class Pricing extends Model {
     declare id: number;
     declare currency: string;
-    declare type: string;
+    declare type: number;
     declare amount: number;
 }
 
@@ -23,7 +23,7 @@ Pricing.init(
             }
         },
         type: {
-            type: DataTypes.STRING,
+            type: DataTypes.TINYINT,
             comment: "0: Cash, 1: Wallet, 2: Card",
             validate: {
                 isIn: [[0,1,2]],

@@ -5,10 +5,14 @@ import { cors } from 'npm:hono/cors';
 import * as config from "./config.ts";
 import Event from "./Database/Model/Event.ts";
 import Pricing from "./Database/Model/Pricing.ts";
-import {Artist, ArtistMembersMapping, Member, Venue} from "./Database/Model/User.ts";
+import {Artist, ArtistMembersMapping, Member, User, Venue} from "./Database/Model/User.ts";
 import EventMapping from "./Database/Model/EventMapping.ts";
 import users from "./Controllers/UserController.ts";
 import authController from "./Controllers/AuthController.ts";
+import {ArtistFollowing, VenueFollowing} from "./Database/Model/Following.ts";
+import {Bio, VenueBio, ArtistBio} from "./Database/Model/Bio.ts";
+import artistController from "./Controllers/ArtistController.ts";
+import venueController from "./Controllers/VenueController.ts";
 
 type Variables = JwtVariables
 
@@ -20,11 +24,18 @@ if(!config.ORIGIN) throw new Error("No host defined");
 Event.belongsTo(Pricing);
 Event.belongsTo(Venue);
 
-Member.belongsToMany(Artist, { through: ArtistMembersMapping});
+Member.belongsToMany(Artist, { through: ArtistMembersMapping });
 Artist.belongsToMany(Member, { through: ArtistMembersMapping });
 
 Event.belongsToMany(Artist, {through: EventMapping });
 Artist.belongsToMany(Event, {through: EventMapping });
+
+Artist.belongsToMany(User, { through: ArtistFollowing });
+Venue.belongsToMany(User, { through: VenueFollowing });
+
+Bio.belongsToMany(Artist, { through: ArtistBio });
+Bio.belongsToMany(Venue, { through: VenueBio });
+
 
 //import sequelize from "./Database/database.ts";
 //await sequelize.sync({ alter: true });
@@ -42,6 +53,8 @@ app.use(prettyJSON())
 
 app.route("/user", users);
 app.route("/auth", authController);
+app.route("/artist", artistController);
+app.route("/venue", venueController);
 
 
 Deno.serve(app.fetch)
