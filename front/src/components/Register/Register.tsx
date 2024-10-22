@@ -14,9 +14,7 @@ export function Register() {
     const [user, dispatch] = useReducerAtom(userRegisterAtom, DefaultReducer);
     async function handleRegister(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
-        const register = await postRequest<UserType>(Paths.user.register, {
-            user
-        });
+        const register = await postRequest<UserType>(Paths.user.register, user);
         if(register.isSuccess()) {
             dispatch({payload: "", type: "all"});
         }

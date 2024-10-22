@@ -12,15 +12,22 @@ declare interface UserRegister {
     [index: string]: number | string;
 }
 
-declare interface VenueRegister extends UserRegister {
+declare interface VenueRegister {
+    email: string;
+    password: string;
+    name: string;
     businessId: string;
     address: string;
     zip: string;
     city: string;
+    [index: string]: number | string;
 }
 
-declare interface ArtistRegister extends UserRegister {
-
+declare interface ArtistRegister {
+    email: string;
+    password: string;
+    name: string;
+    [index: string]: number | string;
 }
 
 const initialUser: UserRegister = {

@@ -1,5 +1,5 @@
 ﻿import {StyledRegister} from "./Register.styled.ts";
-import {DefaultReducer, userRegisterAtom, useReducerAtom, artistRegisterAtom} from "../../store.ts";
+import {DefaultReducer, useReducerAtom, artistRegisterAtom} from "../../store.ts";
 import {BaseRegisterForm} from "./Register.tsx";
 import {postRequest} from "../../api/APITemplate.ts";
 import {User} from "../../../../api/Database/Model/User.ts";
@@ -10,10 +10,7 @@ export default function ArtistRegistration() {
 
     async function handleRegister(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
-        const register = await postRequest<User>("/band/register", {
-            user
-            /*more shit idk*/
-        });
+        const register = await postRequest<User>("/band/register", user);
         if(register.isSuccess()) {
             dispatch({payload: "", type: "all"});
             return;

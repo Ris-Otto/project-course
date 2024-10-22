@@ -10,9 +10,7 @@ export default function VenueRegistration() {
     const [user, dispatch] = useReducerAtom(venueRegisterAtom, DefaultReducer);
     async function handleRegister(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
-        const register = await postRequest<User>("/auth/venue/register", {
-            user
-        });
+        const register = await postRequest<User>("/auth/venue/register", user);
         if(register.isSuccess()) {
             dispatch({payload: "", type: "all"});
             return;

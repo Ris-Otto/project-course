@@ -12,7 +12,7 @@ import {
 
 const auth = new Hono();
 
-auth.post("/", authenticate, );
+auth.post("/", authenticate);
 auth.post("/register", registerUser);
 auth.post("/register/band", registerBand);
 auth.post("/venue/register", registerVenue);
@@ -29,16 +29,11 @@ function registerBand(c: Context) {
 
 async function registerVenue(c: Context) {
     //TODO
-    const { email,
-        password,
-        name,
-        businessId,
-        address,
-        zip,
-        city, } = await c.req.json<Venue>();
+    const venue = await c.req.json<Venue>();
+    console.log("Venue ", venue)
 
     const dbRes = await Venue
-        .create({ email, password, name, businessId, address, zip, city, verified: 1, country: "FI" })
+        .create({...venue, verified: 1, country: "FI" })
         .then(data => data.get({ plain: true }));
     //TODO send confirm email email
     return c.json(Ok(dbRes));
@@ -59,7 +54,7 @@ async function authenticate (c: Context) {
 async function registerUser(c: Context) {
     const { name, email, password } = await c.req.json<User>();
     const dbRes = await User
-        .create({ name, email, password, verified: 0 })
+        .create({ name: name, email: email, password: password, verified: 0 })
         .then(data => data.get({ plain: true }));
     //TODO send confirm email email
     return c.json(Ok(dbRes));

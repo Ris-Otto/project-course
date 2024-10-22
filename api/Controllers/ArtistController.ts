@@ -5,14 +5,14 @@ import * as tokenMiddleware from  "../Middleware/JWTMiddleware.ts";
 
 const artistController = new Hono();
 
-artistController.use(tokenMiddleware.verifyIsUser);
+artistController.use(tokenMiddleware.verifyIsBand);
 
 artistController.post("/announcements/publish", publishAnnouncement);
 artistController.post("/members/update", updateMembers);
 artistController.post("/update", updateArtist);
 artistController.post("/rate/:venueId", rateVenue);
 artistController.get("/event/:eventId", getEventAndStatistics);
-artistController.post("media/upload", uploadMedia);
+artistController.post("/media/upload", uploadMedia);
 artistController.post("/event/register/:eventId", registerForEvent);
 
 async function publishAnnouncement(c: Context) {}
