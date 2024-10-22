@@ -10,6 +10,7 @@ import VenueRegistration from "./components/Register/VenueRegistration.tsx";
 import {DarkTheme} from "./theme.ts";
 import {GlobalStyles} from "./global.ts";
 import DesignTest from "./Test.tsx";
+import {Profile} from "./components/User/Profile.tsx";
 
 const theme = new DarkTheme();
 
@@ -23,6 +24,7 @@ function App() {
                 <Route path="register/venue" element={<VenueRegistration />}/>
                 <Route path="home" element={<Home />}/>
                 <Route path="test" element={<DesignTest />} />
+                <Route path="profile" element={<Profile />} />
             </Route>
         )
     )

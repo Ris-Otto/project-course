@@ -2,7 +2,6 @@ import { useNavigate,Link } from 'react-router-dom'
 // @deno-types="npm:@types/react"
 import { useState } from 'react';
 import {postRequest} from "../../api/APITemplate.ts";
-import { User } from "../../../../api/Database/Model/User.ts";
 import { StyledLogin } from "./Login.styled.ts";
 import { Form, Button } from "react-bootstrap";
 import Paths from "../../../../Shared/paths.ts";
