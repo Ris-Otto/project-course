@@ -8,7 +8,7 @@ import Event from "./Event.ts";
 class User extends Model {
     declare name: string;
     declare email: string;
-    declare id: number;
+    declare id: string;
     declare password: string;
     declare verified: 0 | 1;
     declare authenticate: (enteredPassword: string) => Promise<boolean>;
@@ -17,7 +17,7 @@ class User extends Model {
 class Artist extends Model {
     declare name: string;
     declare email: string;
-    declare id: number;
+    declare id: string;
     declare password: string;
     declare authenticate: (enteredPassword: string) => Promise<boolean>;
     declare verified: 0 | 1;
@@ -44,7 +44,7 @@ class Venue extends Model {
     declare email: string;
     declare contactEmail: string;
     declare contactName: string;
-    declare id: number;
+    declare id: string;
     declare password: string;
     declare authenticate: (enteredPassword: string) => Promise<boolean>;
 }
@@ -54,7 +54,7 @@ class ArtistMembersMapping extends Model {}
 User.init(
     {
         id: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.UUIDV4,
             primaryKey: true,
             autoIncrement: true,
         },
@@ -84,7 +84,7 @@ User.init(
 Artist.init(
     {
         id: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.UUIDV4,
             primaryKey: true,
             autoIncrement: true,
         },
@@ -114,7 +114,7 @@ Artist.init(
 Venue.init(
     {
         id: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.UUIDV4,
             primaryKey: true,
             autoIncrement: true,
         },

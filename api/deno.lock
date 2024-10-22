@@ -1,8 +1,11 @@
 {
   "version": "4",
   "specifiers": {
+    "jsr:@std/bytes@^1.0.2": "1.0.2",
+    "jsr:@std/crypto@^1.0.3": "1.0.3",
     "jsr:@std/dotenv@*": "0.225.2",
     "jsr:@std/dotenv@~0.225.2": "0.225.2",
+    "jsr:@std/uuid@^1.0.4": "1.0.4",
     "npm:@hono/zod-validator@*": "0.4.1_hono@4.6.3_zod@3.23.8",
     "npm:bcrypt@*": "5.1.1",
     "npm:hono@*": "4.6.3",
@@ -12,8 +15,21 @@
     "npm:sequelize@^6.37.4": "6.37.4"
   },
   "jsr": {
+    "@std/bytes@1.0.2": {
+      "integrity": "fbdee322bbd8c599a6af186a1603b3355e59a5fb1baa139f8f4c3c9a1b3e3d57"
+    },
+    "@std/crypto@1.0.3": {
+      "integrity": "a2a32f51ddef632d299e3879cd027c630dcd4d1d9a5285d6e6788072f4e51e7f"
+    },
     "@std/dotenv@0.225.2": {
       "integrity": "e2025dce4de6c7bca21dece8baddd4262b09d5187217e231b033e088e0c4dd23"
+    },
+    "@std/uuid@1.0.4": {
+      "integrity": "f4233149cc8b4753cc3763fd83a7c4101699491f55c7be78dc7b30281946d7a0",
+      "dependencies": [
+        "jsr:@std/bytes",
+        "jsr:@std/crypto"
+      ]
     }
   },
   "npm": {
@@ -513,6 +529,7 @@
   "workspace": {
     "dependencies": [
       "jsr:@std/dotenv@~0.225.2",
+      "jsr:@std/uuid@^1.0.4",
       "npm:@hono/zod-validator@*",
       "npm:hono@^4.6.4",
       "npm:mysql2@^3.11.3",
