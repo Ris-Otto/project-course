@@ -4,6 +4,8 @@ import sequelize from "../database.ts";
 class ArtistFollowing extends Model {
     declare id: number;
     declare description: string;
+    declare UserId: number;
+    declare ArtistId: number;
 
 }
 

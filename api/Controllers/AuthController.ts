@@ -8,6 +8,7 @@ import {
     setCookie,
     deleteCookie,
 } from 'npm:hono/cookie'
+import {dl} from "../Utils/logger.ts";
 
 
 const auth = new Hono();
@@ -28,10 +29,7 @@ function registerBand(c: Context) {
 }
 
 async function registerVenue(c: Context) {
-    //TODO
     const venue = await c.req.json<Venue>();
-    console.log("Venue ", venue)
-
     const dbRes = await Venue
         .create({...venue, verified: 1, country: "FI" })
         .then(data => data.get({ plain: true }));
@@ -56,6 +54,7 @@ async function registerUser(c: Context) {
     const dbRes = await User
         .create({ name: name, email: email, password: password, verified: 0 })
         .then(data => data.get({ plain: true }));
+    dl.info("User: {@a}", dbRes);
     //TODO send confirm email email
     return c.json(Ok(dbRes));
 }
@@ -98,7 +97,7 @@ async function checkLogin(c: Context, user: User | Venue | Artist, password: str
 
     const payload = await generateJWTAccessToken(user);
 
-    await setCookie(c, "access_token", payload);
+    setCookie(c, "access_token", payload);
     const type = user instanceof User ? 0 : user instanceof Artist ? 1 : 2;
     return Ok({ name: user.name, email: user.email, type: type});
 }

@@ -1,8 +1,10 @@
 ﻿import { DataTypes, Model } from "sequelize";
+import Sequelize from "sequelize";
 
 import sequelize from "../database.ts";
 import * as bcrypt from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
 import Event from "./Event.ts";
+import Database from "../database.ts";
 
 //Model is a base-class in the ORM
 class User extends Model {
@@ -19,10 +21,11 @@ class Artist extends Model {
     declare email: string;
     declare id: string;
     declare password: string;
+    declare genre: string;
     declare authenticate: (enteredPassword: string) => Promise<boolean>;
     declare verified: 0 | 1;
-    declare members: Member[];
-    declare events: Event[];
+    declare Members: Member[];
+    declare Events: Event[];
 }
 
 class Member extends Model {
@@ -54,9 +57,10 @@ class ArtistMembersMapping extends Model {}
 User.init(
     {
         id: {
-            type: DataTypes.UUIDV4,
+            type: DataTypes.UUID,
+            defaultValue: Sequelize.UUIDV4,
+            allowNull: false,
             primaryKey: true,
-            autoIncrement: true,
         },
         name: DataTypes.STRING,
         email: {
@@ -84,9 +88,10 @@ User.init(
 Artist.init(
     {
         id: {
-            type: DataTypes.UUIDV4,
+            type: DataTypes.UUID,
+            defaultValue: Sequelize.UUIDV4,
+            allowNull: false,
             primaryKey: true,
-            autoIncrement: true,
         },
         name: DataTypes.STRING,
         email: {
@@ -95,10 +100,6 @@ Artist.init(
         password: {
             type: DataTypes.STRING(256),
 
-        },
-        active: {
-            type: DataTypes.BOOLEAN,
-            comment: "0 if user has not verified email, 1 otherwise"
         },
         genre: {
             type: DataTypes.STRING,
@@ -114,9 +115,10 @@ Artist.init(
 Venue.init(
     {
         id: {
-            type: DataTypes.UUIDV4,
+            type: DataTypes.UUID,
+            defaultValue: Sequelize.UUIDV4,
+            allowNull: false,
             primaryKey: true,
-            autoIncrement: true,
         },
         name: DataTypes.STRING,
         email: {
@@ -136,8 +138,6 @@ Venue.init(
             type: DataTypes.STRING,
         },
         verified: DataTypes.TINYINT,
-        contactEmail: DataTypes.STRING,
-        contactName: DataTypes.STRING,
     },
     {
         tableName: "venues",
@@ -170,6 +170,8 @@ ArtistMembersMapping.init(
             primaryKey: true,
             autoIncrement: true,
         },
+        MemberId: DataTypes.INTEGER,
+        ArtistId: DataTypes.INTEGER
     },
     {
         tableName: "artist_member_mapping",

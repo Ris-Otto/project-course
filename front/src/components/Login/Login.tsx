@@ -5,7 +5,9 @@ import {postRequest} from "../../api/APITemplate.ts";
 import { StyledLogin } from "./Login.styled.ts";
 import { Form, Button } from "react-bootstrap";
 import Paths from "../../../../Shared/paths.ts";
+import { useAtom } from "jotai";
 import type { UserPayload } from "../../../../Shared/Types.ts";
+import {user} from "../../store.ts";
 
 function LoginForm(){
 
@@ -13,12 +15,14 @@ function LoginForm(){
 
     const [email, setEmail] = useState<string>("")
     const [password, setPassword] = useState<string>("")
+    const [, setU] = useAtom(user);
     async function handleLogin(e: React.FormEvent<HTMLFormElement>){
         e.preventDefault()
         const requestBody = {email, password}
         const response = await postRequest<UserPayload>(Paths.user.login, requestBody)
         if(response.isSuccess()) {
             setEmail("");
+            setU(response.response);
             navigate("/home");
         }
         setPassword("");

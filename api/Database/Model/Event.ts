@@ -6,8 +6,8 @@ import Pricing from "./Pricing.ts";
 class Event extends Model {
     declare id: number;
     declare name: string;
-    declare venue: Venue;
-    declare artists: Artist[];
+    declare Venue: Venue;
+    declare Artists: Artist[];
     declare pricing: Pricing;
 }
 

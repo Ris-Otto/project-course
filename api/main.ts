@@ -13,9 +13,10 @@ import {ArtistFollowing, VenueFollowing} from "./Database/Model/Following.ts";
 import {Bio, VenueBio, ArtistBio} from "./Database/Model/Bio.ts";
 import artistController from "./Controllers/ArtistController.ts";
 import venueController from "./Controllers/VenueController.ts";
+import {forceSyncDatabaseAndSetupTestData} from "./Utilities.ts";
+import paths from "../Shared/paths.ts";
 
 type Variables = JwtVariables
-
 
 const app = new Hono<{ Variables: Variables }>()
 
@@ -24,22 +25,23 @@ if(!config.ORIGIN) throw new Error("No host defined");
 Event.belongsTo(Pricing);
 Event.belongsTo(Venue);
 
-Member.belongsToMany(Artist, { through: ArtistMembersMapping });
-Artist.belongsToMany(Member, { through: ArtistMembersMapping });
+Member.belongsToMany(Artist, { through: { model: ArtistMembersMapping, unique: false } });
+Artist.belongsToMany(Member, { through: { model: ArtistMembersMapping, unique: false } });
 
-Event.belongsToMany(Artist, {through: EventMapping });
-Artist.belongsToMany(Event, {through: EventMapping });
+Event.belongsToMany(Artist, {through: { model: EventMapping, unique: false } });
+Artist.belongsToMany(Event, {through: { model: EventMapping, unique: false } });
 
-Artist.belongsToMany(User, { through: ArtistFollowing });
-Venue.belongsToMany(User, { through: VenueFollowing });
+Artist.belongsToMany(User, { through: { model: ArtistFollowing, unique: false } });
+User.belongsToMany(Artist, { through: { model: ArtistFollowing, unique: false } });
+
+Venue.belongsToMany(User, { through: { model: VenueFollowing, unique: false } });
+User.belongsToMany(Venue, { through: { model: VenueFollowing, unique: false } });
 
 Bio.belongsToMany(Artist, { through: ArtistBio });
 Bio.belongsToMany(Venue, { through: VenueBio });
 
 
-//import sequelize from "./Database/database.ts";
-//await sequelize.sync({ alter: true });
-//await sequelize.sync({ force: true });
+//await forceSyncDatabaseAndSetupTestData();
 
 app.use('*', (c, next) => {
   const corsMiddlewareHandler = cors({

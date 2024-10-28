@@ -3,8 +3,9 @@ import Pricing from "../../../api/Database/Model/Pricing.ts";
 
 
 export declare type Event = {
+    id: number;
     name: string;
-    venue: Venue;
-    artists: Artist[];
+    Venue: Venue;
+    Artists: Artist[];
     pricing: Pricing;
 }

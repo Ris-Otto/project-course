@@ -1,7 +1,7 @@
-﻿import { Outlet } from "react-router-dom";
+﻿import { Outlet,useNavigate } from "react-router-dom";
 // @deno-types="npm:@types/react"
 import {useEffect} from "react";
-import {useNavigate} from "react-router-dom";
+import { Button } from "react-bootstrap";
 import {checkToken} from "../api/auth.ts";
 import { useAtom } from "jotai";
 import { user } from "../store.ts";
@@ -12,7 +12,6 @@ export function Auth() {
     const [u, setU] = useAtom(user);
     useEffect(() => {
         const check = async () => {
-
             const res = await checkToken();
             if (res.isSuccess()) {
                 //Successful, set the user state from the data received
@@ -22,7 +21,6 @@ export function Auth() {
                 //the user tried accessing
                 setU(null);
                 if(!RequiresAuth(globalThis.location.pathname)) {
-
                     return;
                 }
                 navigate("/login");
@@ -31,12 +29,21 @@ export function Auth() {
         check();
     }, [])
 
-    useEffect(() => {console.log(u)}, [u])
     return <>
         <Outlet />
-        <div style={{ bottom: "5%", right: "5%", position: "absolute"}}>
-            {u ? (<LogoutButton />): null}
-        </div>
+        {u ? (
+            <div>
+                {!location.pathname.includes("profile") ? (
+                    <div style={{top: "5%", right: "5%", position: "absolute"}}>
+                        <Button onClick={() => navigate("/profile")}>Profile</Button>
+                    </div>): null}
+                <div style={{ bottom: "5%", right: "5%", position: "absolute"}}>
+                    <LogoutButton />
+                </div>
+            </div>
+            )
+        : null}
+
     </>
 }
 

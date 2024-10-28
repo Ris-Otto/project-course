@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { events } from "../../store.ts";
 import { useAtom } from "jotai";
+import { useNavigate } from "react-router-dom";
 import {getRequest} from "../../api/APITemplate.ts";
 import paths from "../../../../Shared/paths.ts";
 import { Event } from "../../utilities/Types.ts";
@@ -15,6 +16,8 @@ function pricingValueGetter(p: any) {
 }
 
 export default function Home() {
+
+    const navigate = useNavigate();
     const [myEvents, setMyEvents] = useAtom(events);
     const colDefs = [
         { headerName: "Event name", valueGetter: function (params: any) {
@@ -28,6 +31,14 @@ export default function Home() {
                 return params.data.Venue.address;
             } },
         { headerName: "Pricing",  valueGetter: pricingValueGetter },
+        {
+            valueGetter: function (params: any) {
+                return params.data.id
+            },
+            hide: true,
+            suppressToolPanel: true
+
+        }
     ];
 
     useEffect(() => {
@@ -36,6 +47,7 @@ export default function Home() {
             if(allEvents.isSuccess()) {
                 setMyEvents(allEvents.response);
             }
+            console.log(await getRequest(paths.user.self))
         }
         data();
     }, []);
@@ -49,7 +61,7 @@ export default function Home() {
             style={{height: 500}}
         >
             <AgGridReact
-                onCellClicked={() => {}}
+                onRowClicked={(row) => navigate(`/events/${row.data!.id}`)}
                 rowData={myEvents}
                 columnDefs={colDefs}
             />

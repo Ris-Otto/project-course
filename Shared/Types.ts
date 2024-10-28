@@ -4,7 +4,7 @@ import {Artist, User, Venue} from "../api/Database/Model/User.ts";
 export type UserType = User | Venue | Artist;
 
 export type UserPayload = {
-    id: number;
+    id: string;
     name: string;
     email: string;
     type: number;
@@ -18,4 +18,13 @@ export function ResolveUserType(user: UserType) {
         return 1;
     }
     return 2;
+}
+
+export declare type FanProfile = {
+    name: string,
+    email: string,
+    createdAt: string,
+    updatedAt: string,
+    Artists: Artist[],
+    Venues: Venue[]
 }
