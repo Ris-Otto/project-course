@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { events } from "../../store.ts";
 import { useAtom } from "jotai";
-import { useNavigate } from "react-router-dom";
+import { createSearchParams, useNavigate } from "react-router-dom";
 import {getRequest} from "../../api/APITemplate.ts";
 import paths from "../../../../Shared/paths.ts";
 import { Event } from "../../utilities/Types.ts";
@@ -43,7 +43,7 @@ export default function Home() {
 
     useEffect(() => {
         const data = async () => {
-            const allEvents = await getRequest<Event[]>(paths.user.events);
+            const allEvents = await getRequest<Event[]>(paths.event.all);
             if(allEvents.isSuccess()) {
                 setMyEvents(allEvents.response);
             }
@@ -61,7 +61,11 @@ export default function Home() {
             style={{height: 500}}
         >
             <AgGridReact
-                onRowClicked={(row) => navigate(`/events/${row.data!.id}`)}
+                onRowClicked={(row) => navigate({
+                    pathname: `/events`,
+                    search: createSearchParams({
+                        eventId: String(row.data!.id)
+                    }).toString()})}
                 rowData={myEvents}
                 columnDefs={colDefs}
             />

@@ -26,6 +26,7 @@ const Paths = {
     },
     event: {
         get: "/event",
+        all: "/events"
     }
 
 } as const;

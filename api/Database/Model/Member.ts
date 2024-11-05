@@ -1,29 +1,32 @@
-﻿import { DataTypes, Model } from "sequelize";
+﻿
 import sequelize from "../database.ts";
-
-import Event from "./Event.ts";
+import { DataTypes, Model } from "sequelize";
 import type { Artist } from "./Artist.ts";
+import type { Role } from "./Role.ts";
 
-class EventMapping extends Model {
+class Member extends Model {
     declare id: number;
-    declare Artist: Artist;
+    declare name: string;
     declare createdAt: Date;
     declare updatedAt: Date;
-    declare Event: Event
+    declare Roles: Role[];
+    declare Artists: Artist[];
 }
 
-EventMapping.init(
+
+Member.init(
     {
         id: {
             type: DataTypes.INTEGER,
             primaryKey: true,
             autoIncrement: true,
-        }
+        },
+        name: DataTypes.STRING
     },
     {
-        tableName: "event_mapping",
+        tableName: "members",
         sequelize: sequelize,
     }
 )
 
-export default EventMapping;
+export { Member }

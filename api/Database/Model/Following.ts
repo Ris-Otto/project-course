@@ -6,7 +6,6 @@ class ArtistFollowing extends Model {
     declare description: string;
     declare UserId: number;
     declare ArtistId: number;
-
 }
 
 ArtistFollowing.init(
@@ -26,7 +25,10 @@ ArtistFollowing.init(
 class VenueFollowing extends Model {
     declare id: number;
     declare description: string;
-
+    declare createdAt: Date;
+    declare updatedAt: Date;
+    declare UserId: number;
+    declare ArtistId: number;
 }
 
 VenueFollowing.init(

@@ -1,50 +1,81 @@
-﻿import { Hono } from "npm:hono";
-import type { Context } from "npm:hono";
+﻿import type {Context} from "npm:hono";
+import {Hono} from "npm:hono";
 import Event from "../Database/Model/Event.ts";
 import * as tokenMiddleware from "../Middleware/JWTMiddleware.ts"
 import {NotFound, Ok} from "../../Shared/Result.ts";
 import Pricing from "../Database/Model/Pricing.ts";
 
-import type { ModelStatic } from 'sequelize'
-import {Artist, Member, User, Venue} from "../Database/Model/User.ts";
+import type {ModelStatic, Model} from 'sequelize'
+import {User} from "../Database/Model/User.ts";
 import {dl} from "../Utils/logger.ts";
+import {Artist} from "../Database/Model/Artist.ts";
+import {Member} from "../Database/Model/Member.ts";
+import {Venue} from "../Database/Model/Venue.ts";
+import {Role} from "../Database/Model/Role.ts";
+import {includeArtist, includeModel} from "../Utilities.ts";
 
 
-const users = new Hono();
+const userController = new Hono();
 
-const defaultGetModel = (model:  ModelStatic<any>, include?:  ModelStatic<any>): any => {
-
-    return include ? {
-        model: model,
-        attributes: { exclude:["password"]},
-        through: {
-            attributes: []
-        },
-        include: [defaultGetModel(include)]
-    } : {
-        model: model,
-        attributes: { exclude:["password"]},
-        through: {
-            attributes: []
-        },
-    }
-}
-
-users.get("/events", getEvents);
-users.get("/", tokenMiddleware.verifyIsUser, getUser);
-users.get("/venues/following", tokenMiddleware.verifyIsUser, getFollowedVenus);
-users.get("/artists/following", tokenMiddleware.verifyIsUser, getFollowedArtists);
-users.post("/venues/follow/:venueId", tokenMiddleware.verifyIsUser, followVenue);
-users.post("/artists/follow/:venueId", tokenMiddleware.verifyIsUser, followArtist);
+userController.get("/events", getEvents);
+userController.get("/event/:eventId", getEvent)
+userController.get("/user", tokenMiddleware.verifyIsUser, getUser);
+userController.get("/user/venues/following", tokenMiddleware.verifyIsUser, getFollowedVenus);
+userController.get("/user/artists/following", tokenMiddleware.verifyIsUser, getFollowedArtists);
+userController.post("/user/venues/follow/:venueId", tokenMiddleware.verifyIsUser, followVenue);
+userController.post("/user/artists/follow/:venueId", tokenMiddleware.verifyIsUser, followArtist);
 
 async function getEvents(c: Context) {
 
-    const events = (await Event.findAll({ include: [
-            {model: Pricing},
-            {model: Venue, attributes: { exclude: ["password", "verified", "contactEmail", "contactName"]}}
-        ]})).map(e => e.get({plain: true}));
-    dl.info("\nEvents: {@a}", events)
+    const events = (await Event.findAll({
+        include: [
+            includeModel(
+                {
+                    model: Pricing,
+                    exclude: ["createdAt", "updatedAt"]
+                }
+            ), includeModel
+            (
+                {
+                    model: Venue,
+                    exclude: ["password", "verified", "contactEmail", "contactName","createdAt", "updatedAt"]
+                }
+            )
+        ],
+        attributes: {
+            exclude: ["VenueId", "PricingId","createdAt", "updatedAt"]
+        }
+    })).map(e => e.get({plain: true}));
     return c.json(Ok(events));
+}
+
+async function getEvent(c: Context) {
+    const id = c.req.param("eventId");
+    const event = (await Event.findByPk(id, {
+        include: [
+            includeModel(
+                {
+                    model: Pricing
+                }
+            ), includeModel
+            (
+                {
+                    model: Venue,
+                    exclude: ["password", "verified", "contactEmail", "contactName"]
+                }
+            ),
+            includeArtist()
+        ],
+        attributes: {
+            exclude: ["VenueId", "PricingId", "Artists"]
+        }
+    }));
+
+    if(event === null) {
+        return c.json(NotFound())
+    }
+    const ret = event.get({plain: true});
+    return c.json(Ok(ret));
 }
 
 async function getUser(c: Context) {
@@ -56,7 +87,17 @@ async function getUser(c: Context) {
                 id: payload.id,
             },
             include: [
-                defaultGetModel(Artist, Member), defaultGetModel(Venue)],
+                includeModel(
+                    {
+                        model: Artist,
+                        exclude: ["password"],
+                        excludeMapping: true,
+                    }
+                ), includeModel({
+                    model: Venue,
+                    exclude: ["password"],
+                    excludeMapping: true
+                })],
             attributes: { exclude: ["password", "verified"] },
         }).then(a => a === null ? null : a.get({plain: true}));
     return c.json(Ok(user));
@@ -79,4 +120,4 @@ async function followArtist(c: Context) {}
 
 async function followVenue(c: Context) {}
 
-export default users;
+export default userController;

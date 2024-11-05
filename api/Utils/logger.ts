@@ -22,8 +22,7 @@ function parseStringTemplate(template: string, args: any[]) {
     return template;
 }
 
-function handleArgType(arg: any, level: number = 0) {
-    if(arg === null) return "";
+function handleArgType(arg: any, level: number = 0): string {
     switch (typeof arg) {
         case "string":
             return green(`"${arg}"`);
@@ -36,7 +35,7 @@ function handleArgType(arg: any, level: number = 0) {
         case "number":
             return magenta(String(arg));
         default:
-            return arg;
+            return String(arg);
     }
 }
 

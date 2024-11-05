@@ -1,5 +1,9 @@
 ﻿// @ts-ignore
-import {Artist, User, Venue} from "../api/Database/Model/User.ts";
+import { User } from "../api/Database/Model/User.ts";
+// @ts-ignore
+import {Venue} from "../api/Database/Model/Venue.ts";
+// @ts-ignore
+import {Artist} from "../api/Database/Model/Artist.ts";
 
 export type UserType = User | Venue | Artist;
 

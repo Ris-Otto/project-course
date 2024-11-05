@@ -5,16 +5,21 @@ import { cors } from 'npm:hono/cors';
 import * as config from "./config.ts";
 import Event from "./Database/Model/Event.ts";
 import Pricing from "./Database/Model/Pricing.ts";
-import {Artist, ArtistMembersMapping, Member, User, Venue} from "./Database/Model/User.ts";
+import { User } from "./Database/Model/User.ts";
 import EventMapping from "./Database/Model/EventMapping.ts";
-import users from "./Controllers/UserController.ts";
+import { ArtistFollowing, VenueFollowing } from "./Database/Model/Following.ts";
+import {Bio } from "./Database/Model/Bio.ts";
+import { ArtistMembersMapping, Artist } from "./Database/Model/Artist.ts";
+import { Member } from "./Database/Model/Member.ts";
+import { Venue } from "./Database/Model/Venue.ts";
+import userController from "./Controllers/UserController.ts";
 import authController from "./Controllers/AuthController.ts";
-import {ArtistFollowing, VenueFollowing} from "./Database/Model/Following.ts";
-import {Bio, VenueBio, ArtistBio} from "./Database/Model/Bio.ts";
 import artistController from "./Controllers/ArtistController.ts";
 import venueController from "./Controllers/VenueController.ts";
-import {forceSyncDatabaseAndSetupTestData} from "./Utilities.ts";
-import paths from "../Shared/paths.ts";
+import { forceSyncDatabaseAndSetupTestData } from "./Utilities.ts";
+import { Media } from "./Database/Model/Media.ts";
+import { Role } from "./Database/Model/Role.ts";
+
 
 type Variables = JwtVariables
 
@@ -24,21 +29,25 @@ if(!config.ORIGIN) throw new Error("No host defined");
 
 Event.belongsTo(Pricing);
 Event.belongsTo(Venue);
+Event.belongsToMany(Artist, {through: { model: EventMapping, unique: false } });
+Event.belongsTo(Bio);
 
 Member.belongsToMany(Artist, { through: { model: ArtistMembersMapping, unique: false } });
+
 Artist.belongsToMany(Member, { through: { model: ArtistMembersMapping, unique: false } });
-
-Event.belongsToMany(Artist, {through: { model: EventMapping, unique: false } });
 Artist.belongsToMany(Event, {through: { model: EventMapping, unique: false } });
-
 Artist.belongsToMany(User, { through: { model: ArtistFollowing, unique: false } });
-User.belongsToMany(Artist, { through: { model: ArtistFollowing, unique: false } });
+Artist.belongsTo(Bio);
 
 Venue.belongsToMany(User, { through: { model: VenueFollowing, unique: false } });
+Venue.belongsTo(Bio);
+
+User.belongsToMany(Artist, { through: { model: ArtistFollowing, unique: false } });
 User.belongsToMany(Venue, { through: { model: VenueFollowing, unique: false } });
 
-Bio.belongsToMany(Artist, { through: ArtistBio });
-Bio.belongsToMany(Venue, { through: VenueBio });
+Media.belongsTo(Bio);
+
+Member.hasMany(Role);
 
 
 //await forceSyncDatabaseAndSetupTestData();
@@ -53,7 +62,7 @@ app.use('*', (c, next) => {
 })
 app.use(prettyJSON())
 
-app.route("/user", users);
+app.route("/", userController);
 app.route("/auth", authController);
 app.route("/artist", artistController);
 app.route("/venue", venueController);

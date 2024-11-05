@@ -1,9 +1,13 @@
 ﻿import { DataTypes, Model } from "sequelize";
 import sequelize from "../database.ts";
+import type { Media } from "./Media.ts";
 
 class Bio extends Model {
     declare id: number;
     declare description: string;
+    declare Media: Media[];
+    declare createdAt: Date;
+    declare updatedAt: Date;
 }
 
 Bio.init(
@@ -21,44 +25,4 @@ Bio.init(
     }
 )
 
-class ArtistBio extends Model {
-    declare id: number;
-}
-
-ArtistBio.init(
-    {
-        id: {
-            type: DataTypes.INTEGER,
-            primaryKey: true,
-            autoIncrement: true,
-        },
-        description: DataTypes.STRING,
-    },
-    {
-        tableName: "artist_bios",
-        sequelize: sequelize,
-    }
-)
-
-class VenueBio extends Model {
-    declare id: number;
-}
-
-VenueBio.init(
-    {
-        id: {
-            type: DataTypes.INTEGER,
-            primaryKey: true,
-            autoIncrement: true,
-        },
-        description: DataTypes.STRING,
-    },
-    {
-        tableName: "venue_bios",
-        sequelize: sequelize,
-    }
-)
-
-
-
-export { Bio, VenueBio, ArtistBio};
+export { Bio };

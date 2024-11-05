@@ -6,6 +6,8 @@ class Pricing extends Model {
     declare currency: string;
     declare type: number;
     declare amount: number;
+    declare createdAt: Date;
+    declare updatedAt: Date;
 }
 
 Pricing.init(
@@ -17,15 +19,17 @@ Pricing.init(
         },
         currency: {
             type: DataTypes.STRING,
-
+            allowNull: false,
         },
         type: {
             type: DataTypes.TINYINT,
             comment: "0: Cash, 1: Wallet, 2: Card",
+            allowNull: false,
 
         },
         amount: {
             type: DataTypes.FLOAT,
+            allowNull: false,
         }
     },
     {

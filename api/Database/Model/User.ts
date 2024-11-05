@@ -1,58 +1,18 @@
 ﻿import { DataTypes, Model } from "sequelize";
 import Sequelize from "sequelize";
-
 import sequelize from "../database.ts";
 import * as bcrypt from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
-import Event from "./Event.ts";
-import Database from "../database.ts";
 
-//Model is a base-class in the ORM
 class User extends Model {
     declare name: string;
     declare email: string;
     declare id: string;
     declare password: string;
     declare verified: 0 | 1;
+    declare createdAt: Date;
+    declare updatedAt: Date;
     declare authenticate: (enteredPassword: string) => Promise<boolean>;
 }
-
-class Artist extends Model {
-    declare name: string;
-    declare email: string;
-    declare id: string;
-    declare password: string;
-    declare genre: string;
-    declare authenticate: (enteredPassword: string) => Promise<boolean>;
-    declare verified: 0 | 1;
-    declare Members: Member[];
-    declare Events: Event[];
-}
-
-class Member extends Model {
-    declare id: number;
-    declare name: string;
-    declare role: string;
-    declare artists: Artist[];
-}
-
-class Venue extends Model {
-    declare verified: 0 | 1;
-    declare events: Event[]
-    declare address: string;
-    declare zip: string;
-    declare city: string;
-    declare country: string;
-    declare businessId: string;
-    declare name: string;
-    declare email: string;
-    declare contactEmail: string;
-    declare contactName: string;
-    declare id: string;
-    declare password: string;
-    declare authenticate: (enteredPassword: string) => Promise<boolean>;
-}
-
-class ArtistMembersMapping extends Model {}
 
 User.init(
     {
@@ -62,17 +22,27 @@ User.init(
             allowNull: false,
             primaryKey: true,
         },
-        name: DataTypes.STRING,
+        name: {
+            type: DataTypes.STRING,
+            allowNull: false,
+            validate: {
+                min: 0,
+                max: 32,
+            }
+        },
         email: {
             type: DataTypes.STRING,
-            unique: true,
+            allowNull: false,
+            unique: {
+                name: "email",
+                msg: "Email must be unique"
+            },
             validate: {
                 isEmail: true,
             }
         },
         password: {
           type: DataTypes.STRING(256),
-
         },
         verified: {
             type: DataTypes.BOOLEAN,
@@ -85,109 +55,7 @@ User.init(
     }
 )
 
-Artist.init(
-    {
-        id: {
-            type: DataTypes.UUID,
-            defaultValue: Sequelize.UUIDV4,
-            allowNull: false,
-            primaryKey: true,
-        },
-        name: DataTypes.STRING,
-        email: {
-            type: DataTypes.STRING,
-        },
-        password: {
-            type: DataTypes.STRING(256),
-
-        },
-        genre: {
-            type: DataTypes.STRING,
-        },
-        verified: DataTypes.TINYINT,
-    },
-    {
-        tableName: "artists",
-        sequelize: sequelize,
-    }
-)
-
-Venue.init(
-    {
-        id: {
-            type: DataTypes.UUID,
-            defaultValue: Sequelize.UUIDV4,
-            allowNull: false,
-            primaryKey: true,
-        },
-        name: DataTypes.STRING,
-        email: {
-            type: DataTypes.STRING,
-        },
-        password: {
-            type: DataTypes.STRING(256),
-
-        },
-        address: {
-            type: DataTypes.STRING,
-        },
-        zip: DataTypes.STRING,
-        city: DataTypes.STRING,
-        country: DataTypes.STRING,
-        businessId: {
-            type: DataTypes.STRING,
-        },
-        verified: DataTypes.TINYINT,
-    },
-    {
-        tableName: "venues",
-        sequelize: sequelize,
-    }
-)
-
-Member.init(
-    {
-        id: {
-            type: DataTypes.INTEGER,
-            primaryKey: true,
-            autoIncrement: true,
-        },
-        name: DataTypes.STRING,
-        role: DataTypes.STRING,
-    },
-    {
-        tableName: "members",
-        sequelize: sequelize,
-    }
-)
-
-
-
-ArtistMembersMapping.init(
-    {
-        id: {
-            type: DataTypes.INTEGER,
-            primaryKey: true,
-            autoIncrement: true,
-        },
-        MemberId: DataTypes.INTEGER,
-        ArtistId: DataTypes.INTEGER
-    },
-    {
-        tableName: "artist_member_mapping",
-        sequelize: sequelize,
-    }
-)
-
 User.prototype.authenticate = async function (enteredPassword: string): Promise<boolean> {
-    return await bcrypt.compare(enteredPassword, this.password);
-}
-
-Artist.prototype.authenticate = async function (enteredPassword: string): Promise<boolean> {
-    return await bcrypt.compare(enteredPassword, this.password);
-}
-
-Venue.prototype.authenticate = async function (enteredPassword: string): Promise<boolean> {
     return await bcrypt.compare(enteredPassword, this.password);
 }
 
@@ -198,19 +66,4 @@ User.addHook("beforeCreate",
     }
 )
 
-Venue.addHook("beforeCreate",
-    async (venue: Venue) => {
-        const salt = await bcrypt.genSalt(12);
-        venue.password = await bcrypt.hash(venue.password, salt);
-    }
-)
-
-Artist.addHook("beforeCreate",
-    async (artist: Artist) => {
-        const salt = await bcrypt.genSalt(12);
-        artist.password = await bcrypt.hash(artist.password, salt);
-    }
-)
-
-
-export {User, Artist, Venue, Member, ArtistMembersMapping};
+export { User };

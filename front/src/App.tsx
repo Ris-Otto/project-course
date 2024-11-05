@@ -12,6 +12,8 @@ import {GlobalStyles} from "./global.ts";
 import DesignTest from "./Test.tsx";
 import {UserProfile} from "./components/User/UserProfile.tsx";
 import ArtistProfilePublic from "./components/User/Artist.tsx";
+import { EventPage } from "./components/Misc/Event.tsx";
+
 
 const theme = new DarkTheme();
 
@@ -26,6 +28,7 @@ const router = createBrowserRouter(
             <Route path="test" element={<DesignTest />} />
             <Route path="profile" element={<UserProfile />} />
             <Route path="artist" element={<ArtistProfilePublic />} />
+            <Route path="events" element={<EventPage />} />
         </Route>
     )
 )

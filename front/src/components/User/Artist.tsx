@@ -1,9 +1,8 @@
 ﻿import { useEffect, useState } from 'react';
-import {Artist, Member} from "../../../../api/Database/Model/User.ts";
-import { Event } from "../../utilities/Types.ts"
 import {getRequest} from "../../api/APITemplate.ts";
 import paths from "../../../../Shared/paths.ts";
 import { useSearchParams } from 'react-router-dom';
+import type { Artist } from "../../../../api/Database/Model/Artist.ts";
 
 export default function ArtistProfilePublic() {
 
@@ -11,7 +10,7 @@ export default function ArtistProfilePublic() {
     const [a, setA] = useState<Artist>();
     useEffect(() => {
         async function getData() {
-            const data = await getRequest<Artist>(`artist/public/${sp.get("id")}`);
+            const data = await getRequest<Artist>(`artist/public/${sp.get("artistId")}`);
             if(data.isSuccess()) {
                 setA(data.response);
             }
@@ -56,7 +55,6 @@ export function RenderArtist({ artist, as }: { artist: Artist, as: "list" | "pag
                     <>
                         <strong style={{color: "yellow"}}>{artist.name}</strong>
                         <div>{artist.genre}</div>
-                        <div>{artist.Members.map((mem: Member, idx) => <div key={idx}>{mem.name}, {mem.role}</div>)}</div>
                     </>
                 ) : null}
             </div>) : (

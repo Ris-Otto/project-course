@@ -1,6 +1,6 @@
 ﻿import {Hono} from "npm:hono";
 import type { Context } from "npm:hono";
-import {Artist, User, Venue} from "../Database/Model/User.ts";
+import { User } from "../Database/Model/User.ts";
 import {Ok, Unauthorized} from "../../Shared/Result.ts";
 import {generateJWTAccessToken, verifyAndDecodeToken, verifyJWTAccessToken} from "../Middleware/JWTMiddleware.ts";
 import {
@@ -9,6 +9,8 @@ import {
     deleteCookie,
 } from 'npm:hono/cookie'
 import {dl} from "../Utils/logger.ts";
+import { Venue } from "../Database/Model/Venue.ts";
+import { Artist } from "../Database/Model/Artist.ts";
 
 
 const auth = new Hono();

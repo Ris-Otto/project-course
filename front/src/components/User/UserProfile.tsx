@@ -37,7 +37,7 @@ export function UserProfile() {
                                 className="artist-box" onMouseDown={() => navigate({
                                 pathname: `/artist`,
                                 search: createSearchParams({
-                                    id: artist.id
+                                    artistId: artist.id
                                 }).toString()})}
                             >
                                 <RenderArtist

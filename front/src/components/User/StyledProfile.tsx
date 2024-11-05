@@ -3,6 +3,7 @@
 
 
 export const StyledProfile = styled.div`
+    /*idk*/
     justify-items: left;
     justify-content: left;
     justify-self: left;

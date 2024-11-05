@@ -43,11 +43,10 @@ export function Auth() {
             </div>
             )
         : null}
-
     </>
 }
 
 function RequiresAuth(path: string) {
-    return path != "/home" && !path.includes("/register");
+    return path != "/home" && !path.includes("/register") && !path.includes("/events");
 
 }
