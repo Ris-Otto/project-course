@@ -7,8 +7,11 @@ import {Venue} from "../Database/Model/Venue.ts";
 import { Artist } from "../Database/Model/Artist.ts";
 import { Member } from "../Database/Model/Member.ts";
 import { Role } from "../Database/Model/Role.ts";
-import {includeModel} from "../Utilities.ts";
 import Pricing from "../Database/Model/Pricing.ts";
+
+import {includeBio, includeEvent, includeMember, includeModel} from "../Database/framework.ts";
+import { Bio } from "../Database/Model/Bio.ts";
+import {Media} from "../Database/Model/Media.ts";
 
 
 const artistController = new Hono();
@@ -40,37 +43,12 @@ async function getArtistProfile(c: Context) {
     const pk = c.req.param('artistId');
     const artist = await Artist.findByPk(pk, {
         include: [
-            includeModel(
-                {
-                    model: Event,
-                    excludeMapping: true,
-                    exclude: ["createdAt", "updatedAt", "PricingId", "VenueId"],
-                    include: [
-                        {
-                            model: Venue,
-                            exclude: ["password", "createdAt", "updatedAt"]
-                        },
-                        {
-                            model: Pricing,
-                            exclude: ["createdAt", "updatedAt"]
-                        }
-                    ]
-                }
-            ),
-            includeModel(
-                {
-                    model: Member,
-                    excludeMapping: true,
-                    exclude: ["createdAt", "updatedAt"],
-                    include: [{
-                        model: Role,
-                        exclude: ["createdAt", "updatedAt", "MemberId"],
-                    }]
-                }
-            )
+            includeEvent(),
+            includeMember(),
+            includeBio()
         ],
         attributes: {
-            exclude: ["password", "createdAt", "updatedAt"]
+            exclude: ["password", "createdAt", "updatedAt", "BioId"]
         }
     });
     if(artist === null) {

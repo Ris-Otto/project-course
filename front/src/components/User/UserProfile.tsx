@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { Button } from 'react-bootstrap';
 import {useNavigate, createSearchParams} from 'react-router-dom';
-import {getRequest} from "../../api/APITemplate.ts";
+import {getRequest, postRequest} from "../../api/APITemplate.ts";
 import paths from "../../../../Shared/paths.ts";
 import {FanProfile} from "../../../../Shared/Types.ts";
 import {RenderArtist} from "./Artist.tsx";

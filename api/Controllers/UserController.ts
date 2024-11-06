@@ -2,17 +2,15 @@
 import {Hono} from "npm:hono";
 import Event from "../Database/Model/Event.ts";
 import * as tokenMiddleware from "../Middleware/JWTMiddleware.ts"
-import {NotFound, Ok} from "../../Shared/Result.ts";
+import {InternalError, NotFound, Ok, Unauthorized} from "../../Shared/Result.ts";
 import Pricing from "../Database/Model/Pricing.ts";
-
-import type {ModelStatic, Model} from 'sequelize'
 import {User} from "../Database/Model/User.ts";
-import {dl} from "../Utils/logger.ts";
 import {Artist} from "../Database/Model/Artist.ts";
-import {Member} from "../Database/Model/Member.ts";
 import {Venue} from "../Database/Model/Venue.ts";
-import {Role} from "../Database/Model/Role.ts";
-import {includeArtist, includeModel} from "../Utilities.ts";
+import {includeArtist, includeModel} from "../Database/framework.ts";
+import {
+    deleteCookie,
+} from 'npm:hono/cookie'
 
 
 const userController = new Hono();
@@ -23,10 +21,10 @@ userController.get("/user", tokenMiddleware.verifyIsUser, getUser);
 userController.get("/user/venues/following", tokenMiddleware.verifyIsUser, getFollowedVenus);
 userController.get("/user/artists/following", tokenMiddleware.verifyIsUser, getFollowedArtists);
 userController.post("/user/venues/follow/:venueId", tokenMiddleware.verifyIsUser, followVenue);
-userController.post("/user/artists/follow/:venueId", tokenMiddleware.verifyIsUser, followArtist);
+userController.post("/user/artists/follow/:artistId", tokenMiddleware.verifyIsUser, followArtist);
 
 async function getEvents(c: Context) {
-
+    //TODO pagination, sequelize probably has some functionality for this
     const events = (await Event.findAll({
         include: [
             includeModel(
@@ -79,6 +77,7 @@ async function getEvent(c: Context) {
 }
 
 async function getUser(c: Context) {
+    //TODO pagination
     const payload = c.get("tokenPayload");
     const user = await User.findOne(
         {
@@ -90,7 +89,7 @@ async function getUser(c: Context) {
                 includeModel(
                     {
                         model: Artist,
-                        exclude: ["password"],
+                        exclude: ["password", "BioId"],
                         excludeMapping: true,
                     }
                 ), includeModel({
@@ -100,24 +99,76 @@ async function getUser(c: Context) {
                 })],
             attributes: { exclude: ["password", "verified"] },
         }).then(a => a === null ? null : a.get({plain: true}));
+    if(!user) {
+        deleteCookie(c, "access_token");
+
+        return c.json(Unauthorized())
+    }
     return c.json(Ok(user));
 }
 
-async function getFollowedVenus(c: Context) {}
 
-async function getFollowedArtists(c: Context) {}
 
-async function getArtist(c: Context) {
-    const pk = c.req.param('id');
-    const artist = await Artist.findByPk(pk);
-    if(artist === null) return c.text("!bajsbajs");
-    return c.json(Ok(
-        artist.get({plain: true})
-    ));
+async function getFollowedVenus(c: Context) {
+    //TODO pagination
+    const payload = c.get("tokenPayload");
+    const user = await User.findOne(
+        {
+            where: {
+                email: payload.email,
+                id: payload.id,
+            },
+        });
+    if(!user) return c.json(NotFound());
+    const venues = await user.getVenues();
+    return c.json(Ok(venues));
 }
 
-async function followArtist(c: Context) {}
+async function getFollowedArtists(c: Context) {
+    //TODO pagination
+    const payload = c.get("tokenPayload");
+    const user = await User.findOne(
+        {
+            where: {
+                email: payload.email,
+                id: payload.id,
+            },
+        });
+    if(!user) return c.json(NotFound());
+    const artists = await user.getArtists();
+    return c.json(Ok(artists));
+}
 
-async function followVenue(c: Context) {}
+async function followArtist(c: Context) {
+    const payload = c.get("tokenPayload");
+    const artistId = c.req.param("artistId");
+    const user = await User.findOne(
+        {
+            where: {
+                email: payload.email,
+                id: payload.id,
+            },
+        });
+    if(!user) return c.json(NotFound());
+    const add = await user.addArtist(artistId);
+    if(!add) return c.json(InternalError()/*or not found*/)
+    return c.json(Ok(add));
+}
+
+async function followVenue(c: Context) {
+    const payload = c.get("tokenPayload");
+    const venueId = c.req.param("venueId");
+    const user = await User.findOne(
+        {
+            where: {
+                email: payload.email,
+                id: payload.id,
+            },
+        });
+    if(!user) return c.json(NotFound());
+    const add = await user.addVenue(venueId);
+    if(!add) return c.json(InternalError()/*or not found*/)
+    return c.json(Ok(add));
+}
 
 export default userController;

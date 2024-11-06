@@ -11,7 +11,7 @@ class Review extends Model {
     declare updatedAt: Date;
     declare description: string;
     declare score: number;
-    declare reviewer_type: number;
+    declare reviewer_type: 1 | 0;
 }
 
 
@@ -39,12 +39,9 @@ Review.init(
             }
         },
         reviewer_type: {
-            type: DataTypes.TINYINT,
+            type: DataTypes.BOOLEAN,
             allowNull: false,
-            validate: {
-                max: 1,
-                min: 0,
-            }
+
         }
     },
     {
@@ -52,3 +49,5 @@ Review.init(
         sequelize: sequelize,
     }
 )
+
+export {Review}

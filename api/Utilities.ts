@@ -1,13 +1,12 @@
-﻿import { User } from "./Database/Model/User.ts";
+﻿import {User} from "./Database/Model/User.ts";
 import sequelize from "./Database/database.ts";
 import {ArtistFollowing} from "./Database/Model/Following.ts";
 import Event from "./Database/Model/Event.ts";
 import Pricing from "./Database/Model/Pricing.ts";
 import EventMapping from "./Database/Model/EventMapping.ts";
-import type { ModelStatic, Model } from "sequelize";
-import { ArtistMembersMapping, Artist } from "./Database/Model/Artist.ts";
-import { Member } from "./Database/Model/Member.ts";
-import { Venue } from "./Database/Model/Venue.ts";
+import {Artist, ArtistMembersMapping} from "./Database/Model/Artist.ts";
+import {Member} from "./Database/Model/Member.ts";
+import {Venue} from "./Database/Model/Venue.ts";
 import {Role} from "./Database/Model/Role.ts";
 
 
@@ -143,83 +142,3 @@ export async function alterSyncDatabase() {
     await sequelize.sync({ alter: true });
 }
 
-export function defaultGetModel<T extends Model<any, any>, TNext extends Model<any, any>>(model:  ModelStatic<T>, include?: ModelStatic<TNext>): any {
-    return include ?
-        {
-            model: model,
-            attributes: { exclude: [ "password"]},
-            through: {
-                attributes: []
-            },
-            include: [defaultGetModel(include)]
-        } :
-        {
-            model: model,
-            attributes: { exclude:["password"]},
-            through: {
-                attributes: []
-            }
-        }
-}
-
-/**
- * `excludeMapping` can only be true if the association between the parent model and the included model
- * has a separate mapping table in the database, otherwise the request will throw
- */
-export type Includeable<T extends Model> = {
-    model: ModelStatic<T>;
-    exclude?: string[];
-    include?: Includeable<Model>[]
-    excludeMapping?: boolean
-}
-
-export type Included<T extends Model> = {
-    model: ModelStatic<T>,
-    attributes?: { exclude: string[] },
-    through?: { attributes: never[] }
-    include?: any[]
-}
-
-export function includeModel<T extends Model>(includeable: Includeable<T>): Included<T> {
-    const { model, exclude, include, excludeMapping} = includeable;
-
-    const subModels: Includeable<Model<any,any>>[] = [];
-
-    const ret: Included<T> = {
-        model: model,
-    };
-    if(exclude) {
-        ret.attributes = {
-            exclude: exclude as unknown as string[]
-        };
-    }
-    if(excludeMapping) {
-        ret.through =  {
-            attributes: []
-        };
-    }
-    if(include) {
-        include.forEach(a => {subModels.push((includeModel(a)));});
-        ret.include = subModels;
-    }
-    return ret;
-}
-
-export function includeArtist() {
-    return includeModel(
-        {
-            model: Artist,
-            excludeMapping: true,
-            exclude: ["password", "createdAt", "updatedAt"],
-            include: [{
-                model: Member,
-                excludeMapping: true,
-                exclude: ["createdAt", "updatedAt"],
-                include: [{
-                    model: Role,
-                    exclude: ["createdAt", "updatedAt"],
-                }]
-            }]
-        }
-    )
-}

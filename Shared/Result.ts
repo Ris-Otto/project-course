@@ -52,10 +52,13 @@ export declare interface ResponseData<T> {
 
 export const Code = {
     Ok: 10,
+    PartialOk: 15,
     Unauthorized: 20,
     NotFound: 30,
     PermissionDenied: 40,
     Error: 50,
+    RequestAborted: 100,
+    ThirdPartyRequestAborted: 200,
 } as const;
 
 type ResultCode = (typeof Code)[keyof typeof Code];
@@ -73,7 +76,10 @@ export class Response<T> {
 }
 
 export const Unauthorized = (message?:string) => new Response(Code.Unauthorized, message ? message : "Not authorized", null);
-export const NotFound = <T>(data?: T, message?:string) => new Response(Code.NotFound, message ? message : `${typeof data} not found`, data);
+export const NotFound = <T>(data?: T, message?:string) => new Response(Code.NotFound, message ? message : `Not found`, data);
 export const PermissionDenied = <T>(data?: T, message?:string) => new Response(Code.PermissionDenied, message ? message : "Permission denied", data);
 export const InternalError = <T>(data?: T, message?:string) => new Response(Code.Error, message ? message : "Internal server error", data);
+export const PartialOk = <T>(data?: T, message?:string) => new Response(Code.PartialOk, message ? message : "Partial Ok", data);
 export const Ok = <T>(data?: T, message?:string) => new Response(Code.Ok, message ? message : "Ok", data);
+export const Aborted = <T>(data?: T, message?:string) => new Response(Code.RequestAborted, message ? message : "Request aborted or declined due to unforeseeable circumstances", data);
+export const ThirdPartyAborted = <T>(data?: T, message?:string) => new Response(Code.RequestAborted, message ? message : "Request aborted or declined by third party", data);

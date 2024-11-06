@@ -2,6 +2,9 @@
 import Sequelize from "sequelize";
 import sequelize from "../database.ts";
 import * as bcrypt from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
+import {ArtistFollowing, VenueFollowing} from "./Following.ts";
+import {Venue} from "./Venue.ts";
+import {Artist} from "./Artist.ts";
 
 class User extends Model {
     declare name: string;
@@ -12,6 +15,10 @@ class User extends Model {
     declare createdAt: Date;
     declare updatedAt: Date;
     declare authenticate: (enteredPassword: string) => Promise<boolean>;
+    declare addVenue: (venueId: string) => Promise<VenueFollowing | null>;
+    declare addArtist: (artistId: string) => Promise<ArtistFollowing | null>;
+    declare getVenues: () => Promise<Venue[]>;
+    declare getArtists: () => Promise<Artist[]>;
 }
 
 User.init(
