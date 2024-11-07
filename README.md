@@ -110,6 +110,8 @@ Required for clickables
 
 Top level css, color scheme and css media query widths are found in `/front/global.ts` and `/front/theme.ts`.
 
+To quickly view style, add elements to the `Test.tsx` file (/test in browser) 
+
 
 
 
