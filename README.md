@@ -1,4 +1,18 @@
+# Project 
+
+Kasper's versions:
+- Node v20.17.0
+- npm v10.8.2
+- deno v2.0.0
+- ts 5.6.2
+
+
+
+
+
 ## Backend
+
+Uses hono.js (https://hono.dev)
 
 ```
 cd api
@@ -59,6 +73,20 @@ JWT_EXP=time_from_token_creation_until_token_expiration_in_seconds
 
 ## Frontend
 
+React with vite
+
+Front uses `.styled`-components (https://styled-components.com) for local css and a global file for top-level css (words mean nothing)
+
+React-bootstrap (https://www.npmjs.com/package/react-bootstrap) for more pleasant FE development experience
+
+React router v6 (https://reactrouter.com/en/main) for some reason probably (deprecation et m.)
+
+axios (https://axios-http.com/docs/intro) for client-server communication
+
+atom (https://jotai.org/docs/introduction) for state management, idk seems cumbersome might use TanStack or something else
+
+react-toastify (https://www.npmjs.com/package/react-toastify) for toasts ('alerts')
+
 ```
 cd front
 deno task dev
@@ -77,5 +105,16 @@ Required for input:
 Required for clickables
 - id
 - example 3
+
+#### Design tests
+
+Top level css, color scheme and css media query widths are found in `/front/global.ts` and `/front/theme.ts`.
+
+
+
+
+
+
+
 
 
