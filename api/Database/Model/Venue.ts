@@ -4,6 +4,7 @@ import { DataTypes, Model } from "sequelize";
 import Sequelize from "sequelize";
 import * as bcrypt from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
 import {Bio} from "./Bio.ts";
+import type EventMapping from "./EventMapping.ts";
 
 
 class Venue extends Model {
@@ -24,6 +25,7 @@ class Venue extends Model {
     declare updatedAt: Date;
     declare Bio: Bio[]
     declare authenticate: (enteredPassword: string) => Promise<boolean>;
+    declare addEvent: (eventId: string) => Promise<EventMapping | null>
 }
 Venue.init(
     {

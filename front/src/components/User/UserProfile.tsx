@@ -1,54 +1,46 @@
-﻿// @deno-types="npm:@types/react"
-import { useEffect, useState } from 'react';
-import { Button } from 'react-bootstrap';
-import {useNavigate, createSearchParams} from 'react-router-dom';
-import {getRequest, postRequest} from "../../api/APITemplate.ts";
+﻿import { createSearchParams, useNavigate } from "react-router-dom";
 import paths from "../../../../Shared/paths.ts";
-import {FanProfile} from "../../../../Shared/Types.ts";
-import {RenderArtist} from "./Artist.tsx";
-import {StyledProfile} from "./StyledProfile.tsx";
+import { FanProfile } from "../../../../Shared/Types.ts";
+import { RenderArtist } from "./Artist.tsx";
+import { StyledProfile } from "./StyledProfile.tsx";
+import { wrapPromise } from "../../Hooks.ts";
+import { Artist } from "../../../../api/Database/Model/Artist.ts";
+import { getRequest } from "../../api/APITemplate.ts";
+import { SuspenseConsumer } from "../../utilities/Types.ts";
 
-
+let user: SuspenseConsumer<FanProfile>;
 export function UserProfile() {
-    const navigate = useNavigate();
-    const [a, setA] = useState<FanProfile>()
+  const navigate = useNavigate();
+  if (!user) {
+    user = wrapPromise(getRequest<FanProfile>(paths.user.self));
+  }
 
-    useEffect(() => {
-        async function getData() {
-            if(!a) {
-                const temp = await getRequest<FanProfile>(paths.user.self);
-                if (temp.isSuccess()) {
-                    setA(temp.response);}
-            }
-        }
-        getData();
-    }, []);
-
-    return (
-        <StyledProfile className="top-level-component">
-            {a ? (
-                <>
-                    <h1 className={"mb-3"} style={{color: "yellow"}}>{a.name}</h1>
-                    <h3>Following</h3>
-                    <div className="artist-list">
-                        {a.Artists.map((artist, idx) =>
-                            <div
-                                key={idx}
-                                className="artist-box" onMouseDown={() => navigate({
-                                pathname: `/artist`,
-                                search: createSearchParams({
-                                    artistId: artist.id
-                                }).toString()})}
-                            >
-                                <RenderArtist
-                                    artist={artist}
-                                    as={"list"}
-                                />
-                            </div>
-                        )}
-                    </div>
-                </>
-            ) : null}
-        </StyledProfile>
-    )
+  return (
+    <StyledProfile id="component-margin" className="top-level-component">
+      <h1 className={"mb-3"} style={{ color: "yellow" }}>
+        {user.read().response.name}
+      </h1>
+      <h3>Following</h3>
+      <div className="artist-list">
+        {user.read().response.Artists.map((artist: Artist, idx: number) => (
+          <div
+            key={idx}
+            className="artist-box"
+            onMouseDown={() =>
+              navigate({
+                pathname: `/artist`,
+                search: createSearchParams({
+                  artistId: artist.id,
+                }).toString(),
+              })}
+          >
+            <RenderArtist
+              artist={artist}
+              as={"list"}
+            />
+          </div>
+        ))}
+      </div>
+    </StyledProfile>
+  );
 }

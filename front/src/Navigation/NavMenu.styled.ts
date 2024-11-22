@@ -1,8 +1,6 @@
-﻿
-
-
-import {styled} from 'styled-components';
+﻿import { styled } from "styled-components";
 
 export const StyledNavMenu = styled.div`
-    text-align: left;
-`
+    justify-content: center;
+    
+`;

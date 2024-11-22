@@ -1,7 +1,5 @@
 ﻿import { styled } from "styled-components";
 
-
-
 export const StyledProfile = styled.div`
     /*idk*/
     justify-items: left;
@@ -20,4 +18,4 @@ export const StyledProfile = styled.div`
     }
     
     
-`
+`;

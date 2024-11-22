@@ -13,8 +13,8 @@
   "tasks": {
     "start": "deno run --allow-net --allow-read --allow-write --allow-env main.ts"
   },
-  "compilerOptions": {
-    "jsx": "precompile",
-    "jsxImportSource": "hono/jsx"
+  "lint": {
+    "indent-width": 2
+
   }
 }
