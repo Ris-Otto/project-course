@@ -1,5 +1,4 @@
 import { Hono } from "npm:hono";
-import { logger } from "npm:hono/logger";
 import { requestId } from "npm:hono/request-id";
 import { prettyJSON } from "npm:hono/pretty-json";
 import type { JwtVariables } from "npm:hono/jwt";
@@ -22,7 +21,6 @@ import authController from "./Controllers/AuthController.ts";
 import artistController from "./Controllers/ArtistController.ts";
 import venueController from "./Controllers/VenueController.ts";
 import { logRequestInfo } from "./Middleware/LoggerMiddleware.ts";
-import { forceSyncDatabaseAndSetupTestData } from "./Utilities.ts";
 
 const app = new Hono<{ Variables: JwtVariables }>();
 

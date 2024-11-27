@@ -17,7 +17,7 @@ export async function logRequestInfo(c: Context, next: Next) {
       `--> ${methodColour(method)} ${path} (request id: ${id}) ${
         statusColour(response.status)
       }`,
-      await response.json(),
+      await unwrapResponse(response)
     );
   } catch (e) {
     dl.error(e);
@@ -49,5 +49,13 @@ function statusColour(status: number) {
       return magenta(String(status));
     default:
       return green(String(status));
+  }
+}
+
+async function unwrapResponse(r: Response) {
+  try {
+    return await r.json();
+  } catch {
+    return await r.text();
   }
 }

@@ -2,7 +2,7 @@
 import * as config from "../config.ts";
 import { ResolveUserType, UserType } from "../../Shared/Types.ts";
 import type { Context, Next } from "npm:hono";
-import { getCookie, setCookie } from "npm:hono/cookie";
+import { getCookie } from "npm:hono/cookie";
 import { Unauthorized } from "../../Shared/Result.ts";
 
 export function generateJWTAccessToken(user: UserType) {

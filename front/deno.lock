@@ -6,6 +6,8 @@
     "npm:@types/node@*": "18.16.19",
     "npm:@types/react-bootstrap@^1.0.1": "1.0.1",
     "npm:@types/react-dom@^18.3.0": "18.3.0",
+    "npm:@types/react-icons@*": "3.0.0_react@18.3.1",
+    "npm:@types/react-icons@3": "3.0.0_react@18.3.1",
     "npm:@types/react@*": "18.3.9",
     "npm:@types/react@^18.3.0": "18.3.9",
     "npm:@types/react@^18.3.11": "18.3.11",
@@ -17,10 +19,12 @@
     "npm:axios@^1.7.7": "1.7.7",
     "npm:bootstrap@^5.3.3": "5.3.3_@popperjs+core@2.11.8",
     "npm:jotai@^2.10.0": "2.10.0_@types+react@18.3.9_react@18.3.1",
+    "npm:react-bootstrap@*": "2.10.5_@types+react@18.3.9_react@18.3.1_react-dom@18.3.1__react@18.3.1",
     "npm:react-bootstrap@^2.10.5": "2.10.5_@types+react@18.3.9_react@18.3.1_react-dom@18.3.1__react@18.3.1",
     "npm:react-dom@*": "18.3.1_react@18.3.1",
     "npm:react-dom@^18.2.0": "18.3.1_react@18.3.1",
     "npm:react-dom@^18.3.1": "18.3.1_react@18.3.1",
+    "npm:react-icons@^5.3.0": "5.3.0_react@18.3.1",
     "npm:react-router-dom@^6.26.2": "6.26.2_react@18.3.1_react-dom@18.3.1__react@18.3.1",
     "npm:react-spinners@~0.14.1": "0.14.1_react@18.3.1_react-dom@18.3.1__react@18.3.1",
     "npm:react-toastify@^10.0.5": "10.0.5_react@18.3.1_react-dom@18.3.1__react@18.3.1",
@@ -514,6 +518,12 @@
         "@types/react@18.3.9"
       ]
     },
+    "@types/react-icons@3.0.0_react@18.3.1": {
+      "integrity": "sha512-Vefs6LkLqF61vfV7AiAqls+vpR94q67gunhMueDznG+msAkrYgRxl7gYjNem/kZ+as2l2mNChmF1jRZzzQQtMg==",
+      "dependencies": [
+        "react-icons"
+      ]
+    },
     "@types/react-transition-group@4.4.11": {
       "integrity": "sha512-RM05tAniPZ5DZPzzNFP+DmrcOdD0efDUxMy3145oljWSl3x9ZV5vhme98gTxFrj2lhXvmGNnUiuDyJgY9IKkNA==",
       "dependencies": [
@@ -884,6 +894,12 @@
         "scheduler"
       ]
     },
+    "react-icons@5.3.0_react@18.3.1": {
+      "integrity": "sha512-DnUk8aFbTyQPSkCfF8dbX6kQjXA9DktMeJqfjrg6cK9vwQVMxmcA3BfP4QoiztVmEHtwlTgLFsPuH2NskKT6eg==",
+      "dependencies": [
+        "react"
+      ]
+    },
     "react-is@16.13.1": {
       "integrity": "sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ=="
     },
@@ -1026,7 +1042,7 @@
       "integrity": "sha512-svtcfoTADIB0nT9nltgjujTi7BzVmwjZClOmskKu/E8FW9BXzg9os8OLr4f8Dlnk0rYWJIWr4wv9eKUXiQvQwQ==",
       "dependencies": [
         "@babel/runtime",
-        "@types/react@18.3.9",
+        "@types/react@18.3.11",
         "invariant",
         "react",
         "react-lifecycles-compat"
@@ -1524,6 +1540,8 @@
       "npm:@types/axios@0.14",
       "npm:@types/react-bootstrap@^1.0.1",
       "npm:@types/react-dom@^18.3.0",
+      "npm:@types/react-icons@3",
+      "npm:@types/react@*",
       "npm:@types/react@^18.3.11",
       "npm:ag-grid-community@^32.2.2",
       "npm:ag-grid-react@^32.2.2",
@@ -1532,9 +1550,11 @@
       "npm:jotai@^2.10.0",
       "npm:react-bootstrap@^2.10.5",
       "npm:react-dom@^18.3.1",
+      "npm:react-icons@^5.3.0",
       "npm:react-router-dom@^6.26.2",
       "npm:react-spinners@~0.14.1",
       "npm:react-toastify@^10.0.5",
+      "npm:react@*",
       "npm:react@^18.3.1",
       "npm:spinners-react@^1.0.10",
       "npm:styled-components@^6.1.13"

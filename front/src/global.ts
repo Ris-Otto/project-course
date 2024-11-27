@@ -57,6 +57,12 @@ export const GlobalStyles = createGlobalStyle<{
         min-height: min-content !important;
     }
 
+    .empty-button {
+        background: transparent;
+        border: none;
+        font-size: 0;
+    }
+
     .top-level-component {
         min-height: 100vh !important;
         align-items: start;
