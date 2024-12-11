@@ -22,7 +22,7 @@ class Venue extends Model {
     declare password: string;
     declare createdAt: Date;
     declare updatedAt: Date;
-    declare Bio: Bio[]
+    declare Bio: Bio
     declare authenticate: (enteredPassword: string) => Promise<boolean>;
 }
 Venue.init(

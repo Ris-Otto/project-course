@@ -18,16 +18,20 @@ const auth = new Hono();
 auth.post("/", authenticate);
 auth.post("/register", registerUser);
 auth.post("/register/band", registerBand);
-auth.post("/venue/register", registerVenue);
+auth.post("/register/venue", registerVenue);
 auth.post("/login", login);
 auth.post("/logout", logout);
 auth.post("verify/user/:id", verifyUser);
 auth.post("verify/artist/:id", verifyArtist);
 auth.post("verify/venue/:id", verifyVenue);
 
-function registerBand(c: Context) {
-    //TODO
-    return c.text("");
+async function registerBand(c: Context) {
+    const artist = await c.req.json<Artist>();
+    const dbRes = await Artist
+        .create({...artist, verified: 1})
+        .then(data => data.get({ plain: true }));
+    //TODO send confirm email email
+    return c.json(Ok(dbRes));
 }
 
 async function registerVenue(c: Context) {
