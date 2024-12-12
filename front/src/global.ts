@@ -112,7 +112,7 @@ export const GlobalStyles = createGlobalStyle<{
             --bs-btn-active-color: #fff;
             --bs-btn-active-bg: ${({ theme }) => theme.tealPressed} !important;
             --bs-btn-active-border-color: ${({ theme }) =>
-  theme.teal} !important;
+              theme.teal} !important;
         }
     }
 
@@ -188,6 +188,24 @@ export const GlobalStyles = createGlobalStyle<{
     
     .h1, .h2, .h3, .h4, .h5 {
       font: 'Ranchers',serif
+    }
+
+    .sign-up-vinyl {
+        width: 600px;
+        @media (max-width: 800px) {
+            width: 300px;
+        }
+    }
+
+    .vinyl-container {
+        z-index: -1;
+        top: 2vh;
+        right: 1vw;
+        position: absolute;
+        @media (max-width: 800px) {
+            top: 1vh;
+            right: 1vh;
+        }
     }
 
     

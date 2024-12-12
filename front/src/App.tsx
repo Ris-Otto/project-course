@@ -9,7 +9,7 @@ import Login from "./components/Login/Login.tsx";
 import { Auth } from "./components/Auth.tsx";
 import { Register } from "./components/Register/Register.tsx";
 import { ThemeProvider } from "styled-components";
-import Home from "./components/Home/Home.tsx";
+import { Home } from "./components/Home/Home.tsx";
 import ArtistRegistration from "./components/Register/ArtistRegistration.tsx";
 import VenueRegistration from "./components/Register/VenueRegistration.tsx";
 import { Theme } from "./theme.ts";

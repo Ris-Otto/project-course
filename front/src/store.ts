@@ -3,6 +3,7 @@ import type { UserPayload } from "../../Shared/Types.ts";
 import Event from "../../api/Database/Model/Event.ts";
 // @deno-types="npm:@types/react"
 import { useCallback } from "react";
+import { ArtistFollowing } from "../../api/Database/Model/Following.ts";
 
 declare interface UserRegister {
   email: string;
@@ -95,6 +96,8 @@ const events = atom<Event[]>([]);
 
 const user = atom<UserPayload | null>(null);
 
+const userFollowing = atom<ArtistFollowing[] | null>(null);
+
 store.set(events, []);
 store.set(user, null);
 
@@ -103,6 +106,7 @@ export {
   events,
   store,
   user,
+  userFollowing,
   userRegisterAtom,
   venueRegisterAtom,
 };

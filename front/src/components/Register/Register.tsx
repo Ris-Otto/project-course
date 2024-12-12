@@ -11,11 +11,17 @@ import { ReactNode } from "react";
 import Paths from "../../../../Shared/paths.ts";
 import { UserType } from "../../../../Shared/Types.ts";
 import type { PrimitiveAtom } from "jotai";
+import { useState } from "react";
+import type { StateHandler } from "../../utilities/Types.ts";
+//@ts-ignore import shit idk
+import vinyl_turquoise from "../../resources/Images-Assets/vinyyli_turkoosi_dripping.svg";
 
 export function Register() {
   const [user, dispatch] = useReducerAtom(userRegisterAtom, DefaultReducer);
+  const [cPw, setCPw] = useState("");
   async function handleRegister(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (user.password !== cPw) return;
     const register = await postRequest<UserType>(Paths.user.register, user);
     if (register.isSuccess()) {
       dispatch({ payload: "", type: "all" });
@@ -23,29 +29,38 @@ export function Register() {
   }
 
   return (
-    <StyledRegister className="top-level-component">
-      <div className="container" style={{ marginTop: "10vh" }}>
-        <Row>
-          <Col>
-            <Link to="/register/band" className="nav-link">
-              I represent a band
-            </Link>
+    <div>
+      <StyledRegister className="top-level-component">
+        <Row className="container" style={{ marginTop: "10vh" }}>
+          <Col xs={12} md={8}>
+            <Row>
+              <Col>
+                <Link to="/register/band" className="nav-link">
+                  I represent a band
+                </Link>
+              </Col>
+            </Row>
+            <Row>
+              <Col>
+                <Link to="/register/venue" className="nav-link">
+                  I represent a venue
+                </Link>
+              </Col>
+            </Row>
+            <BaseRegisterForm
+              onSubmit={handleRegister}
+              title={"Create an account"}
+              atom={userRegisterAtom}
+              confirmPassword={cPw}
+              setConfirmPassword={setCPw}
+            />
           </Col>
         </Row>
-        <Row>
-          <Col>
-            <Link to="/register/venue" className="nav-link">
-              I represent a venue
-            </Link>
-          </Col>
-        </Row>
-        <BaseRegisterForm
-          onSubmit={handleRegister}
-          title={"Create an account"}
-          atom={userRegisterAtom}
-        />
+      </StyledRegister>
+      <div className="vinyl-container">
+        <img className="sign-up-vinyl" src={vinyl_turquoise} alt="vinyl" />
       </div>
-    </StyledRegister>
+    </div>
   );
 }
 
@@ -54,6 +69,8 @@ declare interface BaseRegisterProps<T extends Record<string, string | number>> {
   title: string;
   children?: ReactNode;
   atom: PrimitiveAtom<T>;
+  confirmPassword: string;
+  setConfirmPassword: StateHandler<string>;
 }
 
 export function BaseRegisterForm<T extends Record<string, string | number>>(
@@ -88,14 +105,27 @@ export function BaseRegisterForm<T extends Record<string, string | number>>(
           type="password"
           value={user.password}
           onChange={(e) =>
-            dispatch({ payload: e.target.value, type: "password" })}
+            dispatch({ payload: e.target.value, type: "password" })
+          }
+        />
+      </InputGroup>
+      <InputGroup className="mb-3">
+        <InputGroup.Text>Confirm password</InputGroup.Text>
+        <Form.Control
+          type="password"
+          value={props.confirmPassword}
+          onChange={(e) => props.setConfirmPassword(e.target.value)}
         />
       </InputGroup>
       {props.children}
-      <Button className="mt-3 register-btn" type="submit">Sign up</Button>
+      <Button className="mt-3 register-btn" type="submit">
+        Sign up
+      </Button>
       <div className="mt-3">
         Already have an account?{" "}
-        <Link to={"/login"} className="nav-link">Sign in here</Link>
+        <Link to={"/login"} className="nav-link">
+          Sign in here
+        </Link>
       </div>
     </Form>
   );

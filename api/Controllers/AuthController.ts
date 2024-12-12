@@ -69,6 +69,7 @@ async function registerUser(c: Context) {
   return c.json(Ok(dbRes));
 }
 
+//TODO Split
 async function login(c: Context) {
   const { email, password } = await c.req.json<User>();
 
@@ -94,6 +95,7 @@ async function login(c: Context) {
   }
 }
 
+//TODO Split
 async function checkLogin(
   c: Context,
   user: User | Venue | Artist,

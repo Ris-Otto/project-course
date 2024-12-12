@@ -43,6 +43,17 @@ userController.post(
   followArtist,
 );
 
+userController.post(
+  "/user/venues/unfollow/:venueId",
+  tokenMiddleware.verifyIsUser,
+  unfollowVenue,
+);
+userController.post(
+  "/user/artists/unfollow/:artistId",
+  tokenMiddleware.verifyIsUser,
+  unfollowArtist,
+);
+
 async function getEvents(c: Context) {
   //TODO pagination, sequelize probably has some functionality for this
   const events = (
@@ -171,6 +182,21 @@ async function followArtist(c: Context) {
   return c.json(Ok(add));
 }
 
+async function unfollowArtist(c: Context) {
+  const payload = c.get("tokenPayload");
+  const artistId = c.req.param("artistId");
+  const user = await User.findOne({
+    where: {
+      email: payload.email,
+      id: payload.id,
+    },
+  });
+  if (!user) return c.json(NotFound());
+  const add = await user.removeArtist(artistId);
+  if (!add) return c.json(InternalError() /*or not found*/);
+  return c.json(Ok(add));
+}
+
 async function followVenue(c: Context) {
   const payload = c.get("tokenPayload");
   const venueId = c.req.param("venueId");
@@ -186,4 +212,18 @@ async function followVenue(c: Context) {
   return c.json(Ok(add));
 }
 
+async function unfollowVenue(c: Context) {
+  const payload = c.get("tokenPayload");
+  const venueId = c.req.param("venueId");
+  const user = await User.findOne({
+    where: {
+      email: payload.email,
+      id: payload.id,
+    },
+  });
+  if (!user) return c.json(NotFound());
+  const add = await user.addVenue(venueId);
+  if (!add) return c.json(InternalError() /*or not found*/);
+  return c.json(Ok(add));
+}
 export default userController;
