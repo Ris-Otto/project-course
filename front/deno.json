@@ -7,8 +7,8 @@
   },
   "compilerOptions": {
     "jsx": "react-jsx",
-    "jsxImportSource": "npm:react@^18.3",
-    "jsxImportSourceTypes": "npm:@types/react@^18.3",
+    "jsxImportSource": "npm:react",
+    "jsxImportSourceTypes": "npm:@types/react",
     "lib": [
       "dom",
       "dom.iterable",
@@ -21,6 +21,7 @@
     "@types/react": "npm:@types/react@^18.3.11",
     "@types/react-bootstrap": "npm:@types/react-bootstrap@^1.0.1",
     "@types/react-dom": "npm:@types/react-dom@^18.3.0",
+    "@types/react-icons": "npm:@types/react-icons@^3.0.0",
     "ag-grid-community": "npm:ag-grid-community@^32.2.2",
     "ag-grid-react": "npm:ag-grid-react@^32.2.2",
     "axios": "npm:axios@^1.7.7",
@@ -29,8 +30,12 @@
     "react": "npm:react@^18.3.1",
     "react-bootstrap": "npm:react-bootstrap@^2.10.5",
     "react-dom": "npm:react-dom@^18.3.1",
+    "react-helmet": "npm:react-helmet@^6.1.0",
+    "react-icons": "npm:react-icons@^5.3.0",
     "react-router-dom": "npm:react-router-dom@^6.26.2",
+    "react-spinners": "npm:react-spinners@^0.14.1",
     "react-toastify": "npm:react-toastify@^10.0.5",
+    "spinners-react": "npm:spinners-react@^1.0.10",
     "styled-components": "npm:styled-components@^6.1.13"
   }
 }

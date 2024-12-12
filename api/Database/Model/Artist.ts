@@ -4,6 +4,7 @@ import { DataTypes, Model } from "sequelize";
 import Sequelize from "sequelize";
 import * as bcrypt from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
 import type { Member } from "./Member.ts";
+import type { Bio } from "./Bio.ts";
 
 class Artist extends Model {
     declare name: string;
@@ -15,6 +16,7 @@ class Artist extends Model {
     declare verified: 0 | 1;
     declare Members: Member[];
     declare Events: Event[];
+    declare Bio: Bio;
     declare createdAt: Date;
     declare updatedAt: Date;
 }

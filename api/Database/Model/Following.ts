@@ -2,47 +2,47 @@
 import sequelize from "../database.ts";
 
 class ArtistFollowing extends Model {
-    declare id: number;
-    declare description: string;
-    declare UserId: number;
-    declare ArtistId: number;
+  declare id: number;
+  declare description: string;
+  declare UserId: string;
+  declare ArtistId: string;
 }
 
 ArtistFollowing.init(
-    {
-        id: {
-            type: DataTypes.INTEGER,
-            primaryKey: true,
-            autoIncrement: true,
-        }
+  {
+    id: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true,
     },
-    {
-        tableName: "artist_following",
-        sequelize: sequelize,
-    }
-)
+  },
+  {
+    tableName: "artist_following",
+    sequelize: sequelize,
+  },
+);
 
 class VenueFollowing extends Model {
-    declare id: number;
-    declare description: string;
-    declare createdAt: Date;
-    declare updatedAt: Date;
-    declare UserId: number;
-    declare ArtistId: number;
+  declare id: number;
+  declare description: string;
+  declare createdAt: Date;
+  declare updatedAt: Date;
+  declare UserId: number;
+  declare VenueId: string;
 }
 
 VenueFollowing.init(
-    {
-        id: {
-            type: DataTypes.INTEGER,
-            primaryKey: true,
-            autoIncrement: true,
-        }
+  {
+    id: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true,
     },
-    {
-        tableName: "venue_following",
-        sequelize: sequelize,
-    }
-)
+  },
+  {
+    tableName: "venue_following",
+    sequelize: sequelize,
+  },
+);
 
-export {ArtistFollowing, VenueFollowing};
+export { ArtistFollowing, VenueFollowing };

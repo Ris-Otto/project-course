@@ -1,11 +1,9 @@
-import {Artist, Venue} from "../../../api/Database/Model/User.ts";
-import Pricing from "../../../api/Database/Model/Pricing.ts";
+import { Result } from "../../../Shared/Result.ts";
+// @deno-types="npm:@types/react"
+import React, { SetStateAction } from "react";
 
+export type SuspenseConsumer<T> = {
+  read(): Result<T>;
+};
 
-export declare type Event = {
-    id: number;
-    name: string;
-    Venue: Venue;
-    Artists: Artist[];
-    pricing: Pricing;
-}
+export type StateHandler<T> = React.Dispatch<SetStateAction<T>>;
