@@ -26,3 +26,10 @@ export function PricingTypeToString(type: number | string) {
       throw new Error("Unknown type " + type);
   }
 }
+
+export function ExtractHoursMinutes(date: Date) {
+  const hours = date.toLocaleString("default", { hour: "2-digit" });
+  const minutes = date.toLocaleString("default", { minute: "2-digit" });
+
+  return `${hours}:${minutes}`;
+}

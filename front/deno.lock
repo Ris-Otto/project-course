@@ -14,23 +14,20 @@
     "npm:@vitejs/plugin-react@^4.2.1": "4.3.1_vite@5.4.8_@babel+core@7.25.2",
     "npm:ag-grid-community@*": "32.2.2",
     "npm:ag-grid-community@^32.2.2": "32.2.2",
-    "npm:ag-grid-react@*": "32.2.2_react@18.3.1_react-dom@18.3.1__react@18.3.1",
     "npm:ag-grid-react@^32.2.2": "32.2.2_react@18.3.1_react-dom@18.3.1__react@18.3.1",
     "npm:axios@^1.7.7": "1.7.7",
     "npm:bootstrap@^5.3.3": "5.3.3_@popperjs+core@2.11.8",
     "npm:jotai@^2.10.0": "2.10.0_@types+react@18.3.9_react@18.3.1",
-    "npm:react-bootstrap@*": "2.10.5_@types+react@18.3.9_react@18.3.1_react-dom@18.3.1__react@18.3.1",
     "npm:react-bootstrap@^2.10.5": "2.10.5_@types+react@18.3.9_react@18.3.1_react-dom@18.3.1__react@18.3.1",
-    "npm:react-dom@*": "18.3.1_react@18.3.1",
     "npm:react-dom@^18.2.0": "18.3.1_react@18.3.1",
     "npm:react-dom@^18.3.1": "18.3.1_react@18.3.1",
+    "npm:react-helmet@^6.1.0": "6.1.0_react@18.3.1",
     "npm:react-icons@^5.3.0": "5.3.0_react@18.3.1",
     "npm:react-router-dom@^6.26.2": "6.26.2_react@18.3.1_react-dom@18.3.1__react@18.3.1",
     "npm:react-spinners@~0.14.1": "0.14.1_react@18.3.1_react-dom@18.3.1__react@18.3.1",
     "npm:react-toastify@^10.0.5": "10.0.5_react@18.3.1_react-dom@18.3.1__react@18.3.1",
     "npm:react@*": "18.3.1",
     "npm:react@^18.2.0": "18.3.1",
-    "npm:react@^18.3.0": "18.3.1",
     "npm:react@^18.3.1": "18.3.1",
     "npm:spinners-react@^1.0.10": "1.0.10_@types+react@18.3.9_@types+react-dom@18.3.0_react@18.3.1_react-dom@18.3.1__react@18.3.1",
     "npm:styled-components@^6.1.13": "6.1.13_react@18.3.1_react-dom@18.3.1__react@18.3.1",
@@ -527,7 +524,7 @@
     "@types/react-transition-group@4.4.11": {
       "integrity": "sha512-RM05tAniPZ5DZPzzNFP+DmrcOdD0efDUxMy3145oljWSl3x9ZV5vhme98gTxFrj2lhXvmGNnUiuDyJgY9IKkNA==",
       "dependencies": [
-        "@types/react@18.3.9"
+        "@types/react@18.3.11"
       ]
     },
     "@types/react@18.3.11": {
@@ -894,6 +891,19 @@
         "scheduler"
       ]
     },
+    "react-fast-compare@3.2.2": {
+      "integrity": "sha512-nsO+KSNgo1SbJqJEYRE9ERzo7YtYbou/OqjSQKxV7jcKox7+usiUVZOAC+XnDOABXggQTno0Y1CpVnuWEc1boQ=="
+    },
+    "react-helmet@6.1.0_react@18.3.1": {
+      "integrity": "sha512-4uMzEY9nlDlgxr61NL3XbKRy1hEkXmKNXhjbAIOVw5vcFrsdYbH2FEwcNyWvWinl103nXgzYNlns9ca+8kFiWw==",
+      "dependencies": [
+        "object-assign",
+        "prop-types",
+        "react",
+        "react-fast-compare",
+        "react-side-effect"
+      ]
+    },
     "react-icons@5.3.0_react@18.3.1": {
       "integrity": "sha512-DnUk8aFbTyQPSkCfF8dbX6kQjXA9DktMeJqfjrg6cK9vwQVMxmcA3BfP4QoiztVmEHtwlTgLFsPuH2NskKT6eg==",
       "dependencies": [
@@ -922,6 +932,12 @@
       "integrity": "sha512-tvN1iuT03kHgOFnLPfLJ8V95eijteveqdOSk+srqfePtQvqCExB8eHOYnlilbOcyJyKnYkr1vJvf7YqotAJu1A==",
       "dependencies": [
         "@remix-run/router",
+        "react"
+      ]
+    },
+    "react-side-effect@2.1.2_react@18.3.1": {
+      "integrity": "sha512-PVjOcvVOyIILrYoyGEpDN3vmYNLdy1CajSFNt4TDsVQC5KpTijDvWVoR+/7Rz2xT978D8/ZtFceXxzsPwZEDvw==",
+      "dependencies": [
         "react"
       ]
     },
@@ -1541,7 +1557,6 @@
       "npm:@types/react-bootstrap@^1.0.1",
       "npm:@types/react-dom@^18.3.0",
       "npm:@types/react-icons@3",
-      "npm:@types/react@*",
       "npm:@types/react@^18.3.11",
       "npm:ag-grid-community@^32.2.2",
       "npm:ag-grid-react@^32.2.2",
@@ -1550,11 +1565,11 @@
       "npm:jotai@^2.10.0",
       "npm:react-bootstrap@^2.10.5",
       "npm:react-dom@^18.3.1",
+      "npm:react-helmet@^6.1.0",
       "npm:react-icons@^5.3.0",
       "npm:react-router-dom@^6.26.2",
       "npm:react-spinners@~0.14.1",
       "npm:react-toastify@^10.0.5",
-      "npm:react@*",
       "npm:react@^18.3.1",
       "npm:spinners-react@^1.0.10",
       "npm:styled-components@^6.1.13"

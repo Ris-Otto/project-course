@@ -1,6 +1,6 @@
 ﻿import { atom, createStore, type PrimitiveAtom, useAtom } from "jotai";
-import { Event } from "./utilities/Types.ts";
 import type { UserPayload } from "../../Shared/Types.ts";
+import Event from "../../api/Database/Model/Event.ts";
 // @deno-types="npm:@types/react"
 import { useCallback } from "react";
 

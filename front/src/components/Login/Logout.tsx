@@ -1,5 +1,5 @@
-﻿import { NavDropdown } from "react-bootstrap";
-import { Link, useNavigate } from "react-router-dom";
+﻿import { Button, NavDropdown } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
 import { logout } from "../../api/auth.ts";
 import { user } from "../../store.ts";
 import { useAtom } from "jotai";
@@ -27,7 +27,7 @@ export function NavMenuProfile() {
     <>
       {u
         ? (
-          <div>
+          <div style={{paddingRight: 50}}>
             Logged in as:
             <NavDropdown title={u.name}>
               <NavDropdown.Item onClick={() => navigate("/profile")}>
@@ -39,7 +39,15 @@ export function NavMenuProfile() {
             </NavDropdown>
           </div>
         )
-        : <Link hidden={hideSignIn()} to={"/login"}>Sign in</Link>}
+        : (
+          <Button
+            className="m-3"
+            hidden={hideSignIn()}
+            onClick={() => navigate("/login")}
+          >
+            Sign in
+          </Button>
+        )}
     </>
   );
 }

@@ -21,6 +21,7 @@ import authController from "./Controllers/AuthController.ts";
 import artistController from "./Controllers/ArtistController.ts";
 import venueController from "./Controllers/VenueController.ts";
 import { logRequestInfo } from "./Middleware/LoggerMiddleware.ts";
+import { forceSyncDatabaseAndSetupTestData } from "./Utilities.ts";
 
 const app = new Hono<{ Variables: JwtVariables }>();
 
@@ -56,6 +57,7 @@ Venue.belongsToMany(User, {
 });
 Venue.belongsTo(Bio);
 Venue.hasMany(Review);
+Venue.hasMany(Event);
 
 User.belongsToMany(Artist, {
   through: { model: ArtistFollowing, unique: false },

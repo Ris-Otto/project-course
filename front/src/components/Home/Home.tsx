@@ -12,10 +12,11 @@ import {
 } from "../../utilities/Functions.ts";
 import { wrapPromise } from "../../Hooks.ts";
 import { ColDef, ValueGetterParams } from "ag-grid-community";
+import PageHeader from "../Misc/PageHeader.tsx";
 
 function pricingValueGetter(p: ValueGetterParams<Event, Event>) {
   if (!p.data) {
-    return "Not specified"
+    return "Not specified";
   }
   const a = p.data.Pricing;
   return `${a.amount}${ToCurrencySymbol(a.currency)}, ${
@@ -60,8 +61,8 @@ export default function Home() {
   }
 
   return (
-    <>
-      <h3 style={{ textAlign: "left" }}>Events</h3>
+    <div style={{marginTop:"60px"}}>
+      <PageHeader header={"Events"} />
       {paginatedEvents.read().response.length > 0
         ? (
           <div
@@ -82,6 +83,6 @@ export default function Home() {
           </div>
         )
         : null}
-    </>
+    </div>
   );
 }

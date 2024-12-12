@@ -1,13 +1,14 @@
 ﻿import { createGlobalStyle } from "styled-components";
-import { DarkTheme } from "./theme.ts";
+import { Theme } from "./theme.ts";
 
 /**
  * Global styles for the application
  */
 //A supplied theme is required here apparently
 export const GlobalStyles = createGlobalStyle<{
-  theme?: DarkTheme;
+  theme?: Theme;
 }>`
+  
     html {
         margin: 0;
         padding: 0;
@@ -23,13 +24,13 @@ export const GlobalStyles = createGlobalStyle<{
 
     *, *::after, *::before {
         box-sizing: border-box;
-        font-family: Arial, Helvetica, sans-serif;
+        font-family: 'Nunito',sans-serif, bold, black !important;
     }
 
     body {
         align-items: center;
-        background: ${({ theme }) => theme.body};
-        color: ${({ theme }) => theme.text};
+        background: ${({ theme }) => theme.cream};
+        color: ${({ theme }) => theme.orange};
         display: flex;
         min-height: 100vh;
         width: 100vw;
@@ -83,56 +84,111 @@ export const GlobalStyles = createGlobalStyle<{
 
     a {
         text-decoration: none;
-        color: ${({ theme }) => theme.yellow};
+        color: ${({ theme }) => theme.teal};
 
         &:hover {
             text-decoration: underline;
-            color: ${({ theme }) => theme.darkYellow};
+            color: ${({ theme }) => theme.darkTeal};
         }
     }
 
     .btn-primary, .btn-success, .btn-primary:disabled, .btn-success:disabled {
-        background-color: ${({ theme }) => theme.yellow};
-        border-color: ${({ theme }) => theme.yellow};
-        color: ${({ theme }) => theme.darkText};
+        background-color: ${({ theme }) => theme.teal};
+        border-color: ${({ theme }) => theme.teal};
+        color: ${({ theme }) => theme.text};
 
         &:focus {
-            box-shadow: ${({ theme }) => theme.darkYellow};
+            box-shadow: ${({ theme }) => theme.darkTeal};
         }
 
         &:hover {
-            background-color: ${({ theme }) => theme.darkYellow};
-            border-color: ${({ theme }) => theme.darkYellow};
-            color: ${({ theme }) => theme.darkText};
+            background-color: ${({ theme }) => theme.darkTeal};
+            border-color: ${({ theme }) => theme.tealPressed} !important;
+        }
+
+        &:active {
+            background-color: ${({ theme }) => theme.tealPressed};
+            border-color: ${({ theme }) => theme.teal};
+            --bs-btn-active-color: #fff;
+            --bs-btn-active-bg: ${({ theme }) => theme.tealPressed} !important;
+            --bs-btn-active-border-color: ${({ theme }) =>
+  theme.teal} !important;
         }
     }
 
     .btn-outline-primary, .btn-outline-success, .btn-outline-primary:disabled, .btn-outline-success:disabled {
-        border-color: ${({ theme }) => theme.yellow};
-        color: ${({ theme }) => theme.yellow};
+        border-color: ${({ theme }) => theme.teal};
+        color: ${({ theme }) => theme.teal};
     }
 
     .btn-primary:hover, .btn-primary:focus, .btn-primary:active, .btn-primary.active, .open > .dropdown-toggle.btn-primary, .show > .dropdown-toggle.btn-primary,
     .btn-success:hover, .btn-success:focus, .btn-success:active, .btn-success.active, .open > .dropdown-toggle.btn-success, .show > .dropdown-toggle.btn-success {
-        background-color: ${({ theme }) => theme.btnPrimaryHover};
-        border-color: ${({ theme }) => theme.btnPrimaryHover};
+        background-color: ${({ theme }) => theme.darkTeal};
+        border-color: ${({ theme }) => theme.darkTeal};
     }
 
     .btn-outline-primary:hover, .btn-outline-primary:focus, .btn-outline-primary:active, .btn-outline-primary.active, .open > .dropdown-toggle.btn-outline-primary, .show > .dropdown-toggle.btn-outline-primary,
     .btn-outline-success:hover, .btn-outline-success:focus, .btn-outline-success:active, .btn-outline-success.active, .open > .dropdown-toggle.btn-outline-success, .show > .dropdown-toggle.btn-outline-success {
-        background-color: ${({ theme }) => theme.darkYellow};
-        border-color: ${({ theme }) => theme.darkYellow};
+        background-color: ${({ theme }) => theme.darkTeal};
+        border-color: ${({ theme }) => theme.darkTeal};
     }
 
     .nav-link {
-        color: ${({ theme }) => theme.yellow};
+        color: ${({ theme }) => theme.teal};
         background: none !important;
         border: none;
         padding: 0 !important;
         display: inline;
 
         &:hover {
-            color: ${({ theme }) => theme.darkYellow};
+            color: ${({ theme }) => theme.darkTeal};
         }
     }
+
+    .page-link {
+        color: ${({ theme }) => theme.orange};
+        background: none !important;
+        border: none;
+        padding: 0 !important;
+        display: inline;
+        text-decoration-line: underline;
+
+        &:hover {
+            color: ${({ theme }) => theme.lightOrange};
+            font-weight: bolder;
+        }
+    }
+
+    .back-arrow-1, .back-arrow-2, .back-arrow-3 {
+        cursor: pointer;
+        color: ${({ theme }) => theme.teal};
+
+        &:hover {
+            color: ${({ theme }) => theme.darkTeal};
+        }
+    }
+
+    .back-arrow-1 {
+        font-size: 1em;
+    }
+
+    .back-arrow-2 {
+        font-size: 2em;
+    }
+
+    .back-arrow-3 {
+        font-size: 3em;
+    }
+
+    .navbar-body {
+        color: ${({ theme }) => theme.lightOrange};
+        background: ${({ theme }) => theme.orange};
+        top: 0;
+    }
+    
+    .h1, .h2, .h3, .h4, .h5 {
+      font: 'Ranchers',serif
+    }
+
+    
 `;

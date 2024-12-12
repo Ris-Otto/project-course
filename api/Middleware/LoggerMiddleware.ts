@@ -17,7 +17,7 @@ export async function logRequestInfo(c: Context, next: Next) {
       `--> ${methodColour(method)} ${path} (request id: ${id}) ${
         statusColour(response.status)
       }`,
-      await unwrapResponse(response)
+      await unwrapResponse(response),
     );
   } catch (e) {
     dl.error(e);
@@ -56,6 +56,10 @@ async function unwrapResponse(r: Response) {
   try {
     return await r.json();
   } catch {
-    return await r.text();
+    try {
+      return await r.text();
+    } catch {
+      return "";
+    }
   }
 }

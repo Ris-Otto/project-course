@@ -30,6 +30,7 @@
     "react": "npm:react@^18.3.1",
     "react-bootstrap": "npm:react-bootstrap@^2.10.5",
     "react-dom": "npm:react-dom@^18.3.1",
+    "react-helmet": "npm:react-helmet@^6.1.0",
     "react-icons": "npm:react-icons@^5.3.0",
     "react-router-dom": "npm:react-router-dom@^6.26.2",
     "react-spinners": "npm:react-spinners@^0.14.1",
