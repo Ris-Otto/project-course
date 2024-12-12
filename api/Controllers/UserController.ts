@@ -15,16 +15,13 @@ import { Venue } from "../Database/Model/Venue.ts";
 import { includeArtist, includeModel } from "../Database/framework.ts";
 import { deleteCookie } from "npm:hono/cookie";
 import { Task } from "../Utilities.ts";
+import { getCookie, setCookie } from "npm:hono/cookie";
 
 const userController = new Hono();
 
 userController.get("/events", getEvents);
 userController.get("/event/:eventId", getEvent);
-userController.get(
-  "/user",
-  tokenMiddleware.verifyIsUser,
-  getUser,
-);
+userController.get("/user", tokenMiddleware.verifyIsUser, getUser);
 userController.get(
   "/user/venues/following",
   tokenMiddleware.verifyIsUser,
@@ -48,16 +45,14 @@ userController.post(
 
 async function getEvents(c: Context) {
   //TODO pagination, sequelize probably has some functionality for this
-  const events = (await Event.findAll({
-    include: [
-      includeModel(
-        {
+  const events = (
+    await Event.findAll({
+      include: [
+        includeModel({
           model: Pricing,
           exclude: ["createdAt", "updatedAt"],
-        },
-      ),
-      includeModel(
-        {
+        }),
+        includeModel({
           model: Venue,
           exclude: [
             "password",
@@ -67,13 +62,13 @@ async function getEvents(c: Context) {
             "createdAt",
             "updatedAt",
           ],
-        },
-      ),
-    ],
-    attributes: {
-      exclude: ["VenueId", "PricingId", "createdAt", "updatedAt"],
-    },
-  })).map((e) => e.get({ plain: true }));
+        }),
+      ],
+      attributes: {
+        exclude: ["VenueId", "PricingId", "createdAt", "updatedAt"],
+      },
+    })
+  ).map((e) => e.get({ plain: true }));
   return c.json(Ok(events));
 }
 
@@ -81,17 +76,13 @@ async function getEvent(c: Context) {
   const id = c.req.param("eventId");
   const event = await Event.findByPk(id, {
     include: [
-      includeModel(
-        {
-          model: Pricing,
-        },
-      ),
-      includeModel(
-        {
-          model: Venue,
-          exclude: ["password", "verified", "contactEmail", "contactName"],
-        },
-      ),
+      includeModel({
+        model: Pricing,
+      }),
+      includeModel({
+        model: Venue,
+        exclude: ["password", "verified", "contactEmail", "contactName"],
+      }),
       includeArtist(),
     ],
     attributes: {
@@ -109,29 +100,25 @@ async function getEvent(c: Context) {
 async function getUser(c: Context) {
   //TODO pagination
   const payload = c.get("tokenPayload");
-  const user = await User.findOne(
-    {
-      where: {
-        email: payload.email,
-        id: payload.id,
-      },
-      include: [
-        includeModel(
-          {
-            model: Artist,
-            exclude: ["password", "BioId"],
-            excludeMapping: true,
-          },
-        ),
-        includeModel({
-          model: Venue,
-          exclude: ["password"],
-          excludeMapping: true,
-        }),
-      ],
-      attributes: { exclude: ["password", "verified"] },
+  const user = await User.findOne({
+    where: {
+      email: payload.email,
+      id: payload.id,
     },
-  ).then((a) => a === null ? null : a.get({ plain: true }));
+    include: [
+      includeModel({
+        model: Artist,
+        exclude: ["password", "BioId"],
+        excludeMapping: true,
+      }),
+      includeModel({
+        model: Venue,
+        exclude: ["password"],
+        excludeMapping: true,
+      }),
+    ],
+    attributes: { exclude: ["password", "verified"] },
+  }).then((a) => (a === null ? null : a.get({ plain: true })));
   if (!user) {
     deleteCookie(c, "access_token");
 
@@ -144,14 +131,12 @@ async function getUser(c: Context) {
 async function getFollowedVenus(c: Context) {
   //TODO pagination
   const payload = c.get("tokenPayload");
-  const user = await User.findOne(
-    {
-      where: {
-        email: payload.email,
-        id: payload.id,
-      },
+  const user = await User.findOne({
+    where: {
+      email: payload.email,
+      id: payload.id,
     },
-  );
+  });
   if (!user) return c.json(NotFound());
   const venues = await user.getVenues();
   return c.json(Ok(venues));
@@ -160,14 +145,12 @@ async function getFollowedVenus(c: Context) {
 async function getFollowedArtists(c: Context) {
   //TODO pagination
   const payload = c.get("tokenPayload");
-  const user = await User.findOne(
-    {
-      where: {
-        email: payload.email,
-        id: payload.id,
-      },
+  const user = await User.findOne({
+    where: {
+      email: payload.email,
+      id: payload.id,
     },
-  );
+  });
   if (!user) return c.json(NotFound());
   const artists = await user.getArtists();
   return c.json(Ok(artists));
@@ -176,14 +159,12 @@ async function getFollowedArtists(c: Context) {
 async function followArtist(c: Context) {
   const payload = c.get("tokenPayload");
   const artistId = c.req.param("artistId");
-  const user = await User.findOne(
-    {
-      where: {
-        email: payload.email,
-        id: payload.id,
-      },
+  const user = await User.findOne({
+    where: {
+      email: payload.email,
+      id: payload.id,
     },
-  );
+  });
   if (!user) return c.json(NotFound());
   const add = await user.addArtist(artistId);
   if (!add) return c.json(InternalError() /*or not found*/);
@@ -193,14 +174,12 @@ async function followArtist(c: Context) {
 async function followVenue(c: Context) {
   const payload = c.get("tokenPayload");
   const venueId = c.req.param("venueId");
-  const user = await User.findOne(
-    {
-      where: {
-        email: payload.email,
-        id: payload.id,
-      },
+  const user = await User.findOne({
+    where: {
+      email: payload.email,
+      id: payload.id,
     },
-  );
+  });
   if (!user) return c.json(NotFound());
   const add = await user.addVenue(venueId);
   if (!add) return c.json(InternalError() /*or not found*/);

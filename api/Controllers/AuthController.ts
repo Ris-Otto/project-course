@@ -17,23 +17,29 @@ const auth = new Hono();
 auth.post("/", authenticate);
 auth.post("/register", registerUser);
 auth.post("/register/band", registerBand);
-auth.post("/venue/register", registerVenue);
+auth.post("/register/venue", registerVenue);
 auth.post("/login", login);
 auth.post("/logout", logout);
 auth.post("verify/user/:id", verifyUser);
 auth.post("verify/artist/:id", verifyArtist);
 auth.post("verify/venue/:id", verifyVenue);
 
-function registerBand(c: Context) {
-  //TODO
-  return c.text("");
+async function registerBand(c: Context) {
+  const artist = await c.req.json<Artist>();
+  const dbRes = await Artist.create({ ...artist, verified: 1 }).then((data) =>
+    data.get({ plain: true }),
+  );
+  //TODO send confirm email email
+  return c.json(Ok(dbRes));
 }
 
 async function registerVenue(c: Context) {
   const venue = await c.req.json<Venue>();
-  const dbRes = await Venue
-    .create({ ...venue, verified: 1, country: "FI" })
-    .then((data) => data.get({ plain: true }));
+  const dbRes = await Venue.create({
+    ...venue,
+    verified: 1,
+    country: "FI",
+  }).then((data) => data.get({ plain: true }));
   //TODO send confirm email email
   return c.json(Ok(dbRes));
 }
@@ -52,9 +58,12 @@ async function authenticate(c: Context) {
 
 async function registerUser(c: Context) {
   const { name, email, password } = await c.req.json<User>();
-  const dbRes = await User
-    .create({ name: name, email: email, password: password, verified: 0 })
-    .then((data) => data.get({ plain: true }));
+  const dbRes = await User.create({
+    name: name,
+    email: email,
+    password: password,
+    verified: 0,
+  }).then((data) => data.get({ plain: true }));
   dl.info("User: {@a}", dbRes);
   //TODO send confirm email email
   return c.json(Ok(dbRes));
