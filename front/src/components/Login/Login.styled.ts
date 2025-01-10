@@ -1,4 +1,4 @@
-﻿import {styled} from 'styled-components';
+﻿import { styled } from "styled-components";
 
 export const StyledLogin = styled.div`
     text-align: left;
@@ -6,4 +6,4 @@ export const StyledLogin = styled.div`
     .register-btn {
         text-align: left;
     }
-`
+`;

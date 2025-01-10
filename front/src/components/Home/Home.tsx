@@ -1,76 +1,92 @@
-import { useEffect, useState } from "react";
-import { events } from "../../store.ts";
-import { useAtom } from "jotai";
-import { createSearchParams, useNavigate } from "react-router-dom";
-import {getRequest} from "../../api/APITemplate.ts";
+import { getRequest } from "../../api/APITemplate.ts";
 import paths from "../../../../Shared/paths.ts";
-import { Event } from "../../utilities/Types.ts";
-import { AgGridReact } from 'ag-grid-react'; // React Data Grid Component
+import { SuspenseConsumer } from "../../utilities/Types.ts";
+import Event from "../../../../api/Database/Model/Event.ts";
 import "ag-grid-community/styles/ag-grid.css"; // Mandatory CSS required by the Data Grid
 import "ag-grid-community/styles/ag-theme-quartz.css";
-import {PricingTypeToString, ToCurrencySymbol} from "../../utilities/Functions.ts"; // Optional Theme applied to the Data Grid
+import { wrapPromise } from "../../Hooks.ts";
+import PageHeader from "../Misc/PageHeader.tsx";
+import { useAtom } from "jotai";
+import { user } from "../../store.ts";
+import { Row, Col } from "react-bootstrap";
+import { styled } from "styled-components";
+import { EventCalendar } from "../Misc/EventCalendar.tsx";
 
-function pricingValueGetter(p: any) {
-    const a = p.data.Pricing;
-    return `${a.amount}${ToCurrencySymbol(a.currency)}, ${PricingTypeToString(a.type)}`
-}
+const StyledHome = styled.div`
+  background: ${({ theme }) => theme.teal} !important;
+  border-radius: 10px;
+  .col-pane {
+    background-color: ${({ theme }) => theme.cream};
+    border-radius: 15px;
+    margin: 5%;
+  }
+`;
 
-export default function Home() {
+let paginatedEvents: SuspenseConsumer<Event[]>;
+export function Home() {
+  const [u, _] = useAtom(user);
 
-    const navigate = useNavigate();
-    const [myEvents, setMyEvents] = useAtom(events);
-    const colDefs = [
-        { headerName: "Event name", valueGetter: function (params: any) {
-                return params.data.name
-            }},
-        { headerName: "Venue name",  valueGetter: function (params: any) {
-                return params.data.Venue.name;
-            } },
+  if (!paginatedEvents) {
+    paginatedEvents = wrapPromise(getRequest<Event[]>(paths.event.all));
+  }
 
-        { headerName: "Venue address",  valueGetter: function (params: any) {
-                return params.data.Venue.address;
-            } },
-        { headerName: "Pricing",  valueGetter: pricingValueGetter },
-        {
-            valueGetter: function (params: any) {
-                return params.data.id
-            },
-            hide: true,
-            suppressToolPanel: true
+  return (
+    <StyledHome className="top-level-component">
+      {u ? (
+        <Row style={{ color: "black" }}>
+          <Col className="col-pane">
+            <Row>
+              <h2 style={{ padding: "5px" }}>
+                Latest posts from artists you follow
+              </h2>
+            </Row>
+            <Row>
+              <Col>Nothing to show</Col>
+            </Row>
+          </Col>
+          <Col>
+            <Row className="col-pane">
+              <Row>
+                <h2 style={{ padding: "5px" }}>Similar to artists you like</h2>
+              </Row>
+              <Row>
+                <Col>Nothing to show</Col>
+              </Row>
+            </Row>
 
-        }
-    ];
-
-    useEffect(() => {
-        const data = async () => {
-            const allEvents = await getRequest<Event[]>(paths.event.all);
-            if(allEvents.isSuccess()) {
-                setMyEvents(allEvents.response);
-            }
-            console.log(await getRequest(paths.user.self))
-        }
-        data();
-    }, []);
-
-    return (
+            <Row className="col-pane">
+              <PageHeader header="Upcoming events" color="black" />
+              <Col
+                className="col-pane"
+                style={{
+                  padding: "20px",
+                  borderRadius: "15px",
+                }}
+              >
+                <EventCalendar events={paginatedEvents.read().response} />
+              </Col>
+            </Row>
+          </Col>
+        </Row>
+      ) : (
         <>
-            <h3 style={{textAlign: "left"}}>Events</h3>
-            {myEvents.length > 0 ? (
-        <div
-            className="ag-theme-quartz"
-            style={{height: 500}}
-        >
-            <AgGridReact
-                onRowClicked={(row) => navigate({
-                    pathname: `/events`,
-                    search: createSearchParams({
-                        eventId: String(row.data!.id)
-                    }).toString()})}
-                rowData={myEvents}
-                columnDefs={colDefs}
-            />
-        </div>
-            ): null}
+          <PageHeader header="Upcoming events" color="black" />
+          <Row
+            className="col-pane"
+            style={{ margin: "60px", justifyContent: "center" }}
+          >
+            <Col
+              className="col-pane"
+              style={{
+                padding: "20px",
+                borderRadius: "15px",
+              }}
+            >
+              <EventCalendar events={paginatedEvents.read().response} />
+            </Col>
+          </Row>
         </>
-    )
+      )}
+    </StyledHome>
+  );
 }

@@ -11,23 +11,23 @@
     }
 
     public isError() {
-        return this.code === Code.Error;
+        return this.code === ResultCode.Error;
     }
 
     public isSuccess() {
-        return this.code === Code.Ok;
+        return this.code === ResultCode.Ok;
     }
 
     public isUnauthorized() {
-        return this.code === Code.Unauthorized;
+        return this.code === ResultCode.Unauthorized;
     }
 
     public isNotFound() {
-        return this.code === Code.NotFound;
+        return this.code === ResultCode.NotFound;
     }
 
     public isPermissionDenied() {
-        return this.code === Code.PermissionDenied;
+        return this.code === ResultCode.PermissionDenied;
     }
 
     /**
@@ -50,18 +50,16 @@ export declare interface ResponseData<T> {
     code: ResultCode;
 }
 
-export const Code = {
-    Ok: 10,
-    PartialOk: 15,
-    Unauthorized: 20,
-    NotFound: 30,
-    PermissionDenied: 40,
-    Error: 50,
-    RequestAborted: 100,
-    ThirdPartyRequestAborted: 200,
-} as const;
-
-type ResultCode = (typeof Code)[keyof typeof Code];
+export enum ResultCode {
+    Ok = 10,
+    PartialOk = 15,
+    Unauthorized = 20,
+    NotFound = 30,
+    PermissionDenied = 40,
+    Error = 50,
+    RequestAborted = 100,
+    ThirdPartyRequestAborted = 200,
+}
 
 export class Response<T> {
     private readonly data?: T;
@@ -75,11 +73,11 @@ export class Response<T> {
     }
 }
 
-export const Unauthorized = (message?:string) => new Response(Code.Unauthorized, message ? message : "Not authorized", null);
-export const NotFound = <T>(data?: T, message?:string) => new Response(Code.NotFound, message ? message : `Not found`, data);
-export const PermissionDenied = <T>(data?: T, message?:string) => new Response(Code.PermissionDenied, message ? message : "Permission denied", data);
-export const InternalError = <T>(data?: T, message?:string) => new Response(Code.Error, message ? message : "Internal server error", data);
-export const PartialOk = <T>(data?: T, message?:string) => new Response(Code.PartialOk, message ? message : "Partial Ok", data);
-export const Ok = <T>(data?: T, message?:string) => new Response(Code.Ok, message ? message : "Ok", data);
-export const Aborted = <T>(data?: T, message?:string) => new Response(Code.RequestAborted, message ? message : "Request aborted or declined due to unforeseeable circumstances", data);
-export const ThirdPartyAborted = <T>(data?: T, message?:string) => new Response(Code.RequestAborted, message ? message : "Request aborted or declined by third party", data);
+export const Unauthorized = (message?:string) => new Response(ResultCode.Unauthorized, message ? message : "Not authorized", null);
+export const NotFound = <T>(data?: T, message?:string) => new Response(ResultCode.NotFound, message ? message : `Not found`, data);
+export const PermissionDenied = <T>(data?: T, message?:string) => new Response(ResultCode.PermissionDenied, message ? message : "Permission denied", data);
+export const InternalError = <T>(data?: T, message?:string) => new Response(ResultCode.Error, message ? message : "Internal server error", data);
+export const PartialOk = <T>(data?: T, message?:string) => new Response(ResultCode.PartialOk, message ? message : "Partial Ok", data);
+export const Ok = <T>(data?: T, message?:string) => new Response(ResultCode.Ok, message ? message : "Ok", data);
+export const Aborted = <T>(data?: T, message?:string) => new Response(ResultCode.RequestAborted, message ? message : "Request aborted or declined due to unforeseeable circumstances", data);
+export const ThirdPartyAborted = <T>(data?: T, message?:string) => new Response(ResultCode.ThirdPartyRequestAborted, message ? message : "Request aborted or declined by third party", data);
