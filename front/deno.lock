@@ -6,6 +6,7 @@
     "npm:@types/node@*": "18.16.19",
     "npm:@types/react-bootstrap@^1.0.1": "1.0.1",
     "npm:@types/react-dom@^18.3.0": "18.3.0",
+    "npm:@types/react-icons@*": "3.0.0_react@18.3.1",
     "npm:@types/react@*": "18.3.9",
     "npm:@types/react@^18.3.0": "18.3.9",
     "npm:@types/react@^18.3.11": "18.3.11",
@@ -512,6 +513,12 @@
         "@types/react@18.3.9"
       ]
     },
+    "@types/react-icons@3.0.0_react@18.3.1": {
+      "integrity": "sha512-Vefs6LkLqF61vfV7AiAqls+vpR94q67gunhMueDznG+msAkrYgRxl7gYjNem/kZ+as2l2mNChmF1jRZzzQQtMg==",
+      "dependencies": [
+        "react-icons"
+      ]
+    },
     "@types/react-transition-group@4.4.11": {
       "integrity": "sha512-RM05tAniPZ5DZPzzNFP+DmrcOdD0efDUxMy3145oljWSl3x9ZV5vhme98gTxFrj2lhXvmGNnUiuDyJgY9IKkNA==",
       "dependencies": [
@@ -880,6 +887,12 @@
         "loose-envify",
         "react",
         "scheduler"
+      ]
+    },
+    "react-icons@5.3.0_react@18.3.1": {
+      "integrity": "sha512-DnUk8aFbTyQPSkCfF8dbX6kQjXA9DktMeJqfjrg6cK9vwQVMxmcA3BfP4QoiztVmEHtwlTgLFsPuH2NskKT6eg==",
+      "dependencies": [
+        "react"
       ]
     },
     "react-is@16.13.1": {
