@@ -1,59 +1,47 @@
-﻿import {
-  useNavigate,
-  useSearchParams,
-  useLocation,
-  createSearchParams,
-} from "react-router-dom";
-import Event from "../../../../api/Database/Model/Event.ts";
+﻿import { useNavigate, createSearchParams, useParams } from "react-router-dom";
+import Event, { type EventRead } from "../../../../api/Database/Model/Event.ts";
 import { getRequest } from "../../api/APITemplate.ts";
 import paths from "../../../../Shared/paths.ts";
-import { SuspenseConsumer } from "../../utilities/Types.ts";
+import { paymentMethods, SuspenseConsumer } from "../../utilities/Types.tsx";
 import { wrapPromise } from "../../Hooks.ts";
-import { GoArrowLeft } from "react-icons/go";
 import {
-  PricingTypeToString,
+  resolveBitmask,
   ToCurrencySymbol,
-} from "../../utilities/Functions.ts";
+} from "../../utilities/Functions.tsx";
 import { Strong, StyledEvent } from "./Event.styled.ts";
 import { Container } from "react-bootstrap";
-import PageHeader from "./PageHeader.tsx";
+import Grid from "./Grid.tsx";
 
 let event: SuspenseConsumer<Event> | null;
 function EventPage() {
-  const navigate = useNavigate();
-  const [sp] = useSearchParams();
+  const eventId = useParams<{ eventId?: string }>();
 
   if (!event) {
     event = wrapPromise(
-      getRequest<Event>(`${paths.event.get}/${sp.get("eventId")}`),
+      getRequest<Event>(`${paths.event.get}/${eventId.eventId}`),
     );
   }
 
   return (
-    <StyledEvent
-      id="component-margin"
-      className={"top-level-component"}
-      style={{ marginTop: "60px" }}
-    >
+    <>
       {/* <pre>{JSON.stringify(event.read(), null, 4)}</pre> */}
       {/*@ts-ignore cba*/}
-      <GoArrowLeft onClick={() => navigate(-1)} className="back-arrow-3" />
-      <br />
-      <RenderEvent event={event.read().response} />
-    </StyledEvent>
+      <Grid header={event.read().response.name}>
+        <RenderEvent event={event.read().response} />
+      </Grid>
+    </>
   );
 }
 
 function RenderEvent({ event }: { event: Event }) {
   const navigate = useNavigate();
   return (
-    <Container>
-      <PageHeader header={event.name} />
+    <>
       <h3>
         Price:{" "}
         {`${event.Pricing.amount}${ToCurrencySymbol(
           event.Pricing.currency,
-        )}, ${PricingTypeToString(event.Pricing.type)}`}
+        )}, ${resolveBitmask(event.Pricing.type, paymentMethods)}`}
       </h3>
       {/* Event shit */}
       {event.Artists.map((a, idx) => {
@@ -64,7 +52,7 @@ function RenderEvent({ event }: { event: Event }) {
                 style={{ cursor: "pointer" }}
                 onClick={() =>
                   navigate({
-                    pathname: `/artist`,
+                    pathname: `/artists/public`,
                     search: createSearchParams({
                       artistId: a.id,
                     }).toString(),
@@ -84,7 +72,7 @@ function RenderEvent({ event }: { event: Event }) {
         style={{ cursor: "pointer" }}
         onClick={() =>
           navigate({
-            pathname: `/venue`,
+            pathname: `/venues/public`,
             search: createSearchParams({
               venueId: event.Venue.id,
             }).toString(),
@@ -96,7 +84,7 @@ function RenderEvent({ event }: { event: Event }) {
       <br />
       <Strong>{event.Venue.address}</Strong>
       {/* Venue shit */}
-    </Container>
+    </>
   );
 }
 

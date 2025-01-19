@@ -1,36 +1,42 @@
 ﻿import sequelize from "../database.ts";
-import Sequelize, { DataTypes, Model } from "sequelize";
-
+import Sequelize, { DataTypes, Model } from "npm:sequelize";
 
 class Media extends Model {
-    declare media_id: string;
-    declare internal: boolean;
-    declare createdAt: Date;
-    declare updatedAt: Date;
-    declare href: string;
+  declare media_id: string;
+  declare internal: boolean;
+  declare createdAt: Date;
+  declare updatedAt: Date;
+  declare href: string;
 }
 
-Media.init(
-    {
-        media_id: {
-            type: DataTypes.UUID,
-            defaultValue: Sequelize.UUIDV4,
-            allowNull: false,
-            primaryKey: true,
-        },
-        internal: {
-            type: DataTypes.BOOLEAN,
-            allowNull: false,
-        },
-        href: {
-            type: DataTypes.STRING,
-            allowNull: false,
-        }
-    },
-    {
-        tableName: "media",
-        sequelize: sequelize
-    }
-)
+type MediaRead = {
+  media_id: string;
+  internal: boolean;
+  href: string;
+};
 
-export { Media }
+Media.init(
+  {
+    media_id: {
+      type: DataTypes.UUID,
+      defaultValue: Sequelize.UUIDV4,
+      allowNull: false,
+      primaryKey: true,
+    },
+    internal: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+    },
+    href: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+  },
+  {
+    tableName: "media",
+    sequelize: sequelize,
+  },
+);
+
+export { Media };
+export type { MediaRead };

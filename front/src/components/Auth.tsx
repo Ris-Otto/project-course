@@ -5,10 +5,11 @@ import { checkToken } from "../api/auth.ts";
 import { useAtom } from "jotai";
 import { user } from "../store.ts";
 import NavMenu from "../Navigation/NavMenu.tsx";
+import { Menu } from "./Misc/Menu.tsx";
 
 export function Auth() {
   const navigate = useNavigate();
-  const [u, setU] = useAtom(user);
+  const [_, setU] = useAtom(user);
   useEffect(() => {
     const check = async () => {
       const res = await checkToken();
@@ -18,10 +19,10 @@ export function Auth() {
       } else {
         //If the authentication failed, redirect to the login page with a state containing the path
         //the user tried accessing
-        setU(null);
         if (!RequiresAuth(globalThis.location.pathname)) {
           return;
         }
+        setU(null);
         navigate("/login");
       }
     };
@@ -31,12 +32,16 @@ export function Auth() {
   return (
     <>
       <NavMenu />
+      <Menu />
       <Outlet />
     </>
   );
 }
 
 function RequiresAuth(path: string) {
-  return path != "/home" && !path.includes("/register") &&
-    !path.includes("/events");
+  return (
+    !path.includes("/home") &&
+    !path.includes("/register") &&
+    !path.includes("/public")
+  );
 }

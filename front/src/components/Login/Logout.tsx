@@ -10,6 +10,12 @@ export function NavMenuProfile() {
   const navigate = useNavigate();
   const [u, setU] = useAtom(user);
 
+  const userTypes = [
+    { type: 0, label: "users" },
+    { type: 1, label: "artists" },
+    { type: 2, label: "venues" },
+  ];
+
   const hideSignIn = useCallback(
     () => globalThis.location.pathname === "/login",
     [globalThis.location.pathname],
@@ -25,29 +31,29 @@ export function NavMenuProfile() {
 
   return (
     <>
-      {u
-        ? (
-          <div style={{paddingRight: 50}}>
-            Logged in as:
-            <NavDropdown title={u.name}>
-              <NavDropdown.Item onClick={() => navigate("/profile")}>
-                Profile
-              </NavDropdown.Item>
-              <NavDropdown.Item onClick={() => Logout()}>
-                Sign out
-              </NavDropdown.Item>
-            </NavDropdown>
-          </div>
-        )
-        : (
-          <Button
-            className="m-3"
-            hidden={hideSignIn()}
-            onClick={() => navigate("/login")}
-          >
-            Sign in
-          </Button>
-        )}
+      {u ? (
+        <div style={{ paddingRight: 50 }}>
+          Logged in as:
+          <NavDropdown title={u.name}>
+            <NavDropdown.Item
+              onClick={() => navigate(`${userTypes[u.type].label}/profile`)}
+            >
+              Profile
+            </NavDropdown.Item>
+            <NavDropdown.Item onClick={() => Logout()}>
+              Sign out
+            </NavDropdown.Item>
+          </NavDropdown>
+        </div>
+      ) : (
+        <Button
+          className="m-3"
+          hidden={hideSignIn()}
+          onClick={() => navigate("/login")}
+        >
+          Sign in
+        </Button>
+      )}
     </>
   );
 }

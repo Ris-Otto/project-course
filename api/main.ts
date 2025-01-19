@@ -25,6 +25,8 @@ import { forceSyncDatabaseAndSetupTestData } from "./Utilities.ts";
 
 const app = new Hono<{ Variables: JwtVariables }>();
 
+console.log(config);
+
 if (!config.ORIGIN) throw new Error("No host defined");
 
 Event.belongsTo(Pricing);

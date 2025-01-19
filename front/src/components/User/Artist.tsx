@@ -19,19 +19,19 @@ import type { Artist } from "../../../../api/Database/Model/Artist.ts";
 import { Strong } from "../Misc/Event.styled.ts";
 import PageHeader from "../Misc/PageHeader.tsx";
 import { EventCalendar } from "../Misc/EventCalendar.tsx";
-import { StyledArtistProfile } from "./StyledProfile.tsx";
+import { StyledArtistProfile, StyledListBox } from "./StyledProfile.tsx";
 import { useAtom } from "jotai";
 import { user } from "../../store.ts";
 import { GoArrowLeft } from "react-icons/go";
 import type { Venue } from "../../../../api/Database/Model/Venue.ts";
-import type { StateHandler } from "../../utilities/Types.ts";
+import type { StateHandler } from "../../utilities/Types.tsx";
 import { FollowHeartButton } from "../Misc/MiscComponents.tsx";
+import Grid from "../Misc/Grid.tsx";
 
 export default function ArtistProfilePublic() {
   const [sp] = useSearchParams();
   const [a, setA] = useState<Artist>();
   const [followed, setFollowed] = useState(false);
-  const navigate = useNavigate();
   useEffect(() => {
     async function getData() {
       const data = await getRequest<Artist>(
@@ -54,38 +54,26 @@ export default function ArtistProfilePublic() {
   }, []);
 
   return (
-    <StyledArtistProfile
-      className="top-level-component"
-      style={{ marginTop: "60px", textAlign: "left" }}
-    >
-      {/*@ts-ignore bah*/}
-      <GoArrowLeft onClick={() => navigate(-1)} className="back-arrow-3" />
-      <Container>
-        {a ? (
-          <div style={{ textAlign: "left" }}>
-            <div>
-              <PageHeader header={a.name} className="mb-3" />
-              <Row>
-                <ArtistLeft
-                  artist={a}
-                  followed={followed}
-                  setFollowed={setFollowed}
-                />
-                <ArtistMiddle
-                  artist={a}
-                  followed={followed}
-                  setFollowed={setFollowed}
-                />
-                <ArtistRight
-                  artist={a}
-                  followed={followed}
-                  setFollowed={setFollowed}
-                />
-              </Row>
-            </div>
-          </div>
-        ) : null}
-      </Container>
+    <StyledArtistProfile className="top-level-component">
+      {a ? (
+        <Grid header={a.name}>
+          <ArtistLeft
+            artist={a}
+            followed={followed}
+            setFollowed={setFollowed}
+          />
+          <ArtistMiddle
+            artist={a}
+            followed={followed}
+            setFollowed={setFollowed}
+          />
+          <ArtistRight
+            artist={a}
+            followed={followed}
+            setFollowed={setFollowed}
+          />
+        </Grid>
+      ) : null}
     </StyledArtistProfile>
   );
 }
@@ -101,6 +89,8 @@ export function ArtistProfile() {
     }
     getData();
   }, []);
+
+  return <div></div>;
 }
 
 export function ArtistBox({ artist, followed }: ArtistBoxProps) {
@@ -112,7 +102,7 @@ export function ArtistBox({ artist, followed }: ArtistBoxProps) {
     await postRequest(`/user/artists/follow/${artist.id}`);
   }
   return (
-    <div className="artist-box">
+    <StyledListBox>
       <Row hidden={!u || followed} className="follow-heart-right">
         <Col
           xs={2}
@@ -131,7 +121,7 @@ export function ArtistBox({ artist, followed }: ArtistBoxProps) {
       <Row
         onClick={() =>
           navigate({
-            pathname: `/artist`,
+            pathname: `/artists/public`,
             search: createSearchParams({
               artistId: artist.id,
             }).toString(),
@@ -142,7 +132,7 @@ export function ArtistBox({ artist, followed }: ArtistBoxProps) {
         <br />
         <Strong>{artist.name}</Strong>
       </Row>
-    </div>
+    </StyledListBox>
   );
 }
 

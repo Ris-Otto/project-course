@@ -3,7 +3,7 @@ import { styled } from "styled-components";
 import { Col, Row } from "react-bootstrap";
 import { IoTimeSharp } from "react-icons/io5";
 import { useState } from "react";
-import { ExtractHoursMinutes } from "../../utilities/Functions.ts";
+import { ExtractHoursMinutes } from "../../utilities/Functions.tsx";
 import { createSearchParams, useNavigate } from "react-router-dom";
 import type { Theme } from "../../theme.ts";
 
@@ -11,7 +11,7 @@ const StyledEventCalendar = styled.div<{ theme: Theme }>`
   .calendar-date {
     text-align: center;
     color: #432;
-    background-color: ${({ theme }) => theme.teal};
+    background-color: ${({ theme }) => theme.cream};
     font-size: 24px;
     border-radius: 10px 0px 0px 10px;
   }
@@ -65,10 +65,7 @@ function EventInCalendar({ event }: EventInCalendarProps) {
       className="event-in-calendar"
       onClick={() =>
         navigate({
-          pathname: `/events`,
-          search: createSearchParams({
-            eventId: String(event.id),
-          }).toString(),
+          pathname: `/events/${String(event.id)}`,
         })
       }
     >

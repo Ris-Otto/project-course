@@ -4,8 +4,9 @@ import { ArtistList } from "./Artist.tsx";
 import { StyledProfile } from "./StyledProfile.tsx";
 import { wrapPromise } from "../../Hooks.ts";
 import { getRequest } from "../../api/APITemplate.ts";
-import { SuspenseConsumer } from "../../utilities/Types.ts";
+import { SuspenseConsumer } from "../../utilities/Types.tsx";
 import PageHeader from "../Misc/PageHeader.tsx";
+import { VenueList } from "./Venue.tsx";
 
 let user: SuspenseConsumer<FanProfile>;
 export function UserProfile() {
@@ -17,29 +18,13 @@ export function UserProfile() {
     <StyledProfile
       id="component-margin"
       className="top-level-component"
-      style={{ marginTop: "60px" }}
+      style={{}}
     >
       <PageHeader header={user.read().response.name} className={"mb-3"} />
-      <h3>Following</h3>
-      {/* <div className="artist-list">
-        {user.read().response.Artists.map((artist: Artist, idx: number) => (
-          <div
-            key={idx}
-            onClick={() =>
-              navigate({
-                pathname: `/artist`,
-                search: createSearchParams({
-                  artistId: artist.id,
-                }).toString(),
-              })}
-          >
-            <ArtistBox
-              artist={artist}
-            />
-          </div>
-        ))}
-      </div> */}
+      <h3>Artists</h3>
       <ArtistList artists={user.read().response.Artists} followed />
+      <h3>Venues</h3>
+      <VenueList venues={user.read().response.Venues} followed />
     </StyledProfile>
   );
 }

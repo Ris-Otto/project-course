@@ -1,7 +1,7 @@
 ﻿import { Artist } from "./Model/Artist.ts";
 import { Member } from "./Model/Member.ts";
 import { Role } from "./Model/Role.ts";
-import type { ModelStatic, Model } from "sequelize";
+import type { Model, ModelStatic } from "npm:sequelize";
 import Event from "./Model/Event.ts";
 import { Venue } from "./Model/Venue.ts";
 import Pricing from "./Model/Pricing.ts";

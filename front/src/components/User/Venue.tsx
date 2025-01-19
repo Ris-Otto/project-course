@@ -18,7 +18,7 @@ import type { Artist } from "../../../../api/Database/Model/Artist.ts";
 import { Strong } from "../Misc/Event.styled.ts";
 import PageHeader from "../Misc/PageHeader.tsx";
 import { EventCalendar } from "../Misc/EventCalendar.tsx";
-import { StyledArtistProfile } from "./StyledProfile.tsx";
+import { StyledArtistProfile, StyledListBox } from "./StyledProfile.tsx";
 import { useAtom } from "jotai";
 import { user } from "../../store.ts";
 import { GoArrowLeft } from "react-icons/go";
@@ -26,7 +26,9 @@ import type { Venue } from "../../../../api/Database/Model/Venue.ts";
 
 export default function VenueProfilePublic() {
   const [sp] = useSearchParams();
-  const [a, setA] = useState<Artist>();
+  const [a, setA] = useState<Venue>();
+
+  const [u, _] = useAtom(user);
   const navigate = useNavigate();
   useEffect(() => {
     async function getData() {
@@ -43,7 +45,7 @@ export default function VenueProfilePublic() {
   return (
     <StyledArtistProfile
       className="top-level-component"
-      style={{ marginTop: "60px", textAlign: "left" }}
+      style={{ textAlign: "left" }}
     >
       {/*@ts-ignore bah*/}
       <GoArrowLeft onClick={() => navigate(-1)} className="back-arrow-3" />
@@ -76,9 +78,11 @@ export function VenueProfile() {
     }
     getData();
   }, []);
+
+  return <></>;
 }
 
-export function VenueBox({ venue }: VenueProps) {
+export function VenueBox({ venue, followed }: VenueBoxProps) {
   const navigate = useNavigate();
   const [u, _] = useAtom(user);
   const [fState, setFState] = useState<"empty" | "filled">("empty");
@@ -87,8 +91,8 @@ export function VenueBox({ venue }: VenueProps) {
     await postRequest(`/user/venue/follow/${venue.id}`);
   }
   return (
-    <div className="artist-box">
-      <Row hidden={!u} className="follow-heart-right">
+    <StyledListBox>
+      <Row hidden={!u || followed} className="follow-heart-right">
         <Col
           xs={2}
           md={{ span: 2, offset: 10 }}
@@ -106,7 +110,7 @@ export function VenueBox({ venue }: VenueProps) {
       <Row
         onClick={() =>
           navigate({
-            pathname: `/venue`,
+            pathname: `/venues/public`,
             search: createSearchParams({
               venueId: venue.id,
             }).toString(),
@@ -117,15 +121,15 @@ export function VenueBox({ venue }: VenueProps) {
         <br />
         <Strong>{venue.name}</Strong>
       </Row>
-    </div>
+    </StyledListBox>
   );
 }
 
-export function VenueList({ venues }: ListProps) {
+export function VenueList({ venues, followed }: ListProps) {
   return (
     <div className="artist-list">
       {venues.map((a, i) => {
-        return <VenueBox venue={a} key={i} />;
+        return <VenueBox venue={a} key={i} followed={followed} />;
       })}
     </div>
   );
@@ -133,17 +137,23 @@ export function VenueList({ venues }: ListProps) {
 
 type ListProps = {
   venues: Venue[];
+  followed?: boolean;
 };
 
 type VenueProps = {
   venue: Venue;
 };
 
+type VenueBoxProps = {
+  venue: Venue;
+  followed?: boolean;
+};
+
 function VenueLeft(props: VenueProps) {
   const [u, _] = useAtom(user);
   const [fState, setFState] = useState<"empty" | "filled">("empty");
 
-  async function FollowArtist() {
+  async function FollowVenue() {
     await postRequest(`/user/venues/follow/${props.venue.id}`);
   }
   return (
@@ -161,7 +171,7 @@ function VenueLeft(props: VenueProps) {
           hidden={!u}
           onMouseEnter={() => setFState("filled")}
           onMouseLeave={() => setFState("empty")}
-          onClick={async () => await FollowArtist()}
+          onClick={async () => await FollowVenue()}
           className="follow-share-button mb-3"
         >
           {fState === "empty" ? (

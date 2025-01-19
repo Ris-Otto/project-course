@@ -8,6 +8,7 @@
     "@types/sequelize": "npm:@types/sequelize@^4.28.20",
     "hono": "npm:hono@^4.6.4",
     "mysql2": "npm:mysql2@^3.11.3",
+    "pg-connection-string": "npm:pg-connection-string@^2.7.0",
     "sequelize": "npm:sequelize@^6.37.4"
   },
   "tasks": {
@@ -15,6 +16,5 @@
   },
   "lint": {
     "indent-width": 2
-
   }
 }

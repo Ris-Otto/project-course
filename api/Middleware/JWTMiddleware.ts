@@ -1,6 +1,10 @@
 ﻿import { decode, sign, verify } from "npm:hono/jwt";
 import * as config from "../config.ts";
-import { ResolveUserType, UserType } from "../../Shared/Types.ts";
+import {
+  ResolveUserType,
+  UserType,
+  type UserPayload,
+} from "../../Shared/Types.ts";
 import type { Context, Next } from "npm:hono";
 import { getCookie } from "npm:hono/cookie";
 import { Unauthorized } from "../../Shared/Result.ts";
@@ -77,6 +81,17 @@ export async function verifyIsUser(c: Context, next: Next) {
     return c.json(Unauthorized(), 401);
   }
   if (Number(token.type) !== 0) {
+    return c.json(Unauthorized(), 401);
+  }
+  await next();
+}
+
+export async function verifyIsRegistered(c: Context, next: Next) {
+  const token = await verifyAccessToken(c);
+  if (token === null) {
+    return c.json(Unauthorized(), 401);
+  }
+  if (Number(token.type) > 0) {
     return c.json(Unauthorized(), 401);
   }
   await next();

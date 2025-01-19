@@ -1,28 +1,35 @@
-﻿import { DataTypes, Model } from "sequelize";
+﻿import { DataTypes, Model } from "npm:sequelize";
 import sequelize from "../database.ts";
-import type { Media } from "./Media.ts";
+import type { Media, MediaRead } from "./Media.ts";
 
 class Bio extends Model {
-    declare id: number;
-    declare description: string;
-    declare Media: Media[];
-    declare createdAt: Date;
-    declare updatedAt: Date;
+  declare id: number;
+  declare description: string;
+  declare Media: Media[];
+  declare createdAt: Date;
+  declare updatedAt: Date;
 }
 
+type BioRead = {
+  id: number;
+  description: string;
+  Media: MediaRead[];
+};
+
 Bio.init(
-    {
-        id: {
-            type: DataTypes.INTEGER,
-            primaryKey: true,
-            autoIncrement: true,
-        },
-        description: DataTypes.STRING,
+  {
+    id: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true,
     },
-    {
-        tableName: "bios",
-        sequelize: sequelize,
-    }
-)
+    description: DataTypes.TEXT,
+  },
+  {
+    tableName: "bios",
+    sequelize: sequelize,
+  },
+);
 
 export { Bio };
+export type { BioRead };

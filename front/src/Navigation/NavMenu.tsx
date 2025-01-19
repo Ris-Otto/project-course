@@ -1,13 +1,17 @@
-import { Button, Nav, Navbar, NavDropdown } from "react-bootstrap";
+import { Button, Nav, Navbar } from "react-bootstrap";
 import { NavMenuProfile } from "../components/Login/Logout.tsx";
 import { useNavigate } from "react-router-dom";
 import { IoMenu } from "react-icons/io5";
 import { LiaCalendarWeekSolid } from "react-icons/lia";
 //@ts-ignore import shit idk
 import logo from "../resources/logo/simplified/underwave_logo_final_cream_simplified.svg";
+import { useAtom } from "jotai";
+import { open } from "../store.ts";
+import { Menu } from "../components/Misc/Menu.tsx";
 
 //TODO add privileges functionality
-export function NavMenu() {
+export function NavMenu({ setOpen }: any) {
+  const [o, setO] = useAtom(open);
   const navigate = useNavigate();
   return (
     <Navbar
@@ -17,8 +21,18 @@ export function NavMenu() {
         borderRadius: "0px 0px 5px 5px",
       }}
     >
-      {/*@ts-ignore bah*/}
-      <IoMenu size={70} style={{ marginLeft: 10, marginRight: 10 }} />
+      <Button
+        style={{
+          background: "transparent",
+          border: "none",
+          fontSize: 0,
+        }}
+        onClick={() => setO((s) => !s)}
+      >
+        {/*@ts-ignore bah*/}
+        <IoMenu size={60} style={{ marginLeft: 10, marginRight: 10 }} />
+      </Button>
+
       <Button
         style={{
           background: "transparent",

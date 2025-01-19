@@ -1,6 +1,6 @@
 import { getRequest } from "../../api/APITemplate.ts";
 import paths from "../../../../Shared/paths.ts";
-import { SuspenseConsumer } from "../../utilities/Types.ts";
+import { SuspenseConsumer } from "../../utilities/Types.tsx";
 import Event from "../../../../api/Database/Model/Event.ts";
 import "ag-grid-community/styles/ag-grid.css"; // Mandatory CSS required by the Data Grid
 import "ag-grid-community/styles/ag-theme-quartz.css";
@@ -11,14 +11,18 @@ import { user } from "../../store.ts";
 import { Row, Col } from "react-bootstrap";
 import { styled } from "styled-components";
 import { EventCalendar } from "../Misc/EventCalendar.tsx";
+import Grid from "../Misc/Grid.tsx";
+import { useEffect } from "react";
 
 const StyledHome = styled.div`
-  background: ${({ theme }) => theme.teal} !important;
+  background: ${({ theme }) => theme.cream} !important;
   border-radius: 10px;
   .col-pane {
-    background-color: ${({ theme }) => theme.cream};
+    background-color: ${({ theme }) => theme.teal};
     border-radius: 15px;
     margin: 5%;
+    color: black;
+    text-align: center;
   }
 `;
 
@@ -26,14 +30,18 @@ let paginatedEvents: SuspenseConsumer<Event[]>;
 export function Home() {
   const [u, _] = useAtom(user);
 
-  if (!paginatedEvents) {
+  if (!paginatedEvents || paginatedEvents.invalidate) {
     paginatedEvents = wrapPromise(getRequest<Event[]>(paths.event.all));
   }
 
+  useEffect(() => {
+    return () => (paginatedEvents.invalidate = true);
+  }, []);
+
   return (
-    <StyledHome className="top-level-component">
+    <StyledHome>
       {u ? (
-        <Row style={{ color: "black" }}>
+        <Grid header="Home">
           <Col className="col-pane">
             <Row>
               <h2 style={{ padding: "5px" }}>
@@ -67,7 +75,7 @@ export function Home() {
               </Col>
             </Row>
           </Col>
-        </Row>
+        </Grid>
       ) : (
         <>
           <PageHeader header="Upcoming events" color="black" />

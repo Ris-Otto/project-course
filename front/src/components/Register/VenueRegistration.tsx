@@ -8,13 +8,14 @@ import { postRequest } from "../../api/APITemplate.ts";
 import { User } from "../../../../api/Database/Model/User.ts";
 import { BaseRegisterForm } from "./Register.tsx";
 import { Form, InputGroup } from "react-bootstrap";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export default function VenueRegistration() {
-  const [user, dispatch] = useReducerAtom(venueRegisterAtom, DefaultReducer);
+  const [venue, dispatch] = useReducerAtom(venueRegisterAtom, DefaultReducer);
+  const [confirm, setConfirm] = useState("");
   async function handleRegister(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const register = await postRequest<User>("/auth/venue/register", user);
+    const register = await postRequest<User>("/auth/register/venue", venue);
     if (register.isSuccess()) {
       dispatch({ payload: "", type: "all" });
       return;
@@ -22,8 +23,8 @@ export default function VenueRegistration() {
   }
 
   useEffect(() => {
-    console.log(user);
-  }, [user]);
+    console.log(venue);
+  }, [venue]);
 
   return (
     <StyledRegister className="top-level-component">
@@ -32,13 +33,15 @@ export default function VenueRegistration() {
           onSubmit={handleRegister}
           title={"Register a venue"}
           atom={venueRegisterAtom}
+          confirmPassword={confirm}
+          setConfirmPassword={setConfirm}
         >
           <InputGroup className="mb-3">
             <InputGroup.Text>Business ID</InputGroup.Text>
             <Form.Control
               type="text"
-              value={user.businessId}
-              onChange={(e) => {
+              value={venue.businessId}
+              onChange={(e: { target: { value: any } }) => {
                 dispatch({ payload: e.target.value, type: "businessId" });
               }}
             />
@@ -47,8 +50,8 @@ export default function VenueRegistration() {
             <InputGroup.Text>Address</InputGroup.Text>
             <Form.Control
               type="text"
-              value={user.address}
-              onChange={(e) => {
+              value={venue.address}
+              onChange={(e: { target: { value: any } }) => {
                 dispatch({ payload: e.target.value, type: "address" });
               }}
             />
@@ -57,8 +60,8 @@ export default function VenueRegistration() {
             <InputGroup.Text>Zip code</InputGroup.Text>
             <Form.Control
               type="text"
-              value={user.zip}
-              onChange={(e) => {
+              value={venue.zip}
+              onChange={(e: { target: { value: any } }) => {
                 dispatch({ payload: e.target.value, type: "zip" });
               }}
             />
@@ -67,8 +70,8 @@ export default function VenueRegistration() {
             <InputGroup.Text>City</InputGroup.Text>
             <Form.Control
               type="text"
-              value={user.city}
-              onChange={(e) => {
+              value={venue.city}
+              onChange={(e: { target: { value: any } }) => {
                 dispatch({ payload: e.target.value, type: "city" });
               }}
             />

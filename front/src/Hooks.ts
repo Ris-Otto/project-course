@@ -23,6 +23,7 @@ export function wrapPromise<T>(promise: Promise<T>) {
         return result;
       }
     },
+    invalidate: false,
   };
 }
 

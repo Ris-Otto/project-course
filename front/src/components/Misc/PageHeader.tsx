@@ -39,9 +39,11 @@ export default function PageHeader({
       ? {
           color: color,
           textAlign: "center",
+          marginTop: "20px",
         }
       : {
           textAlign: "center",
+          marginTop: "20px",
         };
   };
 

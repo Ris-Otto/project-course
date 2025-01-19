@@ -1,9 +1,17 @@
-﻿import { DataTypes, Model } from "sequelize";
+﻿import { DataTypes, Model } from "npm:sequelize";
 import sequelize from "../database.ts";
 import Pricing from "./Pricing.ts";
 import type { Artist } from "./Artist.ts";
 import type { Venue } from "./Venue.ts";
 import { Bio } from "./Bio.ts";
+
+type EventRead = {
+  id: number;
+  name: string;
+  age: number;
+  start: Date;
+  end: Date;
+};
 
 class Event extends Model {
   declare id: number;
@@ -55,3 +63,4 @@ Event.init(
 );
 
 export default Event;
+export type { EventRead };

@@ -1,4 +1,4 @@
-﻿import { DataTypes, Model } from "sequelize";
+﻿import { DataTypes, Model } from "npm:sequelize";
 import sequelize from "../database.ts";
 
 class ArtistFollowing extends Model {

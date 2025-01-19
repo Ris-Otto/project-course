@@ -12,7 +12,7 @@ import Paths from "../../../../Shared/paths.ts";
 import { UserType } from "../../../../Shared/Types.ts";
 import type { PrimitiveAtom } from "jotai";
 import { useState } from "react";
-import type { StateHandler } from "../../utilities/Types.ts";
+import type { StateHandler } from "../../utilities/Types.tsx";
 //@ts-ignore import shit idk
 import vinyl_turquoise from "../../resources/Images-Assets/vinyyli_turkoosi_dripping.svg";
 
@@ -87,7 +87,9 @@ export function BaseRegisterForm<T extends Record<string, string | number>>(
           type="email"
           placeholder="finland@hefe.fi"
           value={user.email}
-          onChange={(e) => dispatch({ payload: e.target.value, type: "email" })}
+          onChange={(e: { target: { value: any } }) =>
+            dispatch({ payload: e.target.value, type: "email" })
+          }
         />
       </InputGroup>
       <InputGroup className="mb-3">
@@ -96,7 +98,9 @@ export function BaseRegisterForm<T extends Record<string, string | number>>(
           type="text"
           placeholder="Finland hefe"
           value={user.name}
-          onChange={(e) => dispatch({ payload: e.target.value, type: "name" })}
+          onChange={(e: { target: { value: any } }) =>
+            dispatch({ payload: e.target.value, type: "name" })
+          }
         />
       </InputGroup>
       <InputGroup className="mb-3">
@@ -104,7 +108,7 @@ export function BaseRegisterForm<T extends Record<string, string | number>>(
         <Form.Control
           type="password"
           value={user.password}
-          onChange={(e) =>
+          onChange={(e: { target: { value: any } }) =>
             dispatch({ payload: e.target.value, type: "password" })
           }
         />
@@ -114,7 +118,9 @@ export function BaseRegisterForm<T extends Record<string, string | number>>(
         <Form.Control
           type="password"
           value={props.confirmPassword}
-          onChange={(e) => props.setConfirmPassword(e.target.value)}
+          onChange={(e: { target: { value: any } }) =>
+            props.setConfirmPassword(e.target.value)
+          }
         />
       </InputGroup>
       {props.children}

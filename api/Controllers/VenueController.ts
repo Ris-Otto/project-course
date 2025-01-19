@@ -67,7 +67,7 @@ async function addEvent(c: Context) {
   }
 
   const pricingRes = await Pricing.create({ ...pricing }).then((data) =>
-    data.get({ plain: true }),
+    data.get({ plain: true })
   );
 
   const eventRes = await Event.create({
@@ -165,7 +165,7 @@ async function updateBio(c: Context) {
     bio?.update({ description: description });
   } else {
     bio = await Bio.create({ description: data.description }).then((data) =>
-      data.get({ plain: true }),
+      data.get({ plain: true })
     );
 
     venue?.update({ BioId: bio?.id });

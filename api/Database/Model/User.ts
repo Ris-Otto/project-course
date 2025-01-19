@@ -1,5 +1,5 @@
-﻿import { DataTypes, Model } from "sequelize";
-import Sequelize from "sequelize";
+﻿import { DataTypes, Model } from "npm:sequelize";
+import Sequelize from "npm:sequelize";
 import sequelize from "../database.ts";
 import * as bcrypt from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
 import { ArtistFollowing, VenueFollowing } from "./Following.ts";

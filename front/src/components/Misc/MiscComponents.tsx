@@ -1,5 +1,5 @@
-import { LiaHeart, LiaHeartSolid } from "react-icons/lia";
-import type { StateHandler } from "../../utilities/Types.ts";
+import { LiaHeart, LiaHeartSolid, LiaEnvelope } from "react-icons/lia";
+import type { StateHandler } from "../../utilities/Types.tsx";
 import { useAtom } from "jotai";
 import { user } from "../../store.ts";
 import { Row, Button, Col } from "react-bootstrap";
@@ -59,5 +59,14 @@ export function FollowHeartButton({
       )}
       Follow
     </Button>
+  );
+}
+
+export function EmailPlaceholder() {
+  return (
+    <span>
+      <LiaEnvelope />
+      mail@example.com
+    </span>
   );
 }

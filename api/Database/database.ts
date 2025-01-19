@@ -1,4 +1,4 @@
-﻿import { Sequelize } from "sequelize";
+﻿import { Sequelize } from "npm:sequelize";
 import * as config from "../config.ts";
 
 const sequelize = new Sequelize(

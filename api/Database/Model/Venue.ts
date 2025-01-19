@@ -1,9 +1,9 @@
-﻿import Event from "./Event.ts";
+﻿import Event, { type EventRead } from "./Event.ts";
 import sequelize from "../database.ts";
-import { DataTypes, Model } from "sequelize";
-import Sequelize from "sequelize";
+import { DataTypes, Model } from "npm:sequelize";
+import Sequelize from "npm:sequelize";
 import * as bcrypt from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
-import { Bio } from "./Bio.ts";
+import { Bio, type BioRead } from "./Bio.ts";
 import type EventMapping from "./EventMapping.ts";
 
 class Venue extends Model {
@@ -26,6 +26,19 @@ class Venue extends Model {
   declare authenticate: (enteredPassword: string) => Promise<boolean>;
   declare addEvent: (eventId: string) => Promise<EventMapping | null>;
 }
+
+type VenueRead = {
+  address: string;
+  zip: string;
+  city: string;
+  country: string;
+  businessId: string;
+  name: string;
+  email: string;
+  id: string;
+  Bio: BioRead;
+};
+
 Venue.init(
   {
     id: {
@@ -97,3 +110,4 @@ Venue.addHook("beforeCreate", async (venue: Venue) => {
 });
 
 export { Venue };
+export type { VenueRead };

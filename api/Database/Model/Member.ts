@@ -1,32 +1,37 @@
-﻿
-import sequelize from "../database.ts";
-import { DataTypes, Model } from "sequelize";
-import type { Artist } from "./Artist.ts";
-import type { Role } from "./Role.ts";
+﻿import sequelize from "../database.ts";
+import { DataTypes, Model } from "npm:sequelize";
+import type { Artist, ArtistRead } from "./Artist.ts";
+import type { Role, RoleRead } from "./Role.ts";
 
 class Member extends Model {
-    declare id: number;
-    declare name: string;
-    declare createdAt: Date;
-    declare updatedAt: Date;
-    declare Roles: Role[];
-    declare Artists: Artist[];
+  declare id: number;
+  declare name: string;
+  declare createdAt: Date;
+  declare updatedAt: Date;
+  declare Roles: Role[];
+  declare Artists: Artist[];
 }
 
+type MemberRead = {
+  id: number;
+  name: string;
+  Roles: RoleRead[];
+};
 
 Member.init(
-    {
-        id: {
-            type: DataTypes.INTEGER,
-            primaryKey: true,
-            autoIncrement: true,
-        },
-        name: DataTypes.STRING
+  {
+    id: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true,
     },
-    {
-        tableName: "members",
-        sequelize: sequelize,
-    }
-)
+    name: DataTypes.STRING,
+  },
+  {
+    tableName: "members",
+    sequelize: sequelize,
+  },
+);
 
-export { Member }
+export { Member };
+export type { MemberRead };
