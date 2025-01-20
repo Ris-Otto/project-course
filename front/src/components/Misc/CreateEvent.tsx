@@ -16,7 +16,7 @@ import Select, { type MultiValue } from "react-select";
 
 // @deno-types="npm:@types/react"
 import { useState, useMemo } from "react";
-import { Button, Col, Form } from "react-bootstrap";
+import { Button, Form } from "react-bootstrap";
 import { styled } from "styled-components";
 import Grid from "./Grid.tsx";
 import type { EventRead } from "../../../../api/Database/Model/Event.ts";
@@ -56,7 +56,7 @@ export function CreateEvent() {
   const bio = useObjReducer(TReduce, InitialBio);
   const [media, setMedia] = useState<string[]>([]);
 
-  async function submit(e) {
+  function submit(e) {
     e.preventDefault();
     const data = new FormData(e.target);
     console.log(data);

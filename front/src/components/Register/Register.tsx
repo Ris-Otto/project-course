@@ -87,7 +87,7 @@ export function BaseRegisterForm<T extends Record<string, string | number>>(
           type="email"
           placeholder="finland@hefe.fi"
           value={user.email}
-          onChange={(e: { target: { value: any } }) =>
+          onChange={(e: { target: { value: string } }) =>
             dispatch({ payload: e.target.value, type: "email" })
           }
         />
@@ -98,7 +98,7 @@ export function BaseRegisterForm<T extends Record<string, string | number>>(
           type="text"
           placeholder="Finland hefe"
           value={user.name}
-          onChange={(e: { target: { value: any } }) =>
+          onChange={(e: { target: { value: string } }) =>
             dispatch({ payload: e.target.value, type: "name" })
           }
         />
@@ -108,7 +108,7 @@ export function BaseRegisterForm<T extends Record<string, string | number>>(
         <Form.Control
           type="password"
           value={user.password}
-          onChange={(e: { target: { value: any } }) =>
+          onChange={(e: { target: { value: string } }) =>
             dispatch({ payload: e.target.value, type: "password" })
           }
         />
@@ -118,7 +118,7 @@ export function BaseRegisterForm<T extends Record<string, string | number>>(
         <Form.Control
           type="password"
           value={props.confirmPassword}
-          onChange={(e: { target: { value: any } }) =>
+          onChange={(e: { target: { value: string } }) =>
             props.setConfirmPassword(e.target.value)
           }
         />

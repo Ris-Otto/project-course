@@ -5,7 +5,12 @@ import { ReactNode, Suspense } from "react";
 export function Loading() {
   return (
     <SpinnerCircularSplit
-      style={{ top: "50%", bottom: "50%", color: "orange" }}
+      style={{
+        position: "absolute",
+        top: "50%",
+        bottom: "50%",
+        color: "orange",
+      }}
     />
   );
 }

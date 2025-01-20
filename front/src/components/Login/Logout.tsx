@@ -10,11 +10,7 @@ export function NavMenuProfile() {
   const navigate = useNavigate();
   const [u, setU] = useAtom(user);
 
-  const userTypes = [
-    { type: 0, label: "users" },
-    { type: 1, label: "artists" },
-    { type: 2, label: "venues" },
-  ];
+  const userTypes = [{ 0: "users" }, { 1: "artists" }, { 2: "venues" }];
 
   const hideSignIn = useCallback(
     () => globalThis.location.pathname === "/login",
@@ -36,7 +32,7 @@ export function NavMenuProfile() {
           Logged in as:
           <NavDropdown title={u.name}>
             <NavDropdown.Item
-              onClick={() => navigate(`${userTypes[u.type].label}/profile`)}
+              onClick={() => navigate(`${userTypes[u.type]}/profile`)}
             >
               Profile
             </NavDropdown.Item>

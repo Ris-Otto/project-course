@@ -68,7 +68,6 @@ export function Menu() {
   const hide = () => {
     setO(false);
   };
-  const reset = () => {};
 
   if (!u) return null;
   return (

@@ -1,4 +1,5 @@
-import React from "react";
+//@deno-types=npm:@types/react
+import React, { useMemo } from "react";
 import { styled } from "styled-components";
 import { GoArrowLeft } from "react-icons/go"; // Ensure you have react-icons installed
 import { useNavigate } from "react-router-dom";
@@ -57,12 +58,22 @@ const Grid: React.FC<GridProps> = ({
   headerColor,
 }: GridProps) => {
   const navigate = useNavigate();
-  const columns = Math.min(children.length, 3); // Limit to a maximum of 3 columns
-  const childrenArray = Array.isArray(children) ? children : [children];
+  const childrenArray = useMemo(
+    () => (Array.isArray(children) ? children : [children]),
+    [children],
+  );
+  const columns = useMemo(
+    () =>
+      Math.min(
+        Number.isNaN(childrenArray.length) ? 0 : childrenArray.length,
+        3,
+      ),
+    [childrenArray],
+  ); // Limit to a maximum of 3 columns
 
   return (
     <GridWrapper>
-      <GridHeader>
+      <GridHeader columns={columns}>
         <PageHeader header={header} color={headerColor} />
       </GridHeader>
       <BackArrowColumn>

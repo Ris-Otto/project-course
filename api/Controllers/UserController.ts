@@ -85,7 +85,6 @@ async function getEvents(c: Context) {
       },
     })
   ).map((e) => e.get({ plain: true }));
-  await Task.Delay(2000);
   return c.json(Ok(events));
 }
 
@@ -110,7 +109,6 @@ async function getEvent(c: Context) {
   if (event === null) {
     return c.json(NotFound());
   }
-  await Task.Delay(2000);
   const ret = event.get({ plain: true });
   return c.json(Ok(ret));
 }
