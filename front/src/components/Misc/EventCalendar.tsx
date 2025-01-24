@@ -1,36 +1,61 @@
 import type Event from "../../../../api/Database/Model/Event.ts";
 import { styled } from "styled-components";
 import { Col, Row } from "react-bootstrap";
-import { IoTimeSharp } from "react-icons/io5";
+import { IoTimeSharp, IoLocationSharp } from "react-icons/io5";
 import { useState } from "react";
 import { ExtractHoursMinutes } from "../../utilities/Functions.tsx";
-import { createSearchParams, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import type { Theme } from "../../theme.ts";
 
 const StyledEventCalendar = styled.div<{ theme: Theme }>`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background-color: rgb(228, 227, 210);
+  padding: 20px;
+  max-height: 80vh;
+  overflow-x: visible;
+  overflow-y: scroll;
+  border-radius: 10px 10px 10px 10px;
+
   .calendar-date {
     text-align: center;
     color: #432;
-    background-color: ${({ theme }) => theme.cream};
+    background-color: ${({ theme }) => theme.teal};
     font-size: 24px;
     border-radius: 10px 0px 0px 10px;
+    cursor: pointer;
+    padding-left: 5%;
+    border-left: 1px solid black;
+    border-top: 1px solid black;
+    border-bottom: 1px solid black;
+    min-width: min-content !important;
   }
 
   .calendar-info {
-    text-align: center;
+    overflow: hidden;
+    display: inline-block;
+    text-align: left;
     color: #432;
     background-color: #b3e6ff;
+    padding-left: 5%;
     border-radius: 0px 10px 10px 0px;
+    cursor: pointer;
+    min-width: 100%;
+    max-height: 100%;
+    white-space: nowrap;
+    border-right: 1px solid black;
+    border-top: 1px solid black;
+    border-bottom: 1px solid black;
   }
 
   .event-in-calendar {
     min-height: min-content !important;
-    min-width: 150%;
-    cursor: pointer;
+    max-height: min-content !important;
   }
 
   .event-calendar {
-    background-color: ${({ theme }) => theme.cream};
+    flex-row: nowrap;
   }
 `;
 
@@ -59,20 +84,13 @@ function EventInCalendar({ event }: EventInCalendarProps) {
   const [date] = useState(() => new Date(event.start));
   const [start] = useState(() => ExtractHoursMinutes(new Date(event.start)));
   const [end] = useState(() => ExtractHoursMinutes(new Date(event.end)));
-  const navigate = useNavigate();
+
   return (
-    <Row
-      className="event-in-calendar"
-      onClick={() =>
-        navigate({
-          pathname: `/events/${String(event.id)}`,
-        })
-      }
-    >
-      <Col xs={3} md={2} style={{ padding: "0px" }}>
+    <Row className="event-in-calendar ">
+      <Col xs={3} style={{ padding: "0px" }}>
         <CalendarDate date={date} />
       </Col>
-      <Col xs={12} md={6} style={{ padding: "0px" }}>
+      <Col xs={9} style={{ padding: "0px" }}>
         <CalendarInfo event={event} start={start} end={end} />
       </Col>
     </Row>
@@ -88,19 +106,29 @@ function CalendarInfo({
   start: string;
   end: string;
 }) {
+  const navigate = useNavigate();
   return (
-    <div className="calendar-info">
+    <div
+      className="calendar-info"
+      onClick={() =>
+        navigate({
+          pathname: `/events/${String(event.id)}`,
+        })
+      }
+    >
       {event.name}
       <br />
       <IoTimeSharp />
       {start} - {end}
       <br />
+      <IoLocationSharp />
       {event.Venue.address}
     </div>
   );
 }
 
 function CalendarDate({ date }: { date: Date }) {
+  const navigate = useNavigate();
   const [month] = useState(() =>
     date.toLocaleString(undefined, { month: "short" }),
   );
@@ -108,7 +136,14 @@ function CalendarDate({ date }: { date: Date }) {
     date.toLocaleString(undefined, { day: "2-digit" }),
   );
   return (
-    <div className="calendar-date">
+    <div
+      className="calendar-date"
+      onClick={() =>
+        navigate({
+          pathname: `/events/${String(event.id)}`,
+        })
+      }
+    >
       {month}
       <br />
       <strong>{day}</strong>

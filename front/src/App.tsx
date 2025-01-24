@@ -18,7 +18,7 @@ import { UserProfile } from "./components/User/UserProfile.tsx";
 import ArtistProfilePublic, {
   ArtistProfile,
 } from "./components/User/Artist.tsx";
-import { EventPage } from "./components/Misc/Event.tsx";
+import { AllEvents, EventPage } from "./components/Misc/Event.tsx";
 import { Suspended } from "./utilities/Loading.tsx";
 import VenueProfilePublic, { VenueProfile } from "./components/User/Venue.tsx";
 import { CreateEvent } from "./components/Misc/CreateEvent.tsx";
@@ -28,7 +28,8 @@ const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path={"/"} element={<Auth />}>
       <Route path="login" element={<Login />} />
-      <Route path="register" element={<Register />}>
+      <Route path="register">
+        <Route path="" element={<Register />} />
         <Route path="artist" element={<ArtistRegistration />} />
         <Route path="venue" element={<VenueRegistration />} />
       </Route>
@@ -55,6 +56,14 @@ const router = createBrowserRouter(
       </Route>
 
       <Route path="events">
+        <Route
+          path=""
+          element={
+            <Suspended>
+              <AllEvents />
+            </Suspended>
+          }
+        />
         <Route
           path=":eventId"
           element={

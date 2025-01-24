@@ -50,6 +50,7 @@ function RequiresAuth(path: string) {
   return (
     !path.includes("/home") &&
     !path.includes("/register") &&
-    !path.includes("/public")
+    !path.includes("/public") &&
+    path !== "/events/"
   );
 }

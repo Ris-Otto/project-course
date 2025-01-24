@@ -27,7 +27,21 @@ export function wrapPromise<T>(promise: Promise<T>) {
   };
 }
 
-import { MutableRefObject, useEffect } from "react";
+import { MutableRefObject, useEffect, useState } from "react";
+
+export function useWrapPromise(promise: Promise<T>) {
+  const [ret, setRet] = useState<{
+    read(): T;
+    invalidate: boolean;
+  }>();
+  useEffect(() => {
+    console.log("hej");
+    setRet(wrapPromise(promise));
+    return () => (ret.invalidate = true);
+  }, [globalThis.location.pathname]);
+
+  return { ret };
+}
 
 /**
  * @param {*} ref the reffered component

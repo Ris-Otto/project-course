@@ -22,10 +22,7 @@ function LoginForm({ userType, path }: { userType: number; path: string }) {
   async function handleLogin(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const requestBody = { email, password, type: userType };
-    const response = await postRequest<UserPayload>(
-      paths.artist.login,
-      requestBody,
-    );
+    const response = await postRequest<UserPayload>(path, requestBody);
     if (response.isSuccess()) {
       setU(response.response);
       navigate("/home");
@@ -84,7 +81,7 @@ function LoginForm({ userType, path }: { userType: number; path: string }) {
 
 function Login() {
   const [type, setType] = useState<number>(-1);
-  const [loginPath, setLoginPath] = useState(paths.user.login);
+  const [loginPath, setLoginPath] = useState<string>(paths.user.login);
 
   return (
     <div className="top-level-component" style={{ marginTop: "10vh" }}>

@@ -1,18 +1,22 @@
 ﻿import { useNavigate, createSearchParams, useParams } from "react-router-dom";
-import Event, { type EventRead } from "../../../../api/Database/Model/Event.ts";
+import Event from "../../../../api/Database/Model/Event.ts";
 import { getRequest } from "../../api/APITemplate.ts";
 import paths from "../../../../Shared/paths.ts";
 import { paymentMethods, SuspenseConsumer } from "../../utilities/Types.tsx";
-import { wrapPromise } from "../../Hooks.ts";
+import { useWrapPromise, wrapPromise } from "../../Hooks.ts";
 import {
   resolveBitmask,
   ToCurrencySymbol,
 } from "../../utilities/Functions.tsx";
 import { Strong, StyledEvent } from "./Event.styled.ts";
-import { Container } from "react-bootstrap";
 import Grid from "./Grid.tsx";
+import { EventCalendar } from "./EventCalendar.tsx";
+import { useEffect } from "react";
+import Select from "react-select";
+import { Searchable } from "./Searchable.tsx";
 
 let event: SuspenseConsumer<Event> | null;
+let events: SuspenseConsumer<Event[]> | null;
 function EventPage() {
   const eventId = useParams<{ eventId?: string }>();
 
@@ -21,13 +25,29 @@ function EventPage() {
       getRequest<Event>(`${paths.event.get}/${eventId.eventId}`),
     );
   }
-
   return (
     <>
       {/* <pre>{JSON.stringify(event.read(), null, 4)}</pre> */}
       {/*@ts-ignore cba*/}
       <Grid header={event.read().response.name}>
         <RenderEvent event={event.read().response} />
+      </Grid>
+    </>
+  );
+}
+
+export function AllEvents() {
+  if (!events || events.invalidate) {
+    events = wrapPromise(getRequest<Event[]>(`${paths.event.all}`));
+  }
+  const options = events.read().response;
+
+  return (
+    <>
+      <Grid header={"Events"} wideColumnIndex={1}>
+        <Searchable array={options} />
+        <EventCalendar events={options} />
+        <div></div>
       </Grid>
     </>
   );

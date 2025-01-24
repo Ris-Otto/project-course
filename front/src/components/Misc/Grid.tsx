@@ -6,9 +6,10 @@ import { useNavigate } from "react-router-dom";
 import PageHeader from "./PageHeader.tsx";
 
 interface GridProps {
-  children: React.ReactNode[]; // Expect an array of children
+  children: React.ReactNode[] | React.ReactNode; // Expect an array of children
   header: string; // Add a header prop for the PageHeader
   headerColor?: string; // Optionally pass header color
+  wideColumnIndex?: number; // Index of the column to be made wider
 }
 
 // Styled Components
@@ -34,50 +35,59 @@ const BackArrowColumn = styled.div`
   margin-top: 15px;
 `;
 
-const GridContent = styled.div<{ columns: number }>`
+const GridContent = styled.div<{ columns: string }>`
   grid-area: content; /* Place this in the defined content area */
   display: grid;
-  grid-template-columns: repeat(${(props) => props.columns}, 1fr);
-  gap: 0rem;
+  grid-template-columns: ${(props) => props.columns};
+  gap: 1rem;
 `;
 
-const GridHeader = styled.div<{ columns: number }>`
-  grid-area: header; /* Place this in the defined content area */
-  display: grid;
-
-  gap: 1rem;
+const GridHeader = styled.div`
+  grid-area: header; /* Place this in the defined header area */
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0.5rem;
 `;
 
 const GridColumn = styled.div`
   padding: 1rem;
+  min-width: fit-content;
 `;
 
 const Grid: React.FC<GridProps> = ({
   children,
   header,
   headerColor,
+  wideColumnIndex,
 }: GridProps) => {
   const navigate = useNavigate();
-  /* const childrenArray = useMemo(
+
+  const childrenArray = useMemo(
     () => (Array.isArray(children) ? children : [children]),
     [children],
-  ); */
-  const columns = useMemo(
-    () => Math.min(Number.isNaN(children.length) ? 0 : children.length, 3),
-    [children],
-  ); // Limit to a maximum of 3 columns
+  );
+
+  const columnsTemplate = useMemo(() => {
+    const totalColumns = childrenArray.length;
+    return Array.from({ length: totalColumns })
+      .map(
+        (_, index) => (index === wideColumnIndex ? "3fr" : "1fr"), // Make the specified column wider
+      )
+      .join(" ");
+  }, [childrenArray, wideColumnIndex]);
 
   return (
     <GridWrapper>
-      <GridHeader columns={columns}>
+      <GridHeader>
         <PageHeader header={header} color={headerColor} />
       </GridHeader>
       <BackArrowColumn>
         <GoArrowLeft onClick={() => navigate(-1)} className="back-arrow-3" />
       </BackArrowColumn>
 
-      <GridContent columns={columns}>
-        {children.map((child, index) => (
+      <GridContent columns={columnsTemplate}>
+        {childrenArray.map((child, index) => (
           <GridColumn key={index}>{child}</GridColumn>
         ))}
       </GridContent>
