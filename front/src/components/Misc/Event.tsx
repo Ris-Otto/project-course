@@ -2,7 +2,11 @@
 import Event from "../../../../api/Database/Model/Event.ts";
 import { getRequest } from "../../api/APITemplate.ts";
 import paths from "../../../../Shared/paths.ts";
-import { paymentMethods, SuspenseConsumer } from "../../utilities/Types.tsx";
+import {
+  ObjectEntries,
+  paymentMethods,
+  SuspenseConsumer,
+} from "../../utilities/Types.tsx";
 import { useWrapPromise, wrapPromise } from "../../Hooks.ts";
 import {
   resolveBitmask,
@@ -11,9 +15,11 @@ import {
 import { Strong, StyledEvent } from "./Event.styled.ts";
 import Grid from "./Grid.tsx";
 import { EventCalendar } from "./EventCalendar.tsx";
-import { useEffect } from "react";
+// @deno-types="@types/react"
+import { useEffect, useState } from "react";
 import Select from "react-select";
 import { Searchable } from "./Searchable.tsx";
+import { FormCheck } from "react-bootstrap";
 
 let event: SuspenseConsumer<Event> | null;
 let events: SuspenseConsumer<Event[]> | null;
@@ -27,7 +33,6 @@ function EventPage() {
   }
   return (
     <>
-      {/* <pre>{JSON.stringify(event.read(), null, 4)}</pre> */}
       {/*@ts-ignore cba*/}
       <Grid header={event.read().response.name}>
         <RenderEvent event={event.read().response} />
@@ -36,19 +41,104 @@ function EventPage() {
   );
 }
 
+export type Filter = {
+  [key: string]: {
+    value: string | boolean | number;
+    label: string;
+    type: string;
+  };
+};
+
 export function AllEvents() {
-  if (!events || events.invalidate) {
-    events = wrapPromise(getRequest<Event[]>(`${paths.event.all}`));
-  }
-  const options = events.read().response;
+  const [list, setList] = useState<Event[]>();
+  const [filteredList, setFilteredList] = useState<Event[]>([]);
+  const [filters, setFilters] = useState<Filter>({
+    age: { value: false, label: "Age restriction (18+) ", type: "checkbox" },
+    name: { value: "", label: "Search by name", type: "text" },
+  } as const);
+
+  useEffect(() => {
+    async function getData() {
+      const a = await getRequest<Event[]>(`${paths.event.all}`);
+      if (a.isSuccess()) {
+        setList(a.response);
+        setFilteredList(a.response);
+      }
+    }
+    getData();
+  }, []);
+
+  useEffect(() => {
+    for (const [k, v] of ObjectEntries(filters)) {
+      switch (k) {
+        case "age":
+          if (v.value) {
+            setFilteredList((s) => s.filter((a) => !!a.age));
+            return;
+          } else {
+            setFilteredList(list);
+          }
+          break;
+        case "name":
+          if (v.value !== "") {
+            setTimeout(() => {
+              setFilteredList((s) =>
+                s?.filter((a) => a.name.includes(v.value.trim())),
+              );
+            }, [200]);
+            break;
+          }
+          break;
+      }
+    }
+    setFilteredList(list);
+  }, [filters]);
 
   return (
     <>
-      <Grid header={"Events"} wideColumnIndex={1}>
-        <Searchable array={options} />
-        <EventCalendar events={options} />
-        <div></div>
-      </Grid>
+      {list ? (
+        <Grid header={"Events"} wideColumnIndex={1}>
+          <div className="mt-3 mb-3">
+            <input
+              className="mb-3"
+              value={filters.name.value}
+              placeholder={"Search"}
+              onChange={(e) =>
+                setFilters({
+                  ...filters,
+                  name: {
+                    ...filters.name,
+                    value: e.target.value,
+                  },
+                })
+              }
+            />
+            <br />
+            <strong className="mb-3">Filters</strong>
+            <hr />
+            <label>{filters.age.label}</label>
+            <input
+              className="m-3"
+              value={filters.age.value}
+              type="checkbox"
+              onChange={(e) => {
+                console.log(e.target.checked);
+                setFilters({
+                  ...filters,
+                  age: {
+                    ...filters.age,
+                    value: e.target.checked,
+                  },
+                });
+              }}
+            />
+          </div>
+          <div style={{ textAlign: "center" }}>
+            <EventCalendar events={filteredList} />
+          </div>
+          <div></div>
+        </Grid>
+      ) : null}
     </>
   );
 }

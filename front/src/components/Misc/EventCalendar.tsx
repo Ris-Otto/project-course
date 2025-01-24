@@ -2,7 +2,8 @@ import type Event from "../../../../api/Database/Model/Event.ts";
 import { styled } from "styled-components";
 import { Col, Row } from "react-bootstrap";
 import { IoTimeSharp, IoLocationSharp } from "react-icons/io5";
-import { useState } from "react";
+// @deno-types="@types/react"
+import { useState, useMemo } from "react";
 import { ExtractHoursMinutes } from "../../utilities/Functions.tsx";
 import { useNavigate } from "react-router-dom";
 import type { Theme } from "../../theme.ts";
@@ -15,7 +16,7 @@ const StyledEventCalendar = styled.div<{ theme: Theme }>`
   padding: 20px;
   max-height: 80vh;
   overflow-x: visible;
-  overflow-y: scroll;
+  overflow-y: auto;
   border-radius: 10px 10px 10px 10px;
 
   .calendar-date {
@@ -81,9 +82,12 @@ function EventCalendar({ events }: EventCalendarProps) {
 }
 
 function EventInCalendar({ event }: EventInCalendarProps) {
-  const [date] = useState(() => new Date(event.start));
-  const [start] = useState(() => ExtractHoursMinutes(new Date(event.start)));
-  const [end] = useState(() => ExtractHoursMinutes(new Date(event.end)));
+  const date = useMemo(() => new Date(event.start), [event]);
+  const start = useMemo(
+    () => ExtractHoursMinutes(new Date(event.start)),
+    [event],
+  );
+  const end = useMemo(() => ExtractHoursMinutes(new Date(event.end)), [event]);
 
   return (
     <Row className="event-in-calendar ">
@@ -129,11 +133,13 @@ function CalendarInfo({
 
 function CalendarDate({ date }: { date: Date }) {
   const navigate = useNavigate();
-  const [month] = useState(() =>
-    date.toLocaleString(undefined, { month: "short" }),
+  const month = useMemo(
+    () => date.toLocaleString(undefined, { month: "short" }),
+    [date],
   );
-  const [day] = useState(() =>
-    date.toLocaleString(undefined, { day: "2-digit" }),
+  const day = useMemo(
+    () => date.toLocaleString(undefined, { day: "2-digit" }),
+    [date],
   );
   return (
     <div
