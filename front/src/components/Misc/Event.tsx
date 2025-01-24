@@ -55,6 +55,7 @@ export function AllEvents() {
   const [filters, setFilters] = useState<Filter>({
     age: { value: false, label: "Age restriction (18+) ", type: "checkbox" },
     name: { value: "", label: "Search by name", type: "text" },
+    location: { value: "", label: "Location", type: "text" },
   } as const);
 
   useEffect(() => {
@@ -88,6 +89,8 @@ export function AllEvents() {
             }, [200]);
             break;
           }
+          break;
+        default:
           break;
       }
     }

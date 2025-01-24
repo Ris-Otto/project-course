@@ -4,9 +4,16 @@ import { Col, Row } from "react-bootstrap";
 import { IoTimeSharp, IoLocationSharp } from "react-icons/io5";
 // @deno-types="@types/react"
 import { useState, useMemo } from "react";
-import { ExtractHoursMinutes } from "../../utilities/Functions.tsx";
+import {
+  ExtractHoursMinutes,
+  ToCurrencySymbol,
+  resolveBitmask,
+} from "../../utilities/Functions.tsx";
 import { useNavigate } from "react-router-dom";
 import type { Theme } from "../../theme.ts";
+import { StateHandler, paymentMethods } from "../../utilities/Types.tsx";
+import { Strong } from "./Event.styled.ts";
+import { RenderEvent } from "./Event.tsx";
 
 const StyledEventCalendar = styled.div<{ theme: Theme }>`
   display: flex;
@@ -82,6 +89,7 @@ function EventCalendar({ events }: EventCalendarProps) {
 }
 
 function EventInCalendar({ event }: EventInCalendarProps) {
+  const [isHovering, setIsHovering] = useState(false);
   const date = useMemo(() => new Date(event.start), [event]);
   const start = useMemo(
     () => ExtractHoursMinutes(new Date(event.start)),
@@ -95,8 +103,19 @@ function EventInCalendar({ event }: EventInCalendarProps) {
         <CalendarDate date={date} />
       </Col>
       <Col xs={9} style={{ padding: "0px" }}>
-        <CalendarInfo event={event} start={start} end={end} />
+        <CalendarInfo
+          event={event}
+          start={start}
+          end={end}
+          isHovering={isHovering}
+          setIsHovering={setIsHovering}
+        />
       </Col>
+      {isHovering ? (
+        <div style={{ zIndex: 10 }}>
+          <EventHover event={event} />
+        </div>
+      ) : null}
     </Row>
   );
 }
@@ -105,11 +124,22 @@ function CalendarInfo({
   event,
   start,
   end,
+  isHovering,
+  setIsHovering,
 }: {
   event: Event;
   start: string;
   end: string;
+  isHovering: boolean;
+  setIsHovering: StateHandler<boolean>;
 }) {
+  const handleMouseOver = () => {
+    setIsHovering(true);
+  };
+
+  const handleMouseOut = () => {
+    setIsHovering(false);
+  };
   const navigate = useNavigate();
   return (
     <div
@@ -119,6 +149,12 @@ function CalendarInfo({
           pathname: `/events/${String(event.id)}`,
         })
       }
+      onMouseEnter={() => {
+        handleMouseOver();
+      }}
+      onMouseLeave={() => {
+        handleMouseOut();
+      }}
     >
       {event.name}
       <br />
@@ -127,6 +163,22 @@ function CalendarInfo({
       <br />
       <IoLocationSharp />
       {event.Venue.address}
+    </div>
+  );
+}
+
+function EventHover({ event }: { event: Event }) {
+  return (
+    <div
+      style={{
+        position: "fixed",
+        right: "30vw",
+        border: "1px solid black",
+        backgroundColor: "white",
+        minWidth: "30vw",
+      }}
+    >
+      <RenderHoverEvent event={event} />
     </div>
   );
 }
@@ -154,6 +206,38 @@ function CalendarDate({ date }: { date: Date }) {
       <br />
       <strong>{day}</strong>
     </div>
+  );
+}
+
+function RenderHoverEvent({ event }: { event: Event }) {
+  const navigate = useNavigate();
+  return (
+    <>
+      <h3>
+        Price:{" "}
+        {`${event.Pricing.amount}${ToCurrencySymbol(
+          event.Pricing.currency,
+        )}, ${resolveBitmask(event.Pricing.type, paymentMethods)}`}
+      </h3>
+      {/* Event shit */}
+      <h4>Venue</h4>
+      <Strong
+        style={{ cursor: "pointer" }}
+        onClick={() =>
+          navigate({
+            pathname: `/venues/public`,
+            search: createSearchParams({
+              venueId: event.Venue.id,
+            }).toString(),
+          })
+        }
+      >
+        {event.Venue.name}
+      </Strong>
+      <br />
+      <Strong>{event.Venue.address}</Strong>
+      {/* Venue shit */}
+    </>
   );
 }
 
