@@ -10,6 +10,7 @@ import React, {
   KeyboardEvent,
   Dispatch,
   useContext,
+  useMemo,
 } from "react";
 import {
   Button,
@@ -21,6 +22,8 @@ import {
   ToggleButton,
   Form as BOOTSTRAP_FORM,
   ButtonGroup,
+  FormLabel,
+  Row,
 } from "react-bootstrap";
 import { styled } from "styled-components";
 
@@ -31,9 +34,15 @@ import {
   ObjectEntries,
   RequiredFieldContext,
   ValidatedContext,
+  type ObjectWithKeys,
   type UnderwaveEnumeration,
 } from "./Types.tsx";
-import type { DefaultAction } from "./Reducer.ts";
+import { TReduce, useObjReducer, type DefaultAction } from "./Reducer.ts";
+import isEqual from "lodash/isEqual";
+import {
+  regExpLiteral,
+  updateExpression,
+} from "../../../../../AppData/Local/deno/npm/registry.npmjs.org/@babel/types/7.25.6/lib/index-legacy.d.ts";
 
 export function ToCurrencySymbol(currency: string) {
   switch (currency) {
@@ -110,13 +119,33 @@ export const StyledHeaderField = styled.div`
 
 export const StyledDynamicList = styled.div`
   .indented-input {
-    left: 2%;
-    max-width: 98%;
+    display: flex; /* Aligns the button and form fields horizontally */
+    align-items: stretch; /* Stretches the items vertically */
+  }
+
+  .input-fields-container {
+    display: flex;
+    flex-direction: column; /* Stack input fields vertically */
+    flex-grow: 1; /* Allow the input fields to take up available space */
   }
 
   .add-remove-button {
     min-width: 3rem;
     text-align: center;
+    display: flex;
+    align-items: center; /* Centers button content vertically */
+    justify-content: center; /* Centers button content horizontally */
+    height: 100%; /* Makes the button take up the full height of the input group */
+    flex-grow: 10; /* Ensures the button grows to fill the remaining vertical space */
+  }
+
+  .input-group {
+    display: flex; /* Use flexbox layout */
+    align-items: stretch; /* Ensures all children stretch vertically */
+  }
+
+  .input-group .form-control {
+    flex-grow: 0; /* Allows form controls to fill available space */
   }
 `;
 
@@ -145,14 +174,146 @@ export declare type UnderwaveHeaderProps<E extends ElementType> =
     as?: React.ElementType;
   };
 
-declare type DynamicListProps = UnderwaveHeaderProps<ElementType> & {
-  array: string[];
-  name: string;
-  setArray: React.Dispatch<SetStateAction<string[]>>;
-  pattern?: RegExp;
-};
+declare type DynamicListProps<T extends ObjectWithKeys> =
+  UnderwaveHeaderProps<ElementType> & {
+    array: string[] | T[];
+    name: string;
+    setArray: React.Dispatch<SetStateAction<string[] | T[]>>;
+    pattern: RegExp;
+    noDisable?: boolean;
+    template: T;
+    requiredKeys?: (keyof T)[];
+  };
 
 //#endregion
+
+export function DynamicListForm<T extends ObjectWithKeys>({
+  header,
+  array,
+  setArray,
+  pattern,
+  notes,
+  required,
+  as,
+  noDisable,
+  template,
+  requiredKeys,
+}: DynamicListProps<T>) {
+  //An internal array that keeps track of how long the array should be for the user to be able to input a value
+  const { arrStates, add, update, remove } = useStateArrayFactory(array);
+
+  function testPatternAgainstRequiredKeys<T extends ObjectWithKeys>(
+    obj: T,
+    regex: RegExp,
+  ) {
+    const keys = requiredKeys ? requiredKeys : [Object.keys(obj)[0]];
+    let ret: boolean = true;
+    for (const key of keys) {
+      const temp = regex.test(obj[key]);
+      ret = ret & temp;
+    }
+    return ret;
+  }
+
+  useEffect(() => {
+    add(template);
+  }, []);
+
+  useEffect(() => {
+    setArray(arrStates);
+  }, [arrStates]);
+
+  return (
+    <StyledDynamicList>
+      <UnderwaveHeader
+        header={header}
+        notes={notes}
+        required={required}
+        as={as}
+      />
+      <div className="mb-3">
+        {arrStates.map((a, idx) => {
+          const isDisabled = idx !== arrStates.length - 1;
+          return (
+            <div key={idx}>
+              <InputGroup className="indented-input mt-3">
+                {idx !== arrStates.length - 1 ? (
+                  <Row>
+                    <Col>
+                      <Button
+                        className="add-remove-button"
+                        variant="danger"
+                        onClick={() => remove(idx)}
+                      >
+                        -
+                      </Button>
+                    </Col>
+                  </Row>
+                ) : null}
+
+                <div className="input-fields-container">
+                  {ObjectEntries(a).map(([k, v]) => {
+                    return (
+                      <Row key={k}>
+                        <Col>
+                          <FormControl
+                            placeholder={k}
+                            type="text"
+                            name={`${header}_${idx}`}
+                            id={`dynamic-list-${idx}`}
+                            value={v}
+                            onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                              update(
+                                idx,
+                                k as keyof typeof item,
+                                e.target.value,
+                              );
+                            }}
+                            onKeyDown={(
+                              event: KeyboardEvent<HTMLInputElement>,
+                            ) => {
+                              if (
+                                event.key === "Enter" &&
+                                idx === arrStates.length - 1 &&
+                                testPatternAgainstRequiredKeys(a, pattern)
+                              ) {
+                                add(template);
+                                return;
+                              }
+                              if (event.key === "Backspace") {
+                                if (
+                                  idx === arrStates.length - 1 &&
+                                  v.length === 0
+                                )
+                                  remove(idx - 1);
+                              }
+                            }}
+                            disabled={!noDisable && isDisabled}
+                          />
+                        </Col>
+                      </Row>
+                    );
+                  })}
+                </div>
+                {idx === arrStates.length - 1 ? (
+                  <Col>
+                    <Button
+                      className="add-remove-button"
+                      onClick={() => add(template)}
+                      disabled={!testPatternAgainstRequiredKeys(a, pattern)}
+                    >
+                      +
+                    </Button>
+                  </Col>
+                ) : null}
+              </InputGroup>
+            </div>
+          );
+        })}
+      </div>
+    </StyledDynamicList>
+  );
+}
 
 /**
  * Creates a list with one empty element represented as a {@link FormControl} component.
@@ -170,138 +331,6 @@ declare type DynamicListProps = UnderwaveHeaderProps<ElementType> & {
  * @param as {@link UnderwaveHeaderProps}
  * @returns
  */
-export function DynamicListForm({
-  header,
-  array,
-  setArray,
-  pattern,
-  notes,
-  required,
-  as,
-}: DynamicListProps) {
-  //An internal array that keeps track of how long the array should be for the user to be able to input a value
-  const [internalArray, setInternalArray] = useState<typeof array>([]);
-  //Curr is the internal value for the currently mutable field in the array, helps with keeping proper track of state
-  const [curr, setCurr] = useState("");
-
-  useEffect(() => {
-    if (internalArray.length === 0) {
-      setInternalArray([""]);
-    }
-    //eslint-disable-next-line
-  }, []);
-
-  //Copies the internal array and mutates the value of its last item (it's always an empty string before this)
-  //Resets curr to a workable state for next array mutation and copies the internal array to the supplied array
-  function addField(index: number): void {
-    const data = internalArray.slice();
-    data[index] = curr;
-    setCurr("");
-    setArray(data);
-  }
-
-  //Removes an item from array at index
-  function removeField(index: number): void {
-    const t = array.slice();
-    t.splice(index, 1);
-    setArray(t);
-  }
-
-  //If pasting in a comma-separated list, coincidentally also makes ',' a validity checker
-  useEffect(() => {
-    if (curr.includes(",")) {
-      const commaSeparatedList = curr
-        .split(",")
-        .filter((a) => a.length > 1 && pattern?.test(a.trim()));
-      setFieldValues(commaSeparatedList);
-    }
-    //eslint-disable-next-line
-  }, [curr]);
-
-  //Anytime array is updated, copy it and append an empty item to internalArray-
-  useEffect(() => {
-    setInternalArray(array.slice().concat(""));
-  }, [array]);
-
-  //Bulk update array with values
-  function setFieldValues(values: string[]) {
-    setArray(array.concat(values));
-    setCurr("");
-  }
-
-  //When internalArray is updated, get the last index of the internalArray and focus it (useful when user presses 'Enter' or uses the '+' button)
-  useEffect(() => {
-    if (internalArray.length > 1) {
-      document
-        .getElementById(`dynamic-list-${internalArray.length - 1}`)
-        ?.focus();
-    }
-  }, [internalArray.length]);
-
-  return (
-    <StyledDynamicList>
-      <UnderwaveHeader
-        header={header}
-        notes={notes}
-        required={required}
-        as={as}
-      />
-      <div className="mb-3">
-        {internalArray.map((a, i) => {
-          const isDisabled = i !== internalArray.length - 1;
-          return (
-            <InputGroup className="indented-input mb-3" key={i}>
-              {i !== internalArray.length - 1 ? (
-                <Button
-                  className="add-remove-button"
-                  variant="danger"
-                  onClick={() => removeField(i)}
-                >
-                  -
-                </Button>
-              ) : null}
-              <FormControl
-                type="text"
-                name={`${header}_${i}`}
-                id={`dynamic-list-${i}`}
-                value={isDisabled ? a : curr}
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  setCurr(e.target.value)
-                }
-                onKeyDown={(event: KeyboardEvent<HTMLInputElement>) => {
-                  if (
-                    event.key === "Enter" &&
-                    i === internalArray.length - 1 &&
-                    pattern?.test(curr)
-                  ) {
-                    addField(i);
-                  }
-                }}
-                onBlur={() => {
-                  if (i === internalArray.length - 1 && pattern?.test(curr)) {
-                    addField(i);
-                  }
-                }}
-                readOnly={isDisabled}
-              />
-              {i === internalArray.length - 1 ? (
-                <Button
-                  className="add-remove-button"
-                  onClick={() => {
-                    addField(i);
-                  }}
-                  disabled={!pattern?.test(curr)}
-                >
-                  +
-                </Button>
-              ) : null}
-            </InputGroup>
-          );
-        })}
-      </div>
-    </StyledDynamicList>
-  );
-}
 
 export function UnderwaveHeader({
   header,
@@ -698,6 +727,99 @@ export function SetStateActionFactory<T extends ObjectWithKeys>(
   return (key: keyof T) => {
     return ret[key];
   };
+}
+
+export function UseStateFactory<T extends ObjectWithKeys>(
+  obj: T,
+): (key: keyof T) => {
+  [key in keyof T]: [T[keyof T], StateHandler<T[keyof T]>];
+} {
+  const entries = ObjectEntries(obj);
+  let ret: { [key in keyof T]: [T[keyof T], StateHandler<T[keyof T]>] } | null =
+    null;
+  for (const [k, v] of entries) {
+    if (!ret)
+      ret = {
+        [k]: useState(v),
+      };
+    else
+      ret = {
+        ...ret,
+        [k]: useState(v),
+      };
+  }
+  return (key: keyof T) => {
+    return ret[key];
+  };
+}
+
+export function useStateArrayFactory<T extends ObjectWithKeys>(
+  arr: T[],
+): {
+  arrStates: T[];
+  add: (obj: T) => void;
+  update: (index: number, key: keyof T, value: T[keyof T]) => void;
+  remove: (index: number) => void;
+} {
+  const [arrStates, setArrStates] = useState<T[]>(arr);
+
+  const add = (obj: T) => {
+    setArrStates((prev) => [...prev, obj]);
+  };
+
+  const update = (index: number, key: keyof T, value: T[keyof T]) => {
+    setArrStates((prev) =>
+      prev.map((item, i) =>
+        i === index
+          ? {
+              ...item,
+              [key]: value,
+            }
+          : item,
+      ),
+    );
+  };
+
+  const remove = (index: number) => {
+    setArrStates((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  return { arrStates, add, update, remove };
+}
+
+export function compareArrays<T extends ObjectWithKeys>(
+  original: T[],
+  updated: T[],
+) {
+  const added: T[] = [];
+  const removed: T[] = [];
+  const modified: T[] = [];
+  added.push(
+    ...updated.filter(
+      (currItem) =>
+        !original.some((prevItem) => prevItem.name === currItem.name), // Compare by name or other unique identifier
+    ),
+  );
+
+  // Find removed objects
+  removed.push(
+    ...original.filter(
+      (prevItem) =>
+        !updated.some((currItem) => currItem.name === prevItem.name), // Compare by name or other unique identifier
+    ),
+  );
+
+  // Find modified objects
+  modified.push(
+    ...updated.filter((currItem) =>
+      original.some(
+        (prevItem) =>
+          prevItem.name === currItem.name && prevItem.role !== currItem.role, // Compare properties
+      ),
+    ),
+  );
+
+  return { added, removed, modified };
 }
 
 export const Toggle = StateToggleButtonField;

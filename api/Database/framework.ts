@@ -74,6 +74,7 @@ export function includeMember() {
     excludeMapping: true,
     exclude: ["createdAt", "updatedAt"],
     include: {
+      excludeMapping: true,
       model: Role,
       exclude: ["createdAt", "updatedAt"],
     },

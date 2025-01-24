@@ -1,3 +1,5 @@
+// @ts-types="npm:@types/react"
+import { useEffect, useMemo, ReactNode, useState } from "react";
 import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
 import { postRequest } from "../../api/APITemplate.ts";
 import { Link } from "react-router-dom";
@@ -7,11 +9,9 @@ import {
   useReducerAtom,
   userRegisterAtom,
 } from "../../store.ts";
-import { ReactNode } from "react";
 import Paths from "../../../../Shared/paths.ts";
 import { UserType } from "../../../../Shared/Types.ts";
 import type { PrimitiveAtom } from "jotai";
-import { useState } from "react";
 import type { StateHandler } from "../../utilities/Types.tsx";
 //@ts-ignore import shit idk
 import vinyl_turquoise from "../../resources/Images-Assets/vinyyli_turkoosi_dripping.svg";
@@ -19,10 +19,27 @@ import vinyl_turquoise from "../../resources/Images-Assets/vinyyli_turkoosi_drip
 export function Register() {
   const [user, dispatch] = useReducerAtom(userRegisterAtom, DefaultReducer);
   const [cPw, setCPw] = useState("");
+  const path = useMemo(
+    () => globalThis.location.pathname,
+    [globalThis.location.pathname],
+  );
+  const [regPath, setRegPath] = useState(Paths.user.register);
+
+  useEffect(() => {
+    if (path.includes("venue")) {
+      setRegPath(Paths.venue.register);
+      return;
+    }
+    if (path.includes("artist")) {
+      setRegPath(Paths.artist.register);
+      return;
+    }
+    setRegPath(Paths.user.regiser);
+  }, [path]);
   async function handleRegister(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (user.password !== cPw) return;
-    const register = await postRequest<UserType>(Paths.user.register, user);
+    const register = await postRequest<UserType>(regPath, user);
     if (register.isSuccess()) {
       dispatch({ payload: "", type: "all" });
     }
@@ -35,7 +52,7 @@ export function Register() {
           <Col xs={12} md={8}>
             <Row>
               <Col>
-                <Link to="/register/band" className="nav-link">
+                <Link to="/register/artist" className="nav-link">
                   I represent a band
                 </Link>
               </Col>

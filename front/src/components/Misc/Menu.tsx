@@ -68,8 +68,6 @@ export function Menu() {
   const hide = () => {
     setO(false);
   };
-
-  if (!u) return null;
   return (
     <StyledMenu open={o} aria-hidden={!o}>
       <>
@@ -82,7 +80,7 @@ export function Menu() {
       </>
       {
         //Links to content specific for an admin
-        u.type === 2 ? (
+        u?.type === 2 ? (
           <>
             <Link to="/events/create" tabIndex={tabIndex} onClick={hide}>
               Create event

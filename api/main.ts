@@ -22,10 +22,10 @@ import artistController from "./Controllers/ArtistController.ts";
 import venueController from "./Controllers/VenueController.ts";
 import { logRequestInfo } from "./Middleware/LoggerMiddleware.ts";
 import { forceSyncDatabaseAndSetupTestData } from "./Utilities.ts";
+import { Post } from "./Database/Model/Post.ts";
+import { EventInterest } from "./Database/Model/EventInterest.ts";
 
 const app = new Hono<{ Variables: JwtVariables }>();
-
-console.log(config);
 
 if (!config.ORIGIN) throw new Error("No host defined");
 
@@ -36,6 +36,8 @@ Event.belongsToMany(Artist, {
 });
 Event.belongsTo(Bio);
 Event.hasMany(Review);
+
+Event.hasMany(EventInterest);
 
 Member.belongsToMany(Artist, {
   through: { model: ArtistMembersMapping, unique: false },
@@ -54,6 +56,9 @@ Artist.belongsToMany(User, {
 Artist.belongsTo(Bio);
 Artist.hasMany(Review);
 
+Post.belongsTo(Artist);
+Artist.hasMany(Post);
+
 Venue.belongsToMany(User, {
   through: { model: VenueFollowing, unique: false },
 });
@@ -68,9 +73,11 @@ User.belongsToMany(Venue, {
   through: { model: VenueFollowing, unique: false },
 });
 
+User.hasMany(EventInterest);
+
 Bio.hasMany(Media);
 
-//await forceSyncDatabaseAndSetupTestData();
+await forceSyncDatabaseAndSetupTestData();
 
 app.use("*", (c, next) => {
   const corsMiddlewareHandler = cors({

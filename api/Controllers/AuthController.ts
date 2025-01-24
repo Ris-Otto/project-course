@@ -1,7 +1,7 @@
 ﻿import { Hono } from "npm:hono";
 import type { Context } from "npm:hono";
 import { User } from "../Database/Model/User.ts";
-import { Ok, Unauthorized } from "../../Shared/Result.ts";
+import { NotFound, Ok, Unauthorized } from "../../Shared/Result.ts";
 import {
   generateJWTAccessToken,
   verifyAndDecodeToken,
@@ -16,9 +16,11 @@ const auth = new Hono();
 
 auth.post("/", authenticate);
 auth.post("/register", registerUser);
-auth.post("/register/band", registerBand);
+auth.post("/register/artist", registerBand);
 auth.post("/register/venue", registerVenue);
 auth.post("/login", login);
+auth.post("/login/artist", loginArtist);
+auth.post("/login/venue", loginVenue);
 auth.post("/logout", logout);
 auth.post("verify/user/:id", verifyUser);
 auth.post("verify/artist/:id", verifyArtist);
@@ -26,6 +28,7 @@ auth.post("verify/venue/:id", verifyVenue);
 
 async function registerBand(c: Context) {
   const artist = await c.req.json<Artist>();
+  console.log(artist);
   const dbRes = await Artist.create({ ...artist, verified: 1 }).then((data) =>
     data.get({ plain: true }),
   );
@@ -73,7 +76,7 @@ async function registerUser(c: Context) {
 async function login(c: Context) {
   const { email, password } = await c.req.json<User>();
 
-  let user: User | Venue | Artist | null = await User.findOne({
+  const user = await User.findOne({
     where: { email: email },
   });
 
@@ -81,21 +84,29 @@ async function login(c: Context) {
     const ret = await checkLogin(c, user, password);
     return c.json(ret);
   }
+  return c.json(NotFound());
+}
+async function loginArtist(c: Context) {
+  const { email, password } = await c.req.json<User>();
 
-  user = await Artist.findOne({ where: { email: email } });
+  const user = await Artist.findOne({ where: { email: email } });
   if (user) {
     const ret = await checkLogin(c, user, password);
     return c.json(ret);
   }
+  return c.json(NotFound());
+}
+async function loginVenue(c: Context) {
+  const { email, password } = await c.req.json<User>();
 
-  user = await Venue.findOne({ where: { email: email } });
+  const user = await Venue.findOne({ where: { email: email } });
   if (user) {
     const ret = await checkLogin(c, user, password);
     return c.json(ret);
   }
+  return c.json(NotFound());
 }
 
-//TODO Split
 async function checkLogin(
   c: Context,
   user: User | Venue | Artist,

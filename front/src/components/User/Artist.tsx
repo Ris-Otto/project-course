@@ -1,5 +1,5 @@
 ﻿// @deno-types="npm:@types/react"
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { getRequest, postRequest } from "../../api/APITemplate.ts";
 import paths from "../../../../Shared/paths.ts";
 import {
@@ -27,6 +27,8 @@ import type { Venue } from "../../../../api/Database/Model/Venue.ts";
 import type { StateHandler } from "../../utilities/Types.tsx";
 import { FollowHeartButton } from "../Misc/MiscComponents.tsx";
 import Grid from "../Misc/Grid.tsx";
+import { Member } from "../../../../api/Database/Model/Member.ts";
+import { DynamicListForm, compareArrays } from "../../utilities/Functions.tsx";
 
 export default function ArtistProfilePublic() {
   const [sp] = useSearchParams();
@@ -90,7 +92,47 @@ export function ArtistProfile() {
     getData();
   }, []);
 
-  return <div></div>;
+  if (!a) {
+    return null;
+  }
+
+  return (
+    <Grid header={a.name}>
+      <div>Create post</div>
+      <ArtistMembers members={a.Members} />
+      <div>Event invites</div>
+    </Grid>
+  );
+}
+
+export function ArtistMembers({ members }: { members: Member[] }) {
+  const [ms, setMs] = useState<Member[]>(() =>
+    members.map((m) => {
+      return {
+        name: m.name,
+        role: m.Roles.find((r) => r.MemberId === m.id)?.description,
+      };
+    }),
+  );
+
+  const [ogMems] = useState(() => ms);
+
+  async function submit() {
+    console.log(compareArrays(ogMems, ms));
+  }
+
+  return (
+    <div>
+      <DynamicListForm
+        header="Members"
+        array={ms}
+        setArray={setMs}
+        pattern={/[A-Öa-ö]{1,}/}
+        template={{ name: "", role: "" }}
+      />
+      <Button onClick={submit}>Submit changes</Button>
+    </div>
+  );
 }
 
 export function ArtistBox({ artist, followed }: ArtistBoxProps) {

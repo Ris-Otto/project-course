@@ -58,17 +58,13 @@ const Grid: React.FC<GridProps> = ({
   headerColor,
 }: GridProps) => {
   const navigate = useNavigate();
-  const childrenArray = useMemo(
+  /* const childrenArray = useMemo(
     () => (Array.isArray(children) ? children : [children]),
     [children],
-  );
+  ); */
   const columns = useMemo(
-    () =>
-      Math.min(
-        Number.isNaN(childrenArray.length) ? 0 : childrenArray.length,
-        3,
-      ),
-    [childrenArray],
+    () => Math.min(Number.isNaN(children.length) ? 0 : children.length, 3),
+    [children],
   ); // Limit to a maximum of 3 columns
 
   return (
@@ -81,7 +77,7 @@ const Grid: React.FC<GridProps> = ({
       </BackArrowColumn>
 
       <GridContent columns={columns}>
-        {childrenArray.map((child, index) => (
+        {children.map((child, index) => (
           <GridColumn key={index}>{child}</GridColumn>
         ))}
       </GridContent>

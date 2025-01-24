@@ -121,6 +121,16 @@ export const GlobalStyles = createGlobalStyle<{
         color: ${({ theme }) => theme.teal};
     }
 
+    .btn-danger {
+        border-color: ${({ theme }) => theme.orange};
+        background-color: ${({ theme }) => theme.orange};
+    }
+
+    .btn-danger:hover, .btn-danger:focus, .btn-danger:active {
+        border-color: ${({ theme }) => theme.darkOrange};
+        background-color: ${({ theme }) => theme.darkOrange};
+    }
+
     .btn-primary:hover, .btn-primary:focus, .btn-primary:active, .btn-primary.active, .open > .dropdown-toggle.btn-primary, .show > .dropdown-toggle.btn-primary,
     .btn-success:hover, .btn-success:focus, .btn-success:active, .btn-success.active, .open > .dropdown-toggle.btn-success, .show > .dropdown-toggle.btn-success {
         background-color: ${({ theme }) => theme.darkTeal};

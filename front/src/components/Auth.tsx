@@ -1,15 +1,21 @@
 ﻿import { Outlet, useNavigate } from "react-router-dom";
 // @deno-types="npm:@types/react"
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 import { checkToken } from "../api/auth.ts";
 import { useAtom } from "jotai";
-import { user } from "../store.ts";
+import { open, user } from "../store.ts";
 import NavMenu from "../Navigation/NavMenu.tsx";
 import { Menu } from "./Misc/Menu.tsx";
+import { useOnClickOutside } from "../Hooks.ts";
 
 export function Auth() {
   const navigate = useNavigate();
   const [_, setU] = useAtom(user);
+  const [, setOpen] = useAtom(open);
+  const node = React.createRef<HTMLDivElement>();
+  useOnClickOutside(node, () => {
+    setOpen(false);
+  });
   useEffect(() => {
     const check = async () => {
       const res = await checkToken();
@@ -32,7 +38,9 @@ export function Auth() {
   return (
     <>
       <NavMenu />
-      <Menu />
+      <div ref={node}>
+        <Menu />
+      </div>
       <Outlet />
     </>
   );

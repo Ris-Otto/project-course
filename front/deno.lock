@@ -18,6 +18,7 @@
     "npm:axios@^1.7.7": "1.7.7",
     "npm:bootstrap@^5.3.3": "5.3.3_@popperjs+core@2.11.8",
     "npm:jotai@^2.10.0": "2.10.0_@types+react@18.3.9_react@18.3.1",
+    "npm:lodash@^4.17.21": "4.17.21",
     "npm:react-bootstrap@^2.10.7": "2.10.7_@types+react@18.3.9_react@18.3.1_react-dom@18.3.1__react@18.3.1",
     "npm:react-dom@^18.2.0": "18.3.1_react@18.3.1",
     "npm:react-dom@^18.3.1": "18.3.1_react@18.3.1",
@@ -964,6 +965,9 @@
     "lines-and-columns@1.2.4": {
       "integrity": "sha512-7ylylesZQ/PV29jhEDl3Ufjo6ZX7gCqJr5F7PKrqc93v7fzSymt1BpwEU8nAUXs8qzzvqhbjhK5QZg6Mt/HkBg=="
     },
+    "lodash@4.17.21": {
+      "integrity": "sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg=="
+    },
     "loose-envify@1.4.0": {
       "integrity": "sha512-lyuxPGr/Wfhrlem2CL/UcnUc1zcqKAImBDzukY7Y5F/yQiNdko6+fRLevlw1HgMySw7f611UIY408EtxRSoK3Q==",
       "dependencies": [
@@ -1811,6 +1815,7 @@
       "npm:axios@^1.7.7",
       "npm:bootstrap@^5.3.3",
       "npm:jotai@^2.10.0",
+      "npm:lodash@^4.17.21",
       "npm:react-bootstrap@^2.10.7",
       "npm:react-dom@^18.3.1",
       "npm:react-helmet@^6.1.0",

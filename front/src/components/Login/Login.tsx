@@ -13,7 +13,7 @@ import { GoArrowLeft } from "react-icons/go";
 //@ts-ignore import shit idk
 import vinyl_brown from "../../resources/Images-Assets/vinyyli_ruskea_dripping.svg";
 
-function LoginForm({ userType }: { userType: number }) {
+function LoginForm({ userType, path }: { userType: number; path: string }) {
   const navigate = useNavigate();
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
@@ -23,7 +23,7 @@ function LoginForm({ userType }: { userType: number }) {
     e.preventDefault();
     const requestBody = { email, password, type: userType };
     const response = await postRequest<UserPayload>(
-      paths.user.login,
+      paths.artist.login,
       requestBody,
     );
     if (response.isSuccess()) {
@@ -84,19 +84,40 @@ function LoginForm({ userType }: { userType: number }) {
 
 function Login() {
   const [type, setType] = useState<number>(-1);
+  const [loginPath, setLoginPath] = useState(paths.user.login);
 
   return (
     <div className="top-level-component" style={{ marginTop: "10vh" }}>
       {type < 0 ? (
         <Col xs={1} md={8}>
-          <Button className="mb-3" onClick={() => setType(0)}>
+          <Button
+            className="mb-3"
+            onClick={() => {
+              setType(0);
+              setLoginPath(paths.user.login);
+            }}
+          >
             User login
           </Button>
           <br />
           {/*Apply distinct style*/}
-          <Button onClick={() => setType(1)}>I am/represent an artist</Button>
+          <Button
+            onClick={() => {
+              setType(1);
+              setLoginPath(paths.artist.login);
+            }}
+          >
+            I am/represent an artist
+          </Button>
           {/*Apply distinct style*/}
-          <Button onClick={() => setType(2)}>I represent a venue</Button>
+          <Button
+            onClick={() => {
+              setType(2);
+              setLoginPath(paths.venue.login);
+            }}
+          >
+            I represent a venue
+          </Button>
         </Col>
       ) : (
         <StyledLogin>
@@ -104,7 +125,7 @@ function Login() {
           <div onClick={() => setType(-1)}>
             <GoArrowLeft className="back-arrow-3" />
           </div>
-          <LoginForm userType={type} />
+          <LoginForm userType={type} path={loginPath} />
         </StyledLogin>
       )}
       <div className="vinyl-container">

@@ -2,21 +2,19 @@ import { Hono } from "npm:hono";
 import type { Context } from "npm:hono";
 import * as tokenMiddleware from "../Middleware/JWTMiddleware.ts";
 import Event from "../Database/Model/Event.ts";
-import { NotFound, Ok } from "../../Shared/Result.ts";
+import { NotFound, Ok, Unauthorized } from "../../Shared/Result.ts";
 import { Venue } from "../Database/Model/Venue.ts";
 import { Artist } from "../Database/Model/Artist.ts";
 import { Member } from "../Database/Model/Member.ts";
 import { Role } from "../Database/Model/Role.ts";
 import Pricing from "../Database/Model/Pricing.ts";
+import { deleteCookie } from "npm:hono/cookie";
 
 import {
   includeBio,
   includeEvent,
   includeMember,
-  includeModel,
 } from "../Database/framework.ts";
-import { Bio } from "../Database/Model/Bio.ts";
-import { Media } from "../Database/Model/Media.ts";
 
 const artistController = new Hono();
 artistController.get("/artists", getArtists);
@@ -53,6 +51,8 @@ artistController.post(
 );
 artistController.get("/public/:artistId", getArtistProfile);
 
+artistController.get("/", tokenMiddleware.verifyIsBand, self);
+
 async function getArtists(c: Context) {
   const events = (await Artist.findAll()).map((e) => e.get({ plain: true }));
   return c.json(Ok(events));
@@ -75,11 +75,7 @@ async function registerForEvent(c: Context) {}
 async function getArtistProfile(c: Context) {
   const pk = c.req.param("artistId");
   const artist = await Artist.findByPk(pk, {
-    include: [
-      includeEvent(),
-      includeMember(),
-      includeBio(),
-    ],
+    include: [includeEvent(), includeMember(), includeBio()],
     attributes: {
       exclude: ["password", "createdAt", "updatedAt", "BioId"],
     },
@@ -87,9 +83,25 @@ async function getArtistProfile(c: Context) {
   if (artist === null) {
     return c.json(NotFound());
   }
-  return c.json(Ok(
-    artist.get({ plain: true }),
-  ));
+  return c.json(Ok(artist.get({ plain: true })));
+}
+
+async function self(c: Context) {
+  const payload = c.get("tokenPayload");
+  const user = await Artist.findOne({
+    where: {
+      email: payload.email,
+      id: payload.id,
+    },
+    include: [includeMember()],
+    attributes: { exclude: ["password", "verified"] },
+  }).then((a) => (a === null ? null : a.get({ plain: true })));
+  if (!user) {
+    deleteCookie(c, "access_token");
+
+    return c.json(Unauthorized());
+  }
+  return c.json(Ok(user));
 }
 
 export default artistController;
