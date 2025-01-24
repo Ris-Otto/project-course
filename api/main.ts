@@ -77,7 +77,7 @@ User.hasMany(EventInterest);
 
 Bio.hasMany(Media);
 
-await forceSyncDatabaseAndSetupTestData();
+//await forceSyncDatabaseAndSetupTestData();
 
 app.use("*", (c, next) => {
   const corsMiddlewareHandler = cors({
