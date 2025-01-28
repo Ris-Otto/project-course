@@ -21,6 +21,7 @@ import {
   LiaEnvelope,
   LiaHeart,
   LiaHeartSolid,
+  LiaPhoneAltSolid,
   LiaShareAltSquareSolid,
 } from "react-icons/lia";
 import type { Artist } from "../../../../api/Database/Model/Artist.ts";
@@ -45,6 +46,7 @@ import { Theme } from "../../theme.ts";
 import cd from "../../resources/Images-Assets/cd+cover.png";
 import { logout } from "../../api/auth.ts";
 import { ObjectEntries } from "../../utilities/Types.tsx";
+import { DynamicListForm } from "../../utilities/Functions.tsx";
 
 export default function VenueProfilePublic() {
   const [sp] = useSearchParams();
@@ -179,6 +181,10 @@ export function VenueViewProfile({
   const [zip, szip] = useState(() => venue.zip);
   const [city, scity] = useState(() => venue.city);
   const [hrs, shrs] = useState(() => openingHours);
+  const [phone, sphone] = useState("");
+  const [email, semail] = useState(() => venue.email);
+
+  const [images, setImages] = useState<[{ link: string }]>([]);
 
   const handleImageLoad = (e) => {
     const { naturalHeight, naturalWidth } = e.target;
@@ -328,13 +334,62 @@ export function VenueViewProfile({
               as="h2"
               state={venue.Bio?.description ? venue.Bio.description : ""}
               color={t.redBrown}
+              setState={edit ? scity : undefined}
             />
-            <Control />
+            <div className="mt-3">
+              <UnderwaveHeader header="Contact" as="h2" color={t.redBrown} />
+              <div className="silly-row">
+                <LiaPhoneAltSolid size={40} />
+                <Control
+                  type="text"
+                  state={phone}
+                  setState={edit ? sphone : undefined}
+                />
+              </div>
+
+              <div className="silly-row">
+                <LiaEnvelope size={45} />
+                <Control state={email} setState={edit ? semail : undefined} />
+              </div>
+            </div>
+            <UnderwaveHeader header="Images" as="h2" color={t.redBrown} />
+            <div className="mt-3 silly-row">
+              {images.map((a, i) => {
+                if (i === images.length - 1) return null;
+                return (
+                  <img
+                    key={i}
+                    src={a.link}
+                    style={{
+                      width: `${dimensions.width}px`,
+                      height: `${dimensions.height}px`,
+                      marginLeft: "2px",
+                    }}
+                  />
+                );
+              })}
+            </div>
+            <DynamicListForm
+              array={images}
+              setArray={setImages}
+              template={{ link: "" }}
+              pattern={
+                //URL regex-pattern
+                /[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/
+              }
+            />
+            <div className="mt-3">
+              <UnderwaveHeader header="Links" as="h2" color={t.redBrown} />
+            </div>
           </Col>
         </Grid>
       </div>
     </Row>
   );
+}
+
+export function ShowLinkedImage(link: string) {
+  return <img src={link} />;
 }
 
 export function VenueBox({ venue, followed }: VenueBoxProps) {

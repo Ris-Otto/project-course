@@ -153,6 +153,11 @@ export const StyledDynamicList = styled.div`
   .input-group .form-control {
     flex-grow: 0; /* Allows form controls to fill available space */
   }
+  .field {
+    background-color: ${({ theme }) => theme.semiLightCream};
+    border-color: ${({ theme }) => theme.darkCream};
+    color: ${({ theme }) => theme.brownText};
+  }
 `;
 
 //#region typedef
@@ -190,6 +195,7 @@ declare type DynamicListProps<T extends ObjectWithKeys> =
     noDisable?: boolean;
     template: T;
     requiredKeys?: (keyof T)[];
+    showEmptyOnly?: boolean;
   };
 
 //#endregion
@@ -206,6 +212,7 @@ export function DynamicListForm<T extends ObjectWithKeys>({
   template,
   requiredKeys,
   color,
+  showEmptyOnly,
 }: DynamicListProps<T>) {
   //An internal array that keeps track of how long the array should be for the user to be able to input a value
   const { arrStates, add, update, remove } = useStateArrayFactory(array);
@@ -224,8 +231,12 @@ export function DynamicListForm<T extends ObjectWithKeys>({
   }
 
   useEffect(() => {
-    add(template);
-  }, []);
+    if (
+      arrStates.length === 0 ||
+      testPatternAgainstRequiredKeys(arrStates[arrStates.length - 1], pattern)
+    )
+      add(template);
+  }, [arrStates]);
 
   useEffect(() => {
     setArray(arrStates);
@@ -242,6 +253,11 @@ export function DynamicListForm<T extends ObjectWithKeys>({
       />
       <div className="mb-3">
         {arrStates.map((a, idx) => {
+          if (showEmptyOnly) {
+            if (idx !== arrStates.length - 1) {
+              return null;
+            }
+          }
           const isDisabled = idx !== arrStates.length - 1;
           return (
             <div key={idx}>
@@ -266,6 +282,7 @@ export function DynamicListForm<T extends ObjectWithKeys>({
                       <Row key={k}>
                         <Col>
                           <FormControl
+                            className="field"
                             placeholder={k}
                             type="text"
                             name={`${header}_${idx}`}
@@ -440,18 +457,18 @@ function DefaultStandaloneField<TState extends string | number>({
   const context = useContext(RequiredFieldContext);
   const vContext = useContext(ValidatedContext);
 
-  const [previousState, setPreviousState] = useState<string | number>("");
+  const [previousState, setPreviousState] = useState<TState>("");
   const defaultControlRegex = ".{1,}";
   const temp = new RegExp(pattern ? pattern : defaultControlRegex);
   function isValid(value: string) {
     const ret = temp.test(value);
     return ret || !required;
   }
-  function restrict(previousValue: string | number, value: string | number) {
+  function restrict(previousValue: TState, value: TState) {
     if (restrictor !== undefined) {
-      return restrictor(previousValue, value) as TState;
+      return restrictor(previousValue, value);
     }
-    return value as TState;
+    return value;
   }
 
   function validate(value: string | number) {
@@ -487,9 +504,7 @@ function DefaultStandaloneField<TState extends string | number>({
             if (!setState) return;
             event.preventDefault();
             setPreviousState(state);
-            setState(
-              restrict(previousState, handleStateType(event.target.value)),
-            );
+            setState(restrict(previousState, event.target.value));
           }}
           pattern={pattern}
           isInvalid={
