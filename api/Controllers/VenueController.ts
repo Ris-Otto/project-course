@@ -67,7 +67,7 @@ async function addEvent(c: Context) {
   }
 
   const pricingRes = await Pricing.create({ ...pricing }).then((data) =>
-    data.get({ plain: true })
+    data.get({ plain: true }),
   );
 
   const eventRes = await Event.create({
@@ -165,7 +165,7 @@ async function updateBio(c: Context) {
     bio?.update({ description: description });
   } else {
     bio = await Bio.create({ description: data.description }).then((data) =>
-      data.get({ plain: true })
+      data.get({ plain: true }),
     );
 
     venue?.update({ BioId: bio?.id });
@@ -186,8 +186,17 @@ async function uploadMedia(c: Context) {
 }
 
 async function getVenue(c: Context) {
-  const events = (await Venue.findAll()).map((e) => e.get({ plain: true }));
-  return c.json(Ok(events));
+  const payload = c.get("tokenPayload");
+  const venue = await Venue.findOne({
+    where: {
+      email: payload.email,
+      id: payload.id,
+    },
+    include: includeBio(),
+  });
+  if (venue === null) return c.json(NotFound());
+
+  return c.json(Ok(venue.get({ plain: true })));
 }
 
 async function getVenueProfile(c: Context) {
@@ -199,7 +208,6 @@ async function getVenueProfile(c: Context) {
         attributes: {
           exclude: ["password", "createdAt", "updatedAt", "BioId"],
         },
-        include: [Venue],
       },
     ],
     attributes: {

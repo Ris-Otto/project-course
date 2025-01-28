@@ -36,6 +36,7 @@
     "react-router-dom": "npm:react-router-dom@^6.26.2",
     "react-select": "npm:react-select@^5.9.0",
     "react-spinners": "npm:react-spinners@^0.14.1",
+    "react-time-picker": "npm:react-time-picker@^7.0.0",
     "react-toastify": "npm:react-toastify@^11.0.3",
     "spinners-react": "npm:spinners-react@^1.0.10",
     "styled-components": "npm:styled-components@^6.1.13"

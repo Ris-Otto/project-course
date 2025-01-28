@@ -55,3 +55,7 @@ export default function PageHeader({
     </StyledHeader>
   );
 }
+
+export function PageHeaderS({ header, className, color }: PageHeaderProps) {
+  return <div></div>;
+}

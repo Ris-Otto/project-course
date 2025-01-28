@@ -137,6 +137,7 @@ function CreateEventForm({
         header="Name"
         state={event.state.name}
         setState={eventFactory("name")}
+        color="#774320"
       />
       <Control
         required
@@ -155,6 +156,7 @@ function CreateEventForm({
       <Check
         header="Age restriction (18+)"
         value={event.state.age}
+        state={!!event.state.age}
         checked={!!event.state.age}
         setState={eventFactory("age")}
       />
@@ -173,6 +175,7 @@ function CreateEventForm({
           //URL regex-pattern
           /[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/
         }
+        template={""}
         setArray={setMedia}
       />
       <h3>Pricing</h3>

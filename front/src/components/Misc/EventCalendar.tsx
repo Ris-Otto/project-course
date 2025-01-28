@@ -9,7 +9,7 @@ import {
   ToCurrencySymbol,
   resolveBitmask,
 } from "../../utilities/Functions.tsx";
-import { useNavigate } from "react-router-dom";
+import { createSearchParams, useNavigate } from "react-router-dom";
 import type { Theme } from "../../theme.ts";
 import { StateHandler, paymentMethods } from "../../utilities/Types.tsx";
 import { Strong } from "./Event.styled.ts";
@@ -100,7 +100,7 @@ function EventInCalendar({ event }: EventInCalendarProps) {
   return (
     <Row className="event-in-calendar ">
       <Col xs={3} style={{ padding: "0px" }}>
-        <CalendarDate date={date} />
+        <CalendarDate date={date} event={event} />
       </Col>
       <Col xs={9} style={{ padding: "0px" }}>
         <CalendarInfo
@@ -183,7 +183,7 @@ function EventHover({ event }: { event: Event }) {
   );
 }
 
-function CalendarDate({ date }: { date: Date }) {
+function CalendarDate({ date, event }: { date: Date; event: Event }) {
   const navigate = useNavigate();
   const month = useMemo(
     () => date.toLocaleString(undefined, { month: "short" }),

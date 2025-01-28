@@ -24,8 +24,13 @@ export class Theme implements DefaultTheme {
   lightOrange: string = "#F09A02";
   darkOrange: string = "#923915";
   redBrown: string = "#774320";
+  brownText: string = "#504e35";
   teal: string = "#01928B";
   darkTeal = "#00756F";
   tealPressed = "#015652";
   cream: string = "#F5F3C7";
+  semiLightCream: string = "#EAE8CB";
+  darkCream: string = "#DFDDB7";
+  darkCream2: string = "#D2CE9A";
+  darkCreamPressed: string = "";
 }

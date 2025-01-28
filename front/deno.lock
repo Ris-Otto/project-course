@@ -27,6 +27,7 @@
     "npm:react-router-dom@^6.26.2": "6.26.2_react@18.3.1_react-dom@18.3.1__react@18.3.1",
     "npm:react-select@^5.9.0": "5.9.0_react@18.3.1_react-dom@18.3.1__react@18.3.1_@types+react@18.3.9",
     "npm:react-spinners@~0.14.1": "0.14.1_react@18.3.1_react-dom@18.3.1__react@18.3.1",
+    "npm:react-time-picker@7": "7.0.0_@types+react@18.3.9_react@18.3.1_react-dom@18.3.1__react@18.3.1",
     "npm:react-toastify@^11.0.3": "11.0.3_react@18.3.1_react-dom@18.3.1__react@18.3.1",
     "npm:react@*": "18.3.1",
     "npm:react@^18.2.0": "18.3.1",
@@ -661,6 +662,9 @@
         "vite@5.4.8"
       ]
     },
+    "@wojtekmaj/date-utils@1.5.1": {
+      "integrity": "sha512-+i7+JmNiE/3c9FKxzWFi2IjRJ+KzZl1QPu6QNrsgaa2MuBgXvUy4gA1TVzf/JMdIIloB76xSKikTWuyYAIVLww=="
+    },
     "ag-charts-types@10.2.0": {
       "integrity": "sha512-PUqH1QtugpYLnlbMdeSZVf5PpT1XZVsP69qN1JXhetLtQpVC28zaj7ikwu9CMA9N9b+dBboA9QcjUQUJZVUokQ=="
     },
@@ -799,6 +803,9 @@
     "dequal@2.0.3": {
       "integrity": "sha512-0je+qPKHEMohvfRTCEo3CrPG6cAzAYgmzKyxRiYSSDkS6eGJdyVJm7WaYA5ECaAD9wLB2T4EEeymA5aFVcYXCA=="
     },
+    "detect-element-overflow@1.4.2": {
+      "integrity": "sha512-4m6cVOtvm/GJLjo7WFkPfwXoEIIbM7GQwIh4WEa4g7IsNi1YzwUsGL5ApNLrrHL29bHeNeQ+/iZhw+YHqgE2Fw=="
+    },
     "dom-helpers@5.2.1": {
       "integrity": "sha512-nRCa7CK3VTrM2NmGkIy4cbK7IZlgBE/PYMn55rrXefr5xXDP0LdtfPnblFDoVdcAfslJ7or6iqAUnx0CCGIWQA==",
       "dependencies": [
@@ -903,6 +910,12 @@
     "gensync@1.0.0-beta.2": {
       "integrity": "sha512-3hN7NaskYvMDLQY55gnW3NQ+mesEAepTqlg+VEbj7zzqEMBVNhzcGYYeqFo/TlYz6eQiFcp1HcsCZO+nGgS8zg=="
     },
+    "get-user-locale@2.3.2": {
+      "integrity": "sha512-O2GWvQkhnbDoWFUJfaBlDIKUEdND8ATpBXD6KXcbhxlfktyD/d8w6mkzM/IlQEqGZAMz/PW6j6Hv53BiigKLUQ==",
+      "dependencies": [
+        "mem"
+      ]
+    },
     "globals@11.12.0": {
       "integrity": "sha512-WOBp/EEGUiIsJSp7wcv/y6MO+lV9UoncWqxuFfm8eBwzWNgyfBd6Gz+IeKQ9jCmyhoH99g15M3T+QaVHFjizVA=="
     },
@@ -980,6 +993,22 @@
         "yallist"
       ]
     },
+    "make-event-props@1.6.2": {
+      "integrity": "sha512-iDwf7mA03WPiR8QxvcVHmVWEPfMY1RZXerDVNCRYW7dUr2ppH3J58Rwb39/WG39yTZdRSxr3x+2v22tvI0VEvA=="
+    },
+    "map-age-cleaner@0.1.3": {
+      "integrity": "sha512-bJzx6nMoP6PDLPBFmg7+xRKeFZvFboMrGlxmNj9ClvX53KrmvM5bXFXEWjbz4cz1AFn+jWJ9z/DJSz7hrs0w3w==",
+      "dependencies": [
+        "p-defer"
+      ]
+    },
+    "mem@8.1.1": {
+      "integrity": "sha512-qFCFUDs7U3b8mBDPyz5EToEKoAkgCzqquIgi9nkkR9bixxOVOre+09lbuH7+9Kn2NFpm56M3GUWVbU2hQgdACA==",
+      "dependencies": [
+        "map-age-cleaner",
+        "mimic-fn"
+      ]
+    },
     "memoize-one@6.0.0": {
       "integrity": "sha512-rkpe71W0N0c0Xz6QD0eJETuWAJGnJ9afsl1srmwPrI+yBCkge5EycXXbYRyvL29zZVUWQCY7InPRCv3GDXuZNw=="
     },
@@ -992,6 +1021,9 @@
         "mime-db"
       ]
     },
+    "mimic-fn@3.1.0": {
+      "integrity": "sha512-Ysbi9uYW9hFyfrThdDEQuykN4Ey6BuwPD2kpI5ES/nFTDn/98yxYNLZJcgUAKPT/mcrLLKaGzJR9YVxJrIdASQ=="
+    },
     "ms@2.1.3": {
       "integrity": "sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA=="
     },
@@ -1003,6 +1035,9 @@
     },
     "object-assign@4.1.1": {
       "integrity": "sha512-rJgTQnkUnH1sFw8yT6VSU3zD3sWmu6sZhIseY8VX+GRu3P6F7Fu+JNDoXfklElbLJSnc3FUQHVe4cU5hj+BcUg=="
+    },
+    "p-defer@1.0.0": {
+      "integrity": "sha512-wB3wfAxZpk2AzOfUMJNL+d36xothRSyj8EXOa4f6GMqYDN9BJaaSISbsk+wS9abmnebVw95C2Kb5t85UmpCxuw=="
     },
     "parent-module@1.0.1": {
       "integrity": "sha512-GQ2EWRpQV8/o+Aw8YqtfZZPfNRWZYkbidE9k5rpl/hC3vtHHBfGm2Ifi6qWV+coDGkrUKZAxE3Lot5kcsRlh+g==",
@@ -1087,6 +1122,17 @@
         "warning"
       ]
     },
+    "react-clock@5.1.0_@types+react@18.3.9_react@18.3.1_react-dom@18.3.1__react@18.3.1": {
+      "integrity": "sha512-DKmr29VOK6M8wpbzGUZZa9PwGnG9uC6QXtDLwGwcc2r3vdS/HxNhf5xMMjudXLk7m096mNJQf7AgfjiDpzAYYw==",
+      "dependencies": [
+        "@types/react@18.3.9",
+        "@wojtekmaj/date-utils",
+        "clsx",
+        "get-user-locale",
+        "react",
+        "react-dom"
+      ]
+    },
     "react-dom@18.3.1_react@18.3.1": {
       "integrity": "sha512-5m4nQKp+rZRb09LNH59GM4BxTh9251/ylbKIbpe7TpGxfJ+9kv6BLkLBXIjjspbgbnIBNqlI23tRnTWT0snUIw==",
       "dependencies": [
@@ -1097,6 +1143,16 @@
     },
     "react-fast-compare@3.2.2": {
       "integrity": "sha512-nsO+KSNgo1SbJqJEYRE9ERzo7YtYbou/OqjSQKxV7jcKox7+usiUVZOAC+XnDOABXggQTno0Y1CpVnuWEc1boQ=="
+    },
+    "react-fit@2.0.1_@types+react@18.3.9_react@18.3.1_react-dom@18.3.1__react@18.3.1": {
+      "integrity": "sha512-Eip6ALs/+6Jv82Si0I9UnfysdwVlAhkkZRycgmMdnj7jwUg69SVFp84ICxwB8zszkfvJJ2MGAAo9KAYM8ZUykQ==",
+      "dependencies": [
+        "@types/react@18.3.9",
+        "detect-element-overflow",
+        "react",
+        "react-dom",
+        "warning"
+      ]
     },
     "react-helmet@6.1.0_react@18.3.1": {
       "integrity": "sha512-4uMzEY9nlDlgxr61NL3XbKRy1hEkXmKNXhjbAIOVw5vcFrsdYbH2FEwcNyWvWinl103nXgzYNlns9ca+8kFiWw==",
@@ -1166,6 +1222,21 @@
       "dependencies": [
         "react",
         "react-dom"
+      ]
+    },
+    "react-time-picker@7.0.0_@types+react@18.3.9_react@18.3.1_react-dom@18.3.1__react@18.3.1": {
+      "integrity": "sha512-k6mUjkI+OsY73mg0yjMxqkLXv/UXR1LN7AARNqfyGZOwqHqo1JrjL3lLHTHWQ86HmPTBL/dZACbIX/fV1NLmWg==",
+      "dependencies": [
+        "@types/react@18.3.9",
+        "@wojtekmaj/date-utils",
+        "clsx",
+        "get-user-locale",
+        "make-event-props",
+        "react",
+        "react-clock",
+        "react-dom",
+        "react-fit",
+        "update-input-width"
       ]
     },
     "react-toastify@11.0.3_react@18.3.1_react-dom@18.3.1__react@18.3.1": {
@@ -1320,6 +1391,9 @@
         "escalade",
         "picocolors"
       ]
+    },
+    "update-input-width@1.4.2": {
+      "integrity": "sha512-/p0XLhrQQQ4bMWD7bL9duYObwYCO1qGr8R19xcMmoMSmXuQ7/1//veUnCObQ7/iW6E2pGS6rFkS4TfH4ur7e/g=="
     },
     "use-isomorphic-layout-effect@1.2.0_react@18.3.1": {
       "integrity": "sha512-q6ayo8DWoPZT0VdG4u3D3uxcgONP3Mevx2i2b0434cwWBoL+aelL1DzkXI6w3PhTZzUeR2kaVlZn70iCiseP6w==",
@@ -1823,6 +1897,7 @@
       "npm:react-router-dom@^6.26.2",
       "npm:react-select@^5.9.0",
       "npm:react-spinners@~0.14.1",
+      "npm:react-time-picker@7",
       "npm:react-toastify@^11.0.3",
       "npm:react@^18.3.1",
       "npm:spinners-react@^1.0.10",

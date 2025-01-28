@@ -107,11 +107,17 @@ export const StyledUnderwaveField = styled.div`
     border-top-left-radius: 6px !important;
     border-top-right-radius: 6px !important;
   }
+
+  .field {
+    background-color: ${({ theme }) => theme.semiLightCream};
+    border-color: ${({ theme }) => theme.darkCream};
+    color: ${({ theme }) => theme.brownText};
+  }
 `;
-export const StyledHeaderField = styled.div`
+export const StyledHeaderField = styled.div<{ color: string }>`
   .underwave-form-label {
     font-weight: bold;
-    color: ${({ theme }) => theme.orange};
+    color: ${({ color, theme }) => (color ? color : theme.teal)};
     margin-bottom: 1px;
     letter-spacing: 1px;
   }
@@ -172,6 +178,7 @@ export declare type UnderwaveHeaderProps<E extends ElementType> =
     notes?: React.ReactNode;
     required?: boolean;
     as?: React.ElementType;
+    color?: string;
   };
 
 declare type DynamicListProps<T extends ObjectWithKeys> =
@@ -198,6 +205,7 @@ export function DynamicListForm<T extends ObjectWithKeys>({
   noDisable,
   template,
   requiredKeys,
+  color,
 }: DynamicListProps<T>) {
   //An internal array that keeps track of how long the array should be for the user to be able to input a value
   const { arrStates, add, update, remove } = useStateArrayFactory(array);
@@ -230,6 +238,7 @@ export function DynamicListForm<T extends ObjectWithKeys>({
         notes={notes}
         required={required}
         as={as}
+        color={color}
       />
       <div className="mb-3">
         {arrStates.map((a, idx) => {
@@ -337,11 +346,12 @@ export function UnderwaveHeader({
   notes,
   required,
   as,
+  color,
 }: UnderwaveHeaderProps<ElementType>) {
   const Component = as ?? defaultElement;
 
   return (
-    <StyledHeaderField>
+    <StyledHeaderField color={color}>
       <BOOTSTRAP_FORM.Label className="underwave-form-label">
         <Component>
           {header}
@@ -360,18 +370,21 @@ export declare type UnderwaveSubHeaderProps = {
 export function UnderwaveSubHeader({ children }: UnderwaveSubHeaderProps) {
   return (
     <>
-      <br />
-      <BOOTSTRAP_FORM.Text>{children}</BOOTSTRAP_FORM.Text>
+      {children ? (
+        <>
+          <br />
+          <BOOTSTRAP_FORM.Text>{children}</BOOTSTRAP_FORM.Text>
+        </>
+      ) : null}
     </>
   );
 }
 
-declare interface UnderwaveStandaloneFieldBaseProps<
-  TState extends string | number | boolean,
-> extends UnderwaveHeaderProps<React.ElementType> {
+declare interface UnderwaveStandaloneFieldBaseProps<TState extends {}>
+  extends UnderwaveHeaderProps<React.ElementType> {
   state: TState;
   type?: string;
-  setState: Dispatch<SetStateAction<TState>>;
+  setState?: Dispatch<SetStateAction<TState>>;
   required?: boolean;
   feedback?: React.ReactNode;
   pattern?: string;
@@ -379,9 +392,8 @@ declare interface UnderwaveStandaloneFieldBaseProps<
   className?: string;
 }
 
-declare interface UnderwaveStandaloneFieldProps<
-  TState extends string | number | boolean,
-> extends UnderwaveStandaloneFieldBaseProps<TState> {
+declare interface UnderwaveStandaloneFieldProps<TState extends {}>
+  extends UnderwaveStandaloneFieldBaseProps<TState> {
   validator?: (value: string | number) => boolean;
   restrictor?: (
     previousValue: string | number,
@@ -422,6 +434,8 @@ function DefaultStandaloneField<TState extends string | number>({
   as,
   validator,
   restrictor,
+  color,
+  className,
 }: UnderwaveStandaloneFieldProps<TState>) {
   const context = useContext(RequiredFieldContext);
   const vContext = useContext(ValidatedContext);
@@ -447,17 +461,20 @@ function DefaultStandaloneField<TState extends string | number>({
     return true;
   }
   return (
-    <StyledUnderwaveField>
-      <UnderwaveHeader
-        header={header}
-        notes={notes}
-        required={context.required || required}
-        as={as}
-      />
-      <Form.Group as={Col} className="mt-3 mb-3">
+    <StyledUnderwaveField className={className}>
+      {header ? (
+        <UnderwaveHeader
+          header={header}
+          notes={notes}
+          required={context.required || required}
+          as={as}
+          color={color}
+        />
+      ) : null}
+      <Form.Group className="mb-3">
         <Form.Control
           name={name}
-          className="rounded-corners"
+          className="rounded-corners field"
           data-lpignore="true"
           autoComplete={type}
           type={type ? type : "text"}
@@ -467,6 +484,7 @@ function DefaultStandaloneField<TState extends string | number>({
             if (event.key === "Enter") event.preventDefault();
           }}
           onChange={(event) => {
+            if (!setState) return;
             event.preventDefault();
             setPreviousState(state);
             setState(
@@ -478,6 +496,7 @@ function DefaultStandaloneField<TState extends string | number>({
             vContext.validated && !isValid(String(state)) && validate(state)
           }
           isValid={false}
+          disabled={!setState}
         />
         <Form.Control.Feedback type="invalid">
           {feedback ? feedback : "Please fill out this field"}
@@ -504,6 +523,7 @@ function StateDropdownField<
   as,
   required,
   placeholder,
+  color,
 }: StateDropdownFieldProps<TState, TDropdownValues>) {
   return (
     <StyledUnderwaveField>
@@ -512,6 +532,7 @@ function StateDropdownField<
         notes={notes}
         as={as}
         required={required}
+        color={color}
       />
       <div className={notes ? "mb-3 mt-3" : "mb-3"}>
         <Form.Select
@@ -569,6 +590,7 @@ function StateRadioButtonField<
   name,
   as,
   required,
+  color,
 }: EnumeratedField<TState, TDropdownValues>) {
   function handleStateType(newState: string | number): TState {
     if (Number(newState) >= 0) {
@@ -584,6 +606,7 @@ function StateRadioButtonField<
         notes={notes}
         as={as}
         required={required}
+        color={color}
       />
       {ObjectEntries(template.entries).map(([k, v], idx) => {
         if (keyIsExcluded(k, exceptKeys)) return null;
@@ -617,6 +640,7 @@ function StateToggleButtonField<
   name,
   as,
   required,
+  color,
 }: EnumeratedField<TState, TDropdownValues>) {
   function handleStateType(newState: number | string): TState {
     if (Number(newState) >= 0) {
@@ -632,6 +656,7 @@ function StateToggleButtonField<
         notes={notes}
         as={as}
         required={required}
+        color={color}
       />
       <ButtonGroup className="mb-3">
         {ObjectEntries(template.entries).map(([k, v], idx) => {
@@ -822,8 +847,93 @@ export function compareArrays<T extends ObjectWithKeys>(
   return { added, removed, modified };
 }
 
+export function cfl(val) {
+  return String(val).charAt(0).toUpperCase() + String(val).slice(1);
+}
+
+function TextArea<TState extends {}>(
+  props: UnderwaveStandaloneFieldProps<TState>,
+) {
+  const {
+    header,
+    state,
+    setState,
+    type,
+    notes,
+    required,
+    feedback,
+    pattern,
+    name,
+    as,
+    validator,
+    restrictor,
+    color,
+  } = props;
+
+  const context = useContext(RequiredFieldContext);
+  const vContext = useContext(ValidatedContext);
+
+  const [previousState, setPreviousState] = useState<string | number>("");
+  const defaultControlRegex = ".{1,}";
+  const temp = new RegExp(pattern ? pattern : defaultControlRegex);
+  function isValid(value: string) {
+    const ret = temp.test(value);
+    return ret || !required;
+  }
+  function restrict(previousValue: string | number, value: string | number) {
+    if (restrictor !== undefined) {
+      return restrictor(previousValue, value) as TState;
+    }
+    return value as TState;
+  }
+
+  function validate(value: string | number) {
+    if (validator !== undefined) {
+      return validator(value);
+    }
+    return true;
+  }
+  return (
+    <StyledUnderwaveField>
+      <UnderwaveHeader
+        header={header}
+        notes={notes}
+        required={context.required || required}
+        as={as}
+        color={color}
+      />
+      <Form.Control
+        name={name}
+        className="rounded-corners field"
+        data-lpignore="true"
+        type={"text"}
+        as="textarea"
+        required={context.required || required}
+        value={state}
+        onKeyDown={(event) => {
+          if (event.key === "Enter") event.preventDefault();
+        }}
+        onChange={(event) => {
+          if (!setState) return;
+          event.preventDefault();
+          setPreviousState(state);
+          setState(
+            restrict(previousState, handleStateType(event.target.value)),
+          );
+        }}
+        pattern={pattern}
+        isInvalid={
+          vContext.validated && !isValid(String(state)) && validate(state)
+        }
+        isValid={false}
+      />
+    </StyledUnderwaveField>
+  );
+}
+
 export const Toggle = StateToggleButtonField;
 export const Radio = StateRadioButtonField;
 export const Control = DefaultStandaloneField;
 export const Select = StateDropdownField;
 export const Check = StateCheckField;
+export { TextArea };
