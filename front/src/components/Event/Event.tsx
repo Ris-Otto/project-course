@@ -30,6 +30,13 @@ function EventPage() {
       getRequest<Event>(`${paths.event.get}/${eventId.eventId}`),
     );
   }
+
+  useEffect(() => {
+    return () => {
+      if (!event) return;
+      event.invalidate = true;
+    };
+  }, []);
   return (
     <>
       {/*@ts-ignore cba*/}

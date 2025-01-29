@@ -108,6 +108,7 @@ export const StyledUnderwaveField = styled.div`
 
     &:disabled {
       border-color: ${({ theme }) => theme.darkCream};
+      color: grey;
     }
 
     border-color: ${({ theme }) => theme.redBrown};
@@ -128,10 +129,14 @@ export const StyledUnderwaveField = styled.div`
     }
   }
 `;
-export const StyledHeaderField = styled.div<{ color: string }>`
+export const StyledHeaderField = styled.div<{
+  color: string;
+  disabled?: boolean;
+}>`
   .underwave-form-label {
     font-weight: bold;
-    color: ${({ color, theme }) => (color ? color : theme.teal)};
+    color: ${({ color, theme, disabled }) =>
+      disabled ? "grey" : color ? color : theme.teal};
     margin-bottom: 1px;
     letter-spacing: 1px;
   }
@@ -199,6 +204,7 @@ export declare type UnderwaveHeaderProps<E extends ElementType> =
     as?: React.ElementType;
     color?: string;
     empty?: boolean;
+    disabled?: boolean;
   };
 
 declare type DynamicListProps<T extends ObjectWithKeys> =
@@ -379,11 +385,12 @@ export function UnderwaveHeader({
   required,
   as,
   color,
+  disabled,
 }: UnderwaveHeaderProps<ElementType>) {
   const Component = as ?? defaultElement;
 
   return (
-    <StyledHeaderField color={color}>
+    <StyledHeaderField color={color} disabled={disabled}>
       <BOOTSTRAP_FORM.Label className="underwave-form-label">
         <Component>
           {header}
@@ -509,6 +516,7 @@ function DefaultStandaloneField<TState extends string | number>({
           required={context.required || required}
           as={as}
           color={color}
+          disabled={disabled || !(setState || onChange)}
         />
       ) : null}
       <Form.Group className="mb-3">
@@ -566,6 +574,7 @@ function StateDropdownField<
   required,
   placeholder,
   color,
+  disabled,
 }: StateDropdownFieldProps<TState, TDropdownValues>) {
   const context = useContext(RequiredFieldContext);
   const vContext = useContext(ValidatedContext);
@@ -579,6 +588,7 @@ function StateDropdownField<
           required={context.required || required}
           as={as}
           color={color}
+          disabled={disabled}
         />
       ) : null}
       <div className={notes ? "mb-3 mt-3" : "mb-3"}>
@@ -638,6 +648,7 @@ function StateRadioButtonField<
   as,
   required,
   color,
+  disabled,
 }: EnumeratedField<TState, TDropdownValues>) {
   const context = useContext(RequiredFieldContext);
   const vContext = useContext(ValidatedContext);
@@ -658,6 +669,7 @@ function StateRadioButtonField<
           required={context.required || required}
           as={as}
           color={color}
+          disabled={disabled}
         />
       ) : null}
       {ObjectEntries(template.entries).map(([k, v], idx) => {
@@ -694,6 +706,7 @@ function StateToggleButtonField<
   as,
   required,
   color,
+  disabled,
 }: EnumeratedField<TState, TDropdownValues>) {
   function handleStateType(newState: number | string): TState {
     if (Number(newState) >= 0) {
@@ -711,6 +724,7 @@ function StateToggleButtonField<
           required={context.required || required}
           as={as}
           color={color}
+          disabled={disabled}
         />
       ) : null}
       <ButtonGroup className="mb-3">
@@ -748,6 +762,7 @@ function StateCheckField<TState extends boolean>({
   name,
   as,
   className,
+  disabled,
 }: UnderwaveStandaloneFieldBaseProps<TState>) {
   const context = useContext(RequiredFieldContext);
   return (
@@ -765,6 +780,7 @@ function StateCheckField<TState extends boolean>({
               required={context.required || required}
               as={as}
               color={color}
+              disabled={disabled}
             />
           ) : undefined
         }
@@ -928,6 +944,7 @@ function TextArea<TState extends {}>(
     restrictor,
     color,
     onChange,
+    disabled,
   } = props;
 
   const context = useContext(RequiredFieldContext);
@@ -961,6 +978,7 @@ function TextArea<TState extends {}>(
         required={context.required || required}
         as={as}
         color={color}
+        disabled={disabled}
       />
       <Form.Control
         name={name}
