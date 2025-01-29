@@ -83,8 +83,7 @@ export function includeMember() {
 export function includeEvent() {
   return includeModel({
     model: Event,
-    excludeMapping: true,
-    exclude: ["createdAt", "updatedAt", "PricingId", "VenueId"],
+    exclude: ["createdAt", "updatedAt"],
     include: [
       {
         model: Venue,

@@ -1,7 +1,11 @@
 ﻿import { Hono } from "npm:hono";
 import type { Context } from "npm:hono";
 import * as tokenMiddleware from "../Middleware/JWTMiddleware.ts";
-import { includeBio, includeEvent } from "../Database/framework.ts";
+import {
+  includeBio,
+  includeEvent,
+  includeVenue,
+} from "../Database/framework.ts";
 import { getCookie, setCookie } from "npm:hono/cookie";
 import { NotFound, Ok, Unauthorized } from "../../Shared/Result.ts";
 import { Venue } from "../Database/Model/Venue.ts";
@@ -192,7 +196,7 @@ async function getVenue(c: Context) {
       email: payload.email,
       id: payload.id,
     },
-    include: includeBio(),
+    include: [includeBio(), includeEvent()],
   });
   if (venue === null) return c.json(NotFound());
 
@@ -202,14 +206,7 @@ async function getVenue(c: Context) {
 async function getVenueProfile(c: Context) {
   const pk = c.req.param("venueId");
   const venue = await Venue.findByPk(pk, {
-    include: [
-      {
-        model: Event,
-        attributes: {
-          exclude: ["password", "createdAt", "updatedAt", "BioId"],
-        },
-      },
-    ],
+    include: includeEvent(),
     attributes: {
       exclude: ["password", "createdAt", "updatedAt", "BioId"],
     },

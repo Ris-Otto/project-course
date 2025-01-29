@@ -12,7 +12,11 @@ import Pricing from "../Database/Model/Pricing.ts";
 import { User } from "../Database/Model/User.ts";
 import { Artist } from "../Database/Model/Artist.ts";
 import { Venue } from "../Database/Model/Venue.ts";
-import { includeArtist, includeModel } from "../Database/framework.ts";
+import {
+  includeArtist,
+  includeBio,
+  includeModel,
+} from "../Database/framework.ts";
 import { deleteCookie } from "npm:hono/cookie";
 import { Task } from "../Utilities.ts";
 
@@ -79,6 +83,7 @@ async function getEvents(c: Context) {
             "updatedAt",
           ],
         }),
+        includeBio(),
       ],
       attributes: {
         exclude: ["VenueId", "PricingId", "createdAt", "updatedAt"],
