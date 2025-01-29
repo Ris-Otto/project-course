@@ -15,6 +15,7 @@ import type { PrimitiveAtom } from "jotai";
 import type { StateHandler } from "../../utilities/Types.tsx";
 //@ts-ignore import shit idk
 import vinyl_turquoise from "../../resources/Images-Assets/vinyyli_turkoosi_dripping.svg";
+import { toast } from "react-toastify";
 
 export function Register() {
   const [user, dispatch] = useReducerAtom(userRegisterAtom, DefaultReducer);
@@ -38,10 +39,19 @@ export function Register() {
   }, [path]);
   async function handleRegister(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (user.password !== cPw) return;
+    if (user.password !== cPw) {
+      setCPw("");
+      dispatch({ payload: "", type: "password" });
+      toast.warning("Password don't match");
+      return;
+    }
     const register = await postRequest<UserType>(regPath, user);
     if (register.isSuccess()) {
       dispatch({ payload: "", type: "all" });
+    } else {
+      setCPw("");
+      dispatch({ payload: "", type: "password" });
+      toast.warning("Invalid email or password");
     }
   }
 

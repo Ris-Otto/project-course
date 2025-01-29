@@ -27,6 +27,7 @@ export function wrapPromise<T>(promise: Promise<T>) {
   };
 }
 
+// @deno-types="@types/react"
 import { MutableRefObject, useEffect, useState } from "react";
 
 export function useWrapPromise(promise: Promise<T>) {
@@ -64,3 +65,19 @@ export const useOnClickOutside = <T>(
     };
   }, [ref, handler]);
 };
+
+export function useImageDimensions(maxHeight?: number) {
+  const [dimensions, setDimensions] = useState({
+    width: 0,
+    height: 0,
+  });
+
+  const handleImageLoad = (e) => {
+    const { naturalHeight, naturalWidth } = e.target;
+    const ratio = naturalWidth / naturalHeight;
+    const height = maxHeight ? maxHeight : globalThis.innerHeight / 8;
+    setDimensions({ height: height, width: height * ratio });
+  };
+
+  return { dimensions, handleImageLoad };
+}

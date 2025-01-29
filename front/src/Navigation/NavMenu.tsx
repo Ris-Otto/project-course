@@ -7,11 +7,10 @@ import { LiaCalendarWeekSolid } from "react-icons/lia";
 import logo from "../resources/logo/simplified/underwave_logo_final_cream_simplified.svg";
 import { useAtom } from "jotai";
 import { open } from "../store.ts";
-import { Menu } from "../components/Misc/Menu.tsx";
 
 //TODO add privileges functionality
-export function NavMenu({ setOpen }: any) {
-  const [o, setO] = useAtom(open);
+export function NavMenu() {
+  const [_, setO] = useAtom(open);
   const navigate = useNavigate();
   return (
     <Navbar

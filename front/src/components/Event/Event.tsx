@@ -13,20 +13,19 @@ import {
   ToCurrencySymbol,
 } from "../../utilities/Functions.tsx";
 import { Strong, StyledEvent } from "./Event.styled.ts";
-import Grid from "./Grid.tsx";
+import Grid from "../Misc/Grid.tsx";
 import { EventCalendar } from "./EventCalendar.tsx";
 // @deno-types="@types/react"
 import { useEffect, useState } from "react";
 import Select from "react-select";
-import { Searchable } from "./Searchable.tsx";
+import { Searchable } from "../Misc/Searchable.tsx";
 import { FormCheck } from "react-bootstrap";
 
 let event: SuspenseConsumer<Event> | null;
-let events: SuspenseConsumer<Event[]> | null;
 function EventPage() {
   const eventId = useParams<{ eventId?: string }>();
 
-  if (!event) {
+  if (!event || event.invalidate) {
     event = wrapPromise(
       getRequest<Event>(`${paths.event.get}/${eventId.eventId}`),
     );
@@ -157,7 +156,7 @@ function RenderEvent({ event }: { event: Event }) {
         )}, ${resolveBitmask(event.Pricing.type, paymentMethods)}`}
       </h3>
       {/* Event shit */}
-      {event.Artists.map((a, idx) => {
+      {event.Artists?.map((a, idx) => {
         return (
           <div key={idx}>
             <p>

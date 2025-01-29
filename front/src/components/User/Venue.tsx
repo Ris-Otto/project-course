@@ -1,5 +1,5 @@
 // @deno-types="npm:@types/react"
-import React, { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { getRequest, postRequest } from "../../api/APITemplate.ts";
 import paths from "../../../../Shared/paths.ts";
 import {
@@ -7,27 +7,28 @@ import {
   useNavigate,
   useSearchParams,
 } from "react-router-dom";
-import {
-  Row,
-  Col,
-  Button,
-  Tab,
-  Tabs,
-  Container,
-  FormControl,
-} from "react-bootstrap";
+import { Row, Col, Button, Tab, Tabs, Container } from "react-bootstrap";
 import { IoImageOutline, IoNewspaperSharp } from "react-icons/io5";
 import {
   LiaEnvelope,
   LiaHeart,
   LiaHeartSolid,
+  LiaPencilAltSolid,
   LiaPhoneAltSolid,
   LiaShareAltSquareSolid,
+  LiaSave,
+  LiaTrashAltSolid,
+  LiaPlusSolid,
+  LiaCalendarWeekSolid,
+  LiaClock,
+  LiaTicketAltSolid,
+  LiaSearchLocationSolid,
 } from "react-icons/lia";
+import { GiTicket } from "react-icons/gi";
+import { IoLocationSharp } from "react-icons/io5";
 import type { Artist } from "../../../../api/Database/Model/Artist.ts";
-import { Strong } from "../Misc/Event.styled.ts";
-import PageHeader from "../Misc/PageHeader.tsx";
-import { EventCalendar } from "../Misc/EventCalendar.tsx";
+import { Strong } from "../Event/Event.styled.ts";
+import { EventCalendar } from "../Event/EventCalendar.tsx";
 import { StyledArtistProfile, StyledListBox } from "./StyledProfile.tsx";
 import { useAtom } from "jotai";
 import { user } from "../../store.ts";
@@ -35,7 +36,7 @@ import { GoArrowLeft } from "react-icons/go";
 import type { Venue } from "../../../../api/Database/Model/Venue.ts";
 import Grid from "../Misc/Grid.tsx";
 import { Loading } from "../../utilities/Loading.tsx";
-import { StyledVenueProfile } from "./StyledProfile.tsx";
+import { StyledVenueProfile, EditButton, Circle } from "./StyledProfile.tsx";
 import {
   cfl,
   Control,
@@ -46,7 +47,15 @@ import { Theme } from "../../theme.ts";
 import cd from "../../resources/Images-Assets/cd+cover.png";
 import { logout } from "../../api/auth.ts";
 import { ObjectEntries } from "../../utilities/Types.tsx";
-import { DynamicListForm } from "../../utilities/Functions.tsx";
+import {
+  DynamicListForm,
+  ToCurrencySymbol,
+} from "../../utilities/Functions.tsx";
+import { StyledHoverEvent } from "../Event/EventCalendar.tsx";
+import { RenderEvent } from "../Event/Event.tsx";
+import { Event } from "../../utilities/Types.tsx";
+import { useImageDimensions } from "../../Hooks.ts";
+import { EditEvent } from "./Venue/EditEvent.tsx";
 
 export default function VenueProfilePublic() {
   const [sp] = useSearchParams();
@@ -75,35 +84,31 @@ export default function VenueProfilePublic() {
       <GoArrowLeft onClick={() => navigate(-1)} className="back-arrow-3" />
       <Container>
         {a ? (
-          <div style={{ textAlign: "left" }}>
-            <div>
-              <PageHeader header={a.name} className="mb-3" />
-              <Row>
-                <VenueLeft venue={a} />
-                <VenueMiddle venue={a} />
-                <VenueRight venue={a} />
-              </Row>
-            </div>
-          </div>
-        ) : null}
+          <Grid header={a.name}>
+            <VenueLeft venue={a} />
+            <VenueMiddle venue={a} />
+            <VenueRight venue={a} />
+          </Grid>
+        ) : /* </div> */
+        null}
       </Container>
     </StyledArtistProfile>
   );
 }
-type PageState = "profile" | "events" | "posts" | "account" | "settings";
+type PageState = "profile" | "events" | "account" | "settings";
 const PageStates: PageState[] = [
   "profile",
   "events",
-  "posts",
-  "account",
-  "settings",
+  /* "account",
+  "settings", */
 ] as const;
+
+type SubState = "view" | "edit" | "add";
 
 export function VenueProfile() {
   const [a, setA] = useState<Venue>();
   const [pageState, setPageState] = useState<PageState>("profile");
-  const [subState, setSubState] = useState<"view" | "edit" | "add">("view");
-  const [edit, setEdit] = useState(false);
+  const [subState, setSubState] = useState<SubState>("view");
 
   useEffect(() => {
     async function getData() {
@@ -113,6 +118,11 @@ export function VenueProfile() {
       }
     }
     getData();
+
+    return () => {
+      setSubState("view");
+      setPageState("profile");
+    };
   }, []);
 
   if (!a) return <Loading />;
@@ -123,11 +133,11 @@ export function VenueProfile() {
         <Grid header={a.name} narrowColumnIndex={0} wideColumnIndex={1}>
           <div
             style={{
-              borderRight: "1px solid black",
-              padding: "20px",
               display: "flex",
               flexDirection: "column",
               minHeight: "min-content",
+              minWidth: "max-content",
+              maxWidth: "max-content",
             }}
           >
             {PageStates.map((s, i) => {
@@ -137,7 +147,10 @@ export function VenueProfile() {
                   className={
                     pageState === s ? "selected-page-state mb-3" : "mb-3"
                   }
-                  onClick={() => setPageState(s)}
+                  onClick={() => {
+                    setPageState(s);
+                    setSubState("view");
+                  }}
                   disabled={pageState === s}
                 >
                   {cfl(s)}
@@ -148,21 +161,225 @@ export function VenueProfile() {
               Sign out
             </Button>
           </div>
-          <VenueViewProfile venue={a} edit={edit} setEdit={setEdit} />
+          <div style={{ borderLeft: "1px solid black", paddingLeft: "50px" }}>
+            {pageState === "profile" ? (
+              <VenueViewProfile
+                venue={a}
+                subState={subState}
+                setSubState={setSubState}
+              />
+            ) : pageState === "events" ? (
+              <VenueEvents
+                venue={a}
+                subState={subState}
+                setSubState={setSubState}
+              />
+            ) : null}
+          </div>
         </Grid>
       </div>
     </StyledVenueProfile>
   );
 }
 
-export function VenueViewProfile({
+export function VenueAddEvent({
   venue,
-  edit,
-  setEdit,
+  subState,
+  setSubState,
 }: {
   venue: Venue;
-  edit;
-  setEdit;
+  subState: SubState;
+  setSubState: StateHandler<SubState>;
+}) {}
+
+export function VenueEvents({
+  venue,
+  subState,
+  setSubState,
+}: {
+  venue: Venue;
+  subState: SubState;
+  setSubState: StateHandler<SubState>;
+}) {
+  const add = useMemo(() => subState === "add", [subState]);
+  const edit = useMemo(() => subState === "edit", [subState]);
+  const [events, sevents] = useState(() => venue.Events);
+  const [currentEvent, setCurrentEvent] = useState<Event>();
+  return (
+    <>
+      <div className="silly-row-sb">
+        <h2>
+          {add ? "Create event" : edit ? "Edit event" : "Published events"}
+        </h2>
+        <div>
+          {add ? (
+            <>
+              <EditButton onClick={() => setSubState("view")}>
+                Cancel
+              </EditButton>
+              <EditButton onClick={() => setSubState("view")}>
+                Create
+              </EditButton>
+            </>
+          ) : edit ? (
+            <>
+              <EditButton onClick={() => setSubState("view")}>
+                Cancel
+              </EditButton>
+              <EditButton onClick={() => setSubState("view")}>Save</EditButton>
+            </>
+          ) : (
+            <EditButton onClick={() => setSubState("add")}>
+              New Event
+              <LiaPlusSolid size={25} style={{ marginLeft: "5px" }} />
+            </EditButton>
+          )}
+        </div>
+      </div>
+      {subState === "view" ? (
+        <div className="silly-row-start">
+          {events.map((a, i) => (
+            <div key={i} style={{ margin: "2%" }}>
+              <VenueEvent
+                event={a}
+                setCurrentEvent={setCurrentEvent}
+                setSubState={setSubState}
+              />
+            </div>
+          ))}
+        </div>
+      ) : subState === "add" ? (
+        <VenueAddEvent
+          venue={venue}
+          subState={subState}
+          setSubState={setSubState}
+        />
+      ) : subState === "edit" ? (
+        <EditEvent event={currentEvent} />
+      ) : null}
+    </>
+  );
+}
+
+export function VenueEvent({
+  event,
+  setCurrentEvent,
+  setSubState,
+}: {
+  event: Event;
+  setCurrentEvent?: React.Dispatch<React.SetStateAction<Event | undefined>>;
+  setSubState?: React.Dispatch<React.SetStateAction<SubState>>;
+}) {
+  const startTime = useMemo(() => {
+    const time = new Date(event.start).toTimeString().split(" ")[0];
+    const split = time.split(":");
+    return `${split[0]}:${split[1]}`;
+  }, [event]);
+  const endTime = useMemo(() => {
+    const time = new Date(event.end).toTimeString().split(" ")[0];
+    const split = time.split(":");
+    return `${split[0]}:${split[1]}`;
+  }, [event]);
+  const { dimensions, handleImageLoad } = useImageDimensions(
+    globalThis.innerHeight / 6,
+  );
+  const p = useMemo(() => dimensions.width * 0.12, [dimensions]);
+
+  return (
+    <StyledHoverEvent
+      style={{
+        minWidth: `${dimensions.width}px`,
+      }}
+      padding={p}
+    >
+      {setSubState && setCurrentEvent ? (
+        <div style={{ textAlign: "right" }}>
+          <Button
+            onClick={() => {
+              setCurrentEvent(event);
+              setSubState("edit");
+            }}
+          >
+            <LiaPencilAltSolid size={30} />
+          </Button>
+          <Button>
+            <LiaTrashAltSolid size={30} />
+          </Button>
+        </div>
+      ) : null}
+      <div className="silly-column-sb" style={{ marginTop: "5%" }}>
+        <EventPicture
+          onImageLoad={handleImageLoad}
+          dimensions={dimensions}
+          name={event.name}
+          age={event.age}
+        />
+        <div
+          className="event-description mt-3 mb-3"
+          style={{ maxWidth: `${dimensions.width}px` }}
+        >
+          {event.Bio.description}
+        </div>
+        <div>
+          <LiaCalendarWeekSolid size={30} style={{ marginRight: "5px" }} />
+          {new Date(event.start).toDateString()}
+        </div>
+        <div>
+          <LiaClock size={30} style={{ marginRight: "5px" }} />
+          {startTime} - {endTime}
+        </div>
+        <div>
+          <GiTicket size={30} style={{ marginRight: "5px" }} />
+          {event.Pricing.amount} {ToCurrencySymbol(event.Pricing.currency)}
+        </div>
+        <div>
+          <IoLocationSharp size={30} style={{ marginRight: "5px" }} />
+          {event.Venue.address}
+        </div>
+      </div>
+    </StyledHoverEvent>
+  );
+}
+
+function EventPicture({
+  onImageLoad,
+  dimensions,
+  name,
+  age,
+}: {
+  onImageLoad: (e) => void;
+  dimensions: {
+    width: number;
+    height: number;
+  };
+  name: string;
+  age?: boolean;
+}) {
+  return (
+    <div className="event-picture">
+      <h4 className="event-picture-name">{name}</h4>
+      {age ? <Circle className="event-picture-age">18+</Circle> : null}
+      <img
+        onLoad={onImageLoad}
+        style={{
+          borderRadius: "10px",
+          width: `${dimensions.width}px`,
+          height: `${dimensions.height}px`,
+        }}
+        src="https://bzglfiles.s3.ca-central-1.amazonaws.com/u/394702/c29ca7919a7b7ee69407d46c2f0b8c3d1c1a2327/original/all-around-the-mic-website-version.png?response-content-type=image%2Fpng&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIA2AEJH4L527DJJBYE%2F20250129%2Fca-central-1%2Fs3%2Faws4_request&X-Amz-Date=20250129T121026Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=6e376a9787d821fea41588e0c947d11428296b9f4997df560772e43d70c8ab42"
+      />
+    </div>
+  );
+}
+
+export function VenueViewProfile({
+  venue,
+  setSubState,
+  subState,
+}: {
+  venue: Venue;
+  subState: SubState;
+  setSubState: StateHandler<SubState>;
 }) {
   const openingHours = {
     mon: { from: "18:00", to: "01:00", closed: true },
@@ -174,7 +391,6 @@ export function VenueViewProfile({
     sun: { from: "16:00", to: "23:00", closed: false },
   };
   const t = useMemo(() => new Theme(), []);
-  const [dimensions, setDimensions] = useState({ height: 100, width: 100 });
 
   const [name, sname] = useState(() => venue.name);
   const [addr, saddr] = useState(() => venue.address);
@@ -183,58 +399,69 @@ export function VenueViewProfile({
   const [hrs, shrs] = useState(() => openingHours);
   const [phone, sphone] = useState("");
   const [email, semail] = useState(() => venue.email);
+  const [bio, sbio] = useState(() => (venue.Bio ? venue.Bio.description : ""));
 
-  const [images, setImages] = useState<[{ link: string }]>([]);
+  const edit = useMemo(() => subState === "edit", [subState]);
 
-  const handleImageLoad = (e) => {
-    const { naturalHeight, naturalWidth } = e.target;
-    const ratio = naturalWidth / naturalHeight;
-    const maxHeight = globalThis.innerHeight / 8;
-    setDimensions({ height: maxHeight, width: maxHeight * ratio });
-  };
+  function handleOhrs(key: keyof hrs, value: string, fromto: "from" | "to") {
+    const temp = {
+      ...hrs,
+      [key]: {
+        ...hrs[key],
+        [fromto]: value,
+      },
+    };
+    shrs(temp);
+  }
+
+  const [images, setImages] = useState<[{ image_link: string }]>([]);
+
+  const { dimensions, handleImageLoad } = useImageDimensions();
+
+  async function submit() {}
+
+  useEffect(() => {
+    return () => {
+      setSubState("view");
+    };
+  }, []);
   return (
-    <Row>
-      <Grid>
+    <>
+      <div className="silly-row-sb">
         <h2>Profile</h2>
         <div style={{ textAlign: "right" }}>
           {edit ? (
             <>
-              <Button
-                style={{
-                  backgroundColor: t.teal,
-                  color: "#fff",
-                }}
-                onClick={() => setEdit(false)}
-              >
+              <EditButton onClick={() => setSubState("view")}>
                 Cancel
-              </Button>
-              <Button
-                style={{
-                  backgroundColor: t.teal,
-                  color: "#fff",
+              </EditButton>
+              <EditButton
+                onClick={() => {
+                  setSubState("view");
                 }}
               >
                 Save
-              </Button>
+                <LiaSave size={20} />
+              </EditButton>
             </>
           ) : (
-            <Button
-              style={{
-                backgroundColor: t.teal,
-                color: "#fff",
-              }}
-              onClick={() => setEdit(true)}
-            >
-              Edit
-            </Button>
+            <>
+              <EditButton onClick={() => setSubState("edit")}>
+                Edit
+                <LiaPencilAltSolid
+                  size={20}
+                  style={{ marginLeft: "5px", marginBottom: "2px" }}
+                />
+              </EditButton>
+            </>
           )}
         </div>
-      </Grid>
+      </div>
 
       <div className="profile">
         <Grid>
           <Col>
-            <div className="silly-row-sb">
+            <div className="silly-row-start">
               <img
                 src={cd}
                 alt={"Profile picture"}
@@ -253,26 +480,31 @@ export function VenueViewProfile({
                 setState={edit ? sname : undefined}
               />
             </div>
-
-            <Control
-              header={"Street address"}
-              state={addr}
-              color={t.redBrown}
-              setState={edit ? saddr : undefined}
-            />
-            <div className="silly-row-sb">
+            <div className="silly-row">
+              <Control
+                header={"Street address"}
+                state={addr}
+                color={t.redBrown}
+                setState={edit ? saddr : undefined}
+                className="m-3"
+              />
+            </div>
+            <div className="silly-row-sb-wrap">
               <Control
                 header={"Postal/ZIP-code"}
                 state={zip}
                 color={t.redBrown}
                 setState={edit ? szip : undefined}
+                className="m-3"
               />
               <Control
                 header={"City"}
                 state={city}
                 color={t.redBrown}
                 setState={edit ? scity : undefined}
+                className="m-3"
               />
+              <div></div>
             </div>
             <div style={{ alignItems: "center" }}>
               <UnderwaveHeader
@@ -296,10 +528,17 @@ export function VenueViewProfile({
                     >
                       {cfl(k)}
                     </div>
-                    <div className="silly-row-sb">
+                    <div className="silly-row-sb-wrap">
                       {!v.closed ? (
                         <>
-                          <Control state={v.from} />
+                          <Control
+                            state={v.from}
+                            onChange={
+                              edit
+                                ? (e) => handleOhrs(k, e.target.value, "from")
+                                : undefined
+                            }
+                          />
                           <div
                             style={{
                               marginRight: "10px",
@@ -308,7 +547,14 @@ export function VenueViewProfile({
                           >
                             -
                           </div>
-                          <Control state={v.to} />
+                          <Control
+                            state={v.to}
+                            onChange={
+                              edit
+                                ? (e) => handleOhrs(k, e.target.value, "to")
+                                : undefined
+                            }
+                          />
                         </>
                       ) : (
                         <div
@@ -332,9 +578,9 @@ export function VenueViewProfile({
             <TextArea
               header="Bio"
               as="h2"
-              state={venue.Bio?.description ? venue.Bio.description : ""}
+              state={bio}
               color={t.redBrown}
-              setState={edit ? scity : undefined}
+              setState={edit ? sbio : undefined}
             />
             <div className="mt-3">
               <UnderwaveHeader header="Contact" as="h2" color={t.redBrown} />
@@ -359,7 +605,7 @@ export function VenueViewProfile({
                 return (
                   <img
                     key={i}
-                    src={a.link}
+                    src={a.image_link}
                     style={{
                       width: `${dimensions.width}px`,
                       height: `${dimensions.height}px`,
@@ -369,27 +615,25 @@ export function VenueViewProfile({
                 );
               })}
             </div>
-            <DynamicListForm
-              array={images}
-              setArray={setImages}
-              template={{ link: "" }}
-              pattern={
-                //URL regex-pattern
-                /[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/
-              }
-            />
+            {edit ? (
+              <DynamicListForm
+                array={images}
+                setArray={setImages}
+                template={{ image_link: "" }}
+                pattern={
+                  //URL regex-pattern
+                  /[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/
+                }
+              />
+            ) : null}
             <div className="mt-3">
               <UnderwaveHeader header="Links" as="h2" color={t.redBrown} />
             </div>
           </Col>
         </Grid>
       </div>
-    </Row>
+    </>
   );
-}
-
-export function ShowLinkedImage(link: string) {
-  return <img src={link} />;
 }
 
 export function VenueBox({ venue, followed }: VenueBoxProps) {
@@ -478,7 +722,7 @@ function VenueLeft(props: VenueProps) {
           <LiaShareAltSquareSolid size={30} />
         </Button>
         <Button
-          hidden={!u}
+          hidden={!u || u.type !== 0}
           onMouseEnter={() => setFState("filled")}
           onMouseLeave={() => setFState("empty")}
           onClick={async () => await FollowVenue()}

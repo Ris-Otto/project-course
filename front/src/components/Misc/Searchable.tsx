@@ -1,7 +1,7 @@
 import React from "react";
 import Select from "react-select";
 import { ObjectWithKeys } from "../../utilities/Types.tsx";
-import type { Filter } from "./Event.tsx";
+import type { Filter } from "../Event/Event.tsx";
 
 export function Listable() {}
 

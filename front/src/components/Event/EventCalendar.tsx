@@ -14,12 +14,13 @@ import type { Theme } from "../../theme.ts";
 import { StateHandler, paymentMethods } from "../../utilities/Types.tsx";
 import { Strong } from "./Event.styled.ts";
 import { RenderEvent } from "./Event.tsx";
+import { VenueEvent } from "../User/Venue.tsx";
 
 const StyledEventCalendar = styled.div<{ theme: Theme }>`
   display: flex;
   flex-direction: column;
   justify-content: center;
-  background-color: rgb(228, 227, 210);
+  background-color: ${({ theme }) => theme.darkCream};
   padding: 20px;
   max-height: 80vh;
   overflow-x: visible;
@@ -65,6 +66,17 @@ const StyledEventCalendar = styled.div<{ theme: Theme }>`
   .event-calendar {
     flex-row: nowrap;
   }
+
+  .hover-event {
+  }
+`;
+
+const StyledHoverEvent = styled.div<{ padding?: string }>`
+  background-color: ${({ theme }) => theme.darkCream};
+  box-shadow: ${({ theme }) => theme.darkCream};
+  border-radius: 15px;
+  padding: ${({ padding }) => (padding ? padding : "5")}px;
+  color: black;
 `;
 
 type EventCalendarProps = {
@@ -174,11 +186,10 @@ function EventHover({ event }: { event: Event }) {
         position: "fixed",
         right: "30vw",
         border: "1px solid black",
-        backgroundColor: "white",
-        minWidth: "30vw",
+        borderRadius: "15px",
       }}
     >
-      <RenderHoverEvent event={event} />
+      <VenueEvent event={event} />
     </div>
   );
 }
@@ -212,7 +223,7 @@ function CalendarDate({ date, event }: { date: Date; event: Event }) {
 function RenderHoverEvent({ event }: { event: Event }) {
   const navigate = useNavigate();
   return (
-    <>
+    <StyledHoverEvent>
       <h3>
         Price:{" "}
         {`${event.Pricing.amount}${ToCurrencySymbol(
@@ -237,8 +248,8 @@ function RenderHoverEvent({ event }: { event: Event }) {
       <br />
       <Strong>{event.Venue.address}</Strong>
       {/* Venue shit */}
-    </>
+    </StyledHoverEvent>
   );
 }
 
-export { EventCalendar, EventInCalendar };
+export { EventCalendar, EventInCalendar, RenderHoverEvent, StyledHoverEvent };

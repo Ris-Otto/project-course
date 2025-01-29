@@ -18,7 +18,7 @@ import Select, { type MultiValue } from "react-select";
 import { useState, useMemo } from "react";
 import { Button, Form } from "react-bootstrap";
 import { styled } from "styled-components";
-import Grid from "./Grid.tsx";
+import Grid from "../Misc/Grid.tsx";
 import type { EventRead } from "../../../../api/Database/Model/Event.ts";
 import {
   Check,

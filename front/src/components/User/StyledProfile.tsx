@@ -1,4 +1,5 @@
 ﻿import { styled } from "styled-components";
+import { Button } from "react-bootstrap";
 import type { Theme } from "../../theme.ts";
 
 export const StyledProfile = styled.div<{ theme: Theme }>`
@@ -81,14 +82,16 @@ export const StyledVenueProfile = styled.div<{ theme: Theme }>`
   }
 
   .btn-primary,
-  .btn-success,
-  .btn-primary:disabled,
-  .btn-success:disabled {
+  .btn-success {
     background-color: ${({ theme }) => theme.darkCream};
     border-color: ${({ theme }) => theme.darkCream};
     color: ${({ theme }) => theme.brownText};
     &:focus {
       box-shadow: ${({ theme }) => theme.darkCream2};
+    }
+
+    &:disabled {
+      color: black !important;
     }
 
     &:hover {
@@ -119,13 +122,63 @@ export const StyledVenueProfile = styled.div<{ theme: Theme }>`
     min-width: min-content;
     max-width: max-content;
     vertical-align: middle;
+    flex-wrap: wrap;
+  }
+
+  .silly-row-start {
+    display: flex;
+    flex-direction: row;
+    justify-content: start;
+    min-width: min-content;
+    flex-wrap: wrap;
+  }
+
+  .silly-row-end {
+    display: flex;
+    flex-direction: row;
+    justify-content: end;
+    min-width: min-content;
   }
 
   .silly-row-sb {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
+    min-width: min-content;
+    vertical-align: middle;
+    flex-wrap: wrap;
+  }
+
+  .silly-row-sb-wrap {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
     min-width: max-content;
+    vertical-align: middle;
+    flex-wrap: wrap;
+  }
+
+  .silly-row-se-wrap {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    min-width: min-content;
+    vertical-align: middle;
+    flex-wrap: wrap;
+  }
+
+  .silly-column-sb {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    vertical-align: middle;
+  }
+
+  .silly-row-sb-nowrap {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    min-width: min-content;
     vertical-align: middle;
   }
 
@@ -136,4 +189,23 @@ export const StyledVenueProfile = styled.div<{ theme: Theme }>`
     color: black;
     border-color: ${({ theme }) => theme.darkCream};
   }
+`;
+
+export const EditButton = styled(Button)`
+  background-color: ${({ theme }) => theme.teal} !important;
+  color: white !important;
+`;
+
+export const Circle = styled.div`
+  height: 50px;
+  width: 50px;
+  text-align: center;
+  background-color: #bbb;
+  border-radius: 50%;
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
+  background-color: red;
+  font-weight: bold;
+  justify-content: center;
 `;

@@ -10,7 +10,6 @@ import React, {
   KeyboardEvent,
   Dispatch,
   useContext,
-  useMemo,
 } from "react";
 import {
   Button,
@@ -22,7 +21,6 @@ import {
   ToggleButton,
   Form as BOOTSTRAP_FORM,
   ButtonGroup,
-  FormLabel,
   Row,
 } from "react-bootstrap";
 import { styled } from "styled-components";
@@ -37,12 +35,7 @@ import {
   type ObjectWithKeys,
   type UnderwaveEnumeration,
 } from "./Types.tsx";
-import { TReduce, useObjReducer, type DefaultAction } from "./Reducer.ts";
-import isEqual from "lodash/isEqual";
-import {
-  regExpLiteral,
-  updateExpression,
-} from "../../../../../AppData/Local/deno/npm/registry.npmjs.org/@babel/types/7.25.6/lib/index-legacy.d.ts";
+import { type DefaultAction } from "./Reducer.ts";
 
 export function ToCurrencySymbol(currency: string) {
   switch (currency) {
@@ -110,8 +103,29 @@ export const StyledUnderwaveField = styled.div`
 
   .field {
     background-color: ${({ theme }) => theme.semiLightCream};
-    border-color: ${({ theme }) => theme.darkCream};
+
     color: ${({ theme }) => theme.brownText};
+
+    &:disabled {
+      border-color: ${({ theme }) => theme.darkCream};
+    }
+
+    border-color: ${({ theme }) => theme.redBrown};
+  }
+
+  .underwave-toggle {
+    background-color: ${({ theme }) => theme.redBrown} !important;
+    border-color: ${({ theme }) => theme.redBrown} !important;
+  }
+
+  .form-check-input {
+    background-color: ${({ theme }) => theme.darkCream} !important;
+    border-color: ${({ theme }) => theme.redBrown} !important;
+    border-width: 2px;
+
+    &:checked {
+      background-color: ${({ theme }) => theme.redBrown} !important;
+    }
   }
 `;
 export const StyledHeaderField = styled.div<{ color: string }>`
@@ -179,11 +193,12 @@ const defaultElement = "div";
 
 export declare type UnderwaveHeaderProps<E extends ElementType> =
   PolymorphicProps<E> & {
-    header: string;
+    header?: string;
     notes?: React.ReactNode;
     required?: boolean;
     as?: React.ElementType;
     color?: string;
+    empty?: boolean;
   };
 
 declare type DynamicListProps<T extends ObjectWithKeys> =
@@ -397,6 +412,7 @@ export function UnderwaveSubHeader({ children }: UnderwaveSubHeaderProps) {
   );
 }
 
+// deno-lint-ignore ban-types
 declare interface UnderwaveStandaloneFieldBaseProps<TState extends {}>
   extends UnderwaveHeaderProps<React.ElementType> {
   state: TState;
@@ -409,6 +425,7 @@ declare interface UnderwaveStandaloneFieldBaseProps<TState extends {}>
   className?: string;
 }
 
+// deno-lint-ignore ban-types
 declare interface UnderwaveStandaloneFieldProps<TState extends {}>
   extends UnderwaveStandaloneFieldBaseProps<TState> {
   validator?: (value: string | number) => boolean;
@@ -416,6 +433,8 @@ declare interface UnderwaveStandaloneFieldProps<TState extends {}>
     previousValue: string | number,
     value: string | number,
   ) => string | number;
+  onChange?: React.ChangeEventHandler<FormControlElement>;
+  disabled?: boolean;
 }
 
 declare interface EnumeratedField<
@@ -453,6 +472,9 @@ function DefaultStandaloneField<TState extends string | number>({
   restrictor,
   color,
   className,
+  onChange,
+  disabled,
+  empty,
 }: UnderwaveStandaloneFieldProps<TState>) {
   const context = useContext(RequiredFieldContext);
   const vContext = useContext(ValidatedContext);
@@ -479,8 +501,9 @@ function DefaultStandaloneField<TState extends string | number>({
   }
   return (
     <StyledUnderwaveField className={className}>
-      {header ? (
+      {header || empty ? (
         <UnderwaveHeader
+          empty={empty}
           header={header}
           notes={notes}
           required={context.required || required}
@@ -500,18 +523,22 @@ function DefaultStandaloneField<TState extends string | number>({
           onKeyDown={(event) => {
             if (event.key === "Enter") event.preventDefault();
           }}
-          onChange={(event) => {
-            if (!setState) return;
-            event.preventDefault();
-            setPreviousState(state);
-            setState(restrict(previousState, event.target.value));
-          }}
+          onChange={
+            onChange
+              ? onChange
+              : (event) => {
+                  if (!setState) return;
+                  event.preventDefault();
+                  setPreviousState(state);
+                  setState(restrict(previousState, event.target.value));
+                }
+          }
           pattern={pattern}
           isInvalid={
             vContext.validated && !isValid(String(state)) && validate(state)
           }
           isValid={false}
-          disabled={!setState}
+          disabled={disabled || !(setState || onChange)}
         />
         <Form.Control.Feedback type="invalid">
           {feedback ? feedback : "Please fill out this field"}
@@ -540,15 +567,20 @@ function StateDropdownField<
   placeholder,
   color,
 }: StateDropdownFieldProps<TState, TDropdownValues>) {
+  const context = useContext(RequiredFieldContext);
+  const vContext = useContext(ValidatedContext);
+
   return (
     <StyledUnderwaveField>
-      <UnderwaveHeader
-        header={header}
-        notes={notes}
-        as={as}
-        required={required}
-        color={color}
-      />
+      {header ? (
+        <UnderwaveHeader
+          header={header}
+          notes={notes}
+          required={context.required || required}
+          as={as}
+          color={color}
+        />
+      ) : null}
       <div className={notes ? "mb-3 mt-3" : "mb-3"}>
         <Form.Select
           name={name}
@@ -607,6 +639,9 @@ function StateRadioButtonField<
   required,
   color,
 }: EnumeratedField<TState, TDropdownValues>) {
+  const context = useContext(RequiredFieldContext);
+  const vContext = useContext(ValidatedContext);
+
   function handleStateType(newState: string | number): TState {
     if (Number(newState) >= 0) {
       return Number(newState) as unknown as TState;
@@ -616,17 +651,20 @@ function StateRadioButtonField<
 
   return (
     <StyledUnderwaveField>
-      <UnderwaveHeader
-        header={header}
-        notes={notes}
-        as={as}
-        required={required}
-        color={color}
-      />
+      {header ? (
+        <UnderwaveHeader
+          header={header}
+          notes={notes}
+          required={context.required || required}
+          as={as}
+          color={color}
+        />
+      ) : null}
       {ObjectEntries(template.entries).map(([k, v], idx) => {
         if (keyIsExcluded(k, exceptKeys)) return null;
         return (
           <FormCheck
+            className="underwave-toggle"
             name={name}
             className="mb-3"
             key={idx}
@@ -666,18 +704,21 @@ function StateToggleButtonField<
 
   return (
     <StyledUnderwaveField>
-      <UnderwaveHeader
-        header={header}
-        notes={notes}
-        as={as}
-        required={required}
-        color={color}
-      />
+      {header ? (
+        <UnderwaveHeader
+          header={header}
+          notes={notes}
+          required={context.required || required}
+          as={as}
+          color={color}
+        />
+      ) : null}
       <ButtonGroup className="mb-3">
         {ObjectEntries(template.entries).map(([k, v], idx) => {
           if (keyIsExcluded(k, exceptKeys)) return null;
           return (
             <ToggleButton
+              className="underwave-toggle"
               key={idx}
               id={`toggle-button-${template.enumName}-${idx}`}
               type="checkbox"
@@ -717,11 +758,15 @@ function StateCheckField<TState extends boolean>({
         checked={state}
         name={name}
         label={
-          <UnderwaveHeader
-            header={header}
-            required={context.required ? context.required : required}
-            as={as}
-          />
+          header ? (
+            <UnderwaveHeader
+              header={header}
+              notes={notes}
+              required={context.required || required}
+              as={as}
+              color={color}
+            />
+          ) : undefined
         }
         required={context.required ? context.required : required}
         onChange={() => setState(!state as TState)}
@@ -866,6 +911,7 @@ export function cfl(val) {
   return String(val).charAt(0).toUpperCase() + String(val).slice(1);
 }
 
+// deno-lint-ignore ban-types
 function TextArea<TState extends {}>(
   props: UnderwaveStandaloneFieldProps<TState>,
 ) {
@@ -873,16 +919,15 @@ function TextArea<TState extends {}>(
     header,
     state,
     setState,
-    type,
     notes,
     required,
-    feedback,
     pattern,
     name,
     as,
     validator,
     restrictor,
     color,
+    onChange,
   } = props;
 
   const context = useContext(RequiredFieldContext);
@@ -941,6 +986,7 @@ function TextArea<TState extends {}>(
           vContext.validated && !isValid(String(state)) && validate(state)
         }
         isValid={false}
+        disabled={!(setState || onChange)}
       />
     </StyledUnderwaveField>
   );

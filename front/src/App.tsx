@@ -18,10 +18,10 @@ import { UserProfile } from "./components/User/UserProfile.tsx";
 import ArtistProfilePublic, {
   ArtistProfile,
 } from "./components/User/Artist.tsx";
-import { AllEvents, EventPage } from "./components/Misc/Event.tsx";
+import { AllEvents, EventPage } from "./components/Event/Event.tsx";
 import { Suspended } from "./utilities/Loading.tsx";
 import VenueProfilePublic, { VenueProfile } from "./components/User/Venue.tsx";
-import { CreateEvent } from "./components/Misc/CreateEvent.tsx";
+import { CreateEvent } from "./components/Event/CreateEvent.tsx";
 const theme = new Theme();
 
 const router = createBrowserRouter(

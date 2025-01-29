@@ -1,5 +1,5 @@
 ﻿// @deno-types="npm:@types/react"
-import React, { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { getRequest, postRequest } from "../../api/APITemplate.ts";
 import paths from "../../../../Shared/paths.ts";
 import {
@@ -7,7 +7,7 @@ import {
   useNavigate,
   useSearchParams,
 } from "react-router-dom";
-import { Row, Col, Button, Tab, Tabs, Container } from "react-bootstrap";
+import { Row, Col, Button, Tab, Tabs } from "react-bootstrap";
 import { IoImageOutline, IoNewspaperSharp } from "react-icons/io5";
 import {
   LiaEnvelope,
@@ -16,14 +16,11 @@ import {
   LiaShareAltSquareSolid,
 } from "react-icons/lia";
 import type { Artist } from "../../../../api/Database/Model/Artist.ts";
-import { Strong } from "../Misc/Event.styled.ts";
-import PageHeader from "../Misc/PageHeader.tsx";
-import { EventCalendar } from "../Misc/EventCalendar.tsx";
+import { Strong } from "../Event/Event.styled.ts";
+import { EventCalendar } from "../Event/EventCalendar.tsx";
 import { StyledArtistProfile, StyledListBox } from "./StyledProfile.tsx";
 import { useAtom } from "jotai";
 import { user } from "../../store.ts";
-import { GoArrowLeft } from "react-icons/go";
-import type { Venue } from "../../../../api/Database/Model/Venue.ts";
 import type { StateHandler } from "../../utilities/Types.tsx";
 import { FollowHeartButton } from "../Misc/MiscComponents.tsx";
 import Grid from "../Misc/Grid.tsx";

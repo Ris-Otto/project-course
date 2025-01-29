@@ -11,6 +11,7 @@ interface GridProps {
   headerColor?: string; // Optionally pass header color
   wideColumnIndex?: number; // Index of the column to be made wider
   narrowColumnIndex?: number;
+  narrowness?: string | "auto";
   headerStyle?: "small" | "large";
   gap?: string;
   margin?: string;
@@ -42,8 +43,7 @@ const BackArrowColumn = styled.div`
   display: flex;
   align-items: flex-start; /* Align arrow to the top */
   justify-content: flex-start; /* Align arrow to the left */
-  padding: 0.5rem;
-  margin-top: 15px;
+  margin-top: 64%;
 `;
 
 const GridContent = styled.div<{ columns: string; gap?: string }>`
@@ -61,8 +61,8 @@ const GridHeader = styled.div`
   padding: 0.5rem;
 `;
 
-const GridColumn = styled.div<{ cPadding?: string }>`
-  padding: ${(props) => (props.cPadding ? props.cPadding : "1rem")};
+const GridColumn = styled.div<{ padding?: string }>`
+  padding: ${(props) => (props.padding ? props.padding : "1rem")};
   min-width: min-content;
 `;
 
@@ -72,6 +72,7 @@ const Grid: React.FC<GridProps> = ({
   headerColor,
   wideColumnIndex,
   narrowColumnIndex,
+  narrowness = "auto",
   headerStyle,
   gap,
   margin,
@@ -93,7 +94,7 @@ const Grid: React.FC<GridProps> = ({
           index === wideColumnIndex
             ? "2fr"
             : index === narrowColumnIndex
-            ? "0.5fr"
+            ? narrowness
             : "1fr", // Make the specified column wider
       )
       .join(" ");
@@ -117,7 +118,7 @@ const Grid: React.FC<GridProps> = ({
 
       <GridContent columns={columnsTemplate} gap={gap}>
         {childrenArray.map((child, index) => (
-          <GridColumn cPadding={cPadding} key={index}>
+          <GridColumn padding={cPadding} key={index}>
             {child}
           </GridColumn>
         ))}

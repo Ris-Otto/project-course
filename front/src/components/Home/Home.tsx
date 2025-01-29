@@ -10,7 +10,7 @@ import { useAtom } from "jotai";
 import { user } from "../../store.ts";
 import { Row, Col } from "react-bootstrap";
 import { styled } from "styled-components";
-import { EventCalendar } from "../Misc/EventCalendar.tsx";
+import { EventCalendar } from "../Event/EventCalendar.tsx";
 import Grid from "../Misc/Grid.tsx";
 import { useEffect } from "react";
 

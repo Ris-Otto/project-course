@@ -1,6 +1,6 @@
 // @deno-types="npm:@types/react"
 import React, { useReducer } from "react";
-import { ObjectWithKeys, type NestedKeyOf } from "./Types.tsx";
+import { ObjectWithKeys } from "./Types.tsx";
 /**
  * `type` is the property of the object you want to mutate
  * `payload` contains the value(s) for the property
@@ -8,6 +8,7 @@ import { ObjectWithKeys, type NestedKeyOf } from "./Types.tsx";
 
 export type FormAction<TState extends ObjectWithKeys> = {
   type: keyof TState;
+  // deno-lint-ignore ban-types
   payload: {};
 };
 /**

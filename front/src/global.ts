@@ -64,6 +64,33 @@ export const GlobalStyles = createGlobalStyle<{
         font-size: 0;
     }
 
+    .event-picture {
+    position: relative;
+  }
+  .event-picture-name {
+    position: absolute;
+    color: white;
+    background-color: rgba(0, 0, 0, 0.7);
+    border-radius: 10px;
+    padding: 1%;
+  }
+
+  .event-picture-age {
+    position: absolute;
+    right: -5%;
+    top: -10%;
+  }
+
+  .event-description {
+    color: ${({ theme }) => theme.brownText};
+    overflow: hidden;
+    height: calc(3 * var(--bs-body-font-size));
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+
     .top-level-component {
         min-height: 100vh !important;
         align-items: start;
