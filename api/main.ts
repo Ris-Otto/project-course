@@ -21,9 +21,10 @@ import authController from "./Controllers/AuthController.ts";
 import artistController from "./Controllers/ArtistController.ts";
 import venueController from "./Controllers/VenueController.ts";
 import { logRequestInfo } from "./Middleware/LoggerMiddleware.ts";
-import { forceSyncDatabaseAndSetupTestData } from "./Utilities.ts";
 import { Post } from "./Database/Model/Post.ts";
 import { EventInterest } from "./Database/Model/EventInterest.ts";
+import { OpeningHour } from "./Database/Model/OpeningHour.ts";
+import { alterSyncDatabase } from "./Utilities.ts";
 
 const app = new Hono<{ Variables: JwtVariables }>();
 
@@ -65,6 +66,8 @@ Venue.belongsToMany(User, {
 Venue.belongsTo(Bio);
 Venue.hasMany(Review);
 Venue.hasMany(Event);
+Venue.hasOne(OpeningHour);
+Venue.hasMany(Post);
 
 User.belongsToMany(Artist, {
   through: { model: ArtistFollowing, unique: false },
@@ -77,7 +80,7 @@ User.hasMany(EventInterest);
 
 Bio.hasMany(Media);
 
-//await forceSyncDatabaseAndSetupTestData();
+//await alterSyncDatabase();
 
 app.use("*", (c, next) => {
   const corsMiddlewareHandler = cors({

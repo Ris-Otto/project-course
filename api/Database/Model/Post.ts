@@ -1,14 +1,15 @@
 import sequelize from "../database.ts";
 import { DataTypes, Model } from "npm:sequelize";
-import Sequelize from "npm:sequelize";
 import type { Artist } from "./Artist.ts";
 import type { Media } from "./Media.ts";
+import type { Venue } from "./Venue.ts";
 
 class Post extends Model {
   declare id: number;
-  declare Artist: Artist;
+  declare Artist?: Artist;
   declare text: string;
   declare Media: Media[];
+  declare Venue?: Venue;
 }
 
 Post.init(
