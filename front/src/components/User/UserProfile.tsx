@@ -7,19 +7,22 @@ import { getRequest } from "../../api/APITemplate.ts";
 import { SuspenseConsumer } from "../../utilities/Types.tsx";
 import PageHeader from "../Misc/PageHeader.tsx";
 import { VenueList } from "./Venue.tsx";
+import { useAuth } from "../Auth.tsx";
+import { useState } from "react";
 
 let user: SuspenseConsumer<FanProfile>;
 export function UserProfile() {
+  useAuth();
+  const [r, setr] = useState(false);
   if (!user) {
-    user = wrapPromise(getRequest<FanProfile>(paths.user.self));
+    try {
+      user = wrapPromise(getRequest<FanProfile>(paths.user.self));
+      setr(true);
+    } catch {}
   }
 
   return (
-    <StyledProfile
-      id="component-margin"
-      className="top-level-component"
-      style={{}}
-    >
+    <StyledProfile id="component-margin" className="top-level-component">
       <PageHeader header={user.read().response.name} className={"mb-3"} />
       <h3>Artists</h3>
       <ArtistList artists={user.read().response.Artists} followed />

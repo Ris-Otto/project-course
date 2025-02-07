@@ -32,7 +32,7 @@ export function Auth() {
         navigate("/login");
       }
     };
-    check();
+    //check();
   }, []);
 
   return (
@@ -44,6 +44,28 @@ export function Auth() {
       <Outlet />
     </>
   );
+}
+
+export function useAuth() {
+  const [u, setU] = useAtom(user);
+  console.log(u);
+  const navigate = useNavigate();
+  useEffect(() => {
+    console.log("Hej");
+    const check = async () => {
+      const res = await checkToken();
+      console.log(res.data);
+      if (res.isSuccess()) {
+        //Successful, set the user state from the data received
+        setU(res.response);
+      } else {
+        setU(null);
+        //If the authentication failed, redirect to the login page with a state containing the path
+        navigate("/home");
+      }
+    };
+    check();
+  }, []);
 }
 
 function RequiresAuth(path: string) {

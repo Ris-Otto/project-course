@@ -1,5 +1,5 @@
 // @deno-types="npm:@types/react"
-import { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { getRequest, postRequest } from "../../api/APITemplate.ts";
 import paths from "../../../../Shared/paths.ts";
 import {
@@ -21,12 +21,9 @@ import {
   LiaPlusSolid,
   LiaCalendarWeekSolid,
   LiaClock,
-  LiaTicketAltSolid,
-  LiaSearchLocationSolid,
 } from "react-icons/lia";
 import { GiTicket } from "react-icons/gi";
 import { IoLocationSharp } from "react-icons/io5";
-import type { Artist } from "../../../../api/Database/Model/Artist.ts";
 import { Strong } from "../Event/Event.styled.ts";
 import { EventCalendar } from "../Event/EventCalendar.tsx";
 import { StyledArtistProfile, StyledListBox } from "./StyledProfile.tsx";
@@ -44,18 +41,20 @@ import {
   UnderwaveHeader,
 } from "../../utilities/Functions.tsx";
 import { Theme } from "../../theme.ts";
+//@ts-ignore bah
 import cd from "../../resources/Images-Assets/cd+cover.png";
 import { logout } from "../../api/auth.ts";
-import { ObjectEntries } from "../../utilities/Types.tsx";
+import { ObjectEntries, type StateHandler } from "../../utilities/Types.tsx";
 import {
   DynamicListForm,
   ToCurrencySymbol,
 } from "../../utilities/Functions.tsx";
 import { StyledHoverEvent } from "../Event/EventCalendar.tsx";
-import { RenderEvent } from "../Event/Event.tsx";
-import { Event } from "../../utilities/Types.tsx";
+import Event from "../../../../api/Database/Model/Event.ts";
+
 import { useImageDimensions } from "../../Hooks.ts";
 import { EditEvent } from "./Venue/EditEvent.tsx";
+import { useAuth } from "../Auth.tsx";
 
 export default function VenueProfilePublic() {
   const [sp] = useSearchParams();
@@ -65,9 +64,7 @@ export default function VenueProfilePublic() {
   const navigate = useNavigate();
   useEffect(() => {
     async function getData() {
-      const data = await getRequest<Artist>(
-        `venue/public/${sp.get("venueId")}`,
-      );
+      const data = await getRequest<Venue>(`venue/public/${sp.get("venueId")}`);
       if (data.isSuccess()) {
         setA(data.response);
       }
@@ -109,6 +106,7 @@ export function VenueProfile() {
   const [a, setA] = useState<Venue>();
   const [pageState, setPageState] = useState<PageState>("profile");
   const [subState, setSubState] = useState<SubState>("view");
+  useAuth();
 
   useEffect(() => {
     async function getData() {
@@ -255,7 +253,7 @@ export function VenueEvents({
           setSubState={setSubState}
         />
       ) : subState === "edit" ? (
-        <EditEvent event={currentEvent} />
+        <EditEvent event={currentEvent!} />
       ) : null}
     </>
   );
@@ -269,7 +267,7 @@ export function VenueEvent({
   event: Event;
   setCurrentEvent?: React.Dispatch<React.SetStateAction<Event | undefined>>;
   setSubState?: React.Dispatch<React.SetStateAction<SubState>>;
-}) {
+}): React.ReactNode {
   const startTime = useMemo(() => {
     const time = new Date(event.start).toTimeString().split(" ")[0];
     const split = time.split(":");
@@ -290,7 +288,7 @@ export function VenueEvent({
       style={{
         minWidth: `${dimensions.width}px`,
       }}
-      padding={p}
+      padding={String(p)}
     >
       {setSubState && setCurrentEvent ? (
         <div style={{ textAlign: "right" }}>
@@ -312,7 +310,7 @@ export function VenueEvent({
           onImageLoad={handleImageLoad}
           dimensions={dimensions}
           name={event.name}
-          age={event.age}
+          age={!!event.age}
         />
         <div
           className="event-description mt-3 mb-3"
@@ -403,7 +401,11 @@ export function VenueViewProfile({
 
   const edit = useMemo(() => subState === "edit", [subState]);
 
-  function handleOhrs(key: keyof hrs, value: string, fromto: "from" | "to") {
+  function handleOhrs(
+    key: keyof typeof hrs,
+    value: string,
+    fromto: "from" | "to",
+  ) {
     const temp = {
       ...hrs,
       [key]: {
@@ -414,7 +416,7 @@ export function VenueViewProfile({
     shrs(temp);
   }
 
-  const [images, setImages] = useState<[{ image_link: string }]>([]);
+  const [images, setImages] = useState<{ image_link: string }[]>([]);
 
   const { dimensions, handleImageLoad } = useImageDimensions();
 

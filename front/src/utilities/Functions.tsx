@@ -33,9 +33,14 @@ import {
   RequiredFieldContext,
   ValidatedContext,
   type ObjectWithKeys,
+  type SuspenseConsumer,
   type UnderwaveEnumeration,
 } from "./Types.tsx";
 import { type DefaultAction } from "./Reducer.ts";
+import type { NavigateFunction } from "react-router-dom";
+import { checkToken, logout } from "../api/auth.ts";
+import { wrapPromise } from "../Hooks.ts";
+import { getRequest } from "../api/APITemplate.ts";
 
 export function ToCurrencySymbol(currency: string) {
   switch (currency) {
@@ -211,7 +216,9 @@ declare type DynamicListProps<T extends ObjectWithKeys> =
   UnderwaveHeaderProps<ElementType> & {
     array: string[] | T[];
     name: string;
-    setArray: React.Dispatch<SetStateAction<string[] | T[]>>;
+    setArray:
+      | React.Dispatch<SetStateAction<T[]>>
+      | React.Dispatch<SetStateAction<string[]>>;
     pattern: RegExp;
     noDisable?: boolean;
     template: T;
@@ -676,9 +683,8 @@ function StateRadioButtonField<
         if (keyIsExcluded(k, exceptKeys)) return null;
         return (
           <FormCheck
-            className="underwave-toggle"
+            className="underwave-toggle mb-3"
             name={name}
-            className="mb-3"
             key={idx}
             type="radio"
             value={state}
@@ -1010,9 +1016,16 @@ function TextArea<TState extends {}>(
   );
 }
 
+async function handleLogout(navigate: NavigateFunction) {
+  const ret = await logout();
+  if (ret.isSuccess()) {
+    checkToken();
+  }
+}
+
 export const Toggle = StateToggleButtonField;
 export const Radio = StateRadioButtonField;
 export const Control = DefaultStandaloneField;
 export const Select = StateDropdownField;
 export const Check = StateCheckField;
-export { TextArea };
+export { TextArea, handleLogout };
