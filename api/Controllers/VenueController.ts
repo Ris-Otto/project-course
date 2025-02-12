@@ -170,7 +170,7 @@ async function updateEvent(c: Context) {
   };
 
   const newBio = {
-    description: data.bio.description || bioRes?.description,
+    description: bio ? bio : bioRes?.description || "",
     media: data.bio.media || null,
   };
   await event.update({
