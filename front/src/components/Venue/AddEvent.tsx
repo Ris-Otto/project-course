@@ -33,6 +33,7 @@ export function AddEvent({
 
   const [name, sname] = useState("");
   const [selectedArtist, setSelectedArtist] = useState<SearchArtist>();
+  const [nonArtist, setNonArtist] = useState<{ name: string, genre: string, description: string}>({ name: "", genre: "", description: ""})
   const [addedArtists, setAddedArtists] = useState<SearchArtist[]>([]);
   const [removedArtists, setRemovedArtists] = useState<SearchArtist[]>([]);
   const [artists, setArtists] = useState<SearchArtist[]>([]);
@@ -78,11 +79,6 @@ export function AddEvent({
       }
     }
 
-    if(addedArtists.length !== artists.length) {
-      toast.warn("Something went wrong, please try again later");
-      return false;
-    }
-
     const res = await postRequest<Event>(paths.venue.event.create, {
       name: name,
       start: start,
@@ -93,7 +89,7 @@ export function AddEvent({
       city: city,
       zip: zip,
       capacity: capacity,
-      addedArtists: addedArtists.map(a => a.value),
+      artists: addedArtists.map(a => a.value),
       type: type,
       tags: tags,
       VenueId: venue.id,
@@ -117,13 +113,16 @@ export function AddEvent({
 
       <div style={{textAlign: "right"}} className={"mb-3"}>
         <Modal contentClassName="underwave-modal" show={show}>
-          <Modal.Header closeButton >
+          <Modal.Header closeButton>
             <Modal.Title>Add artist</Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            <Control color={t.redBrown} header="Name" state={selectedArtist?.value || ''} setState={setSelectedArtist} />
-            <Control color={t.redBrown} header="Genre" state={selectedArtist?.value || ''} setState={setSelectedArtist} />
-            <Control color={t.redBrown} header="Introduction/Bio" state={selectedArtist?.value || ''} setState={setSelectedArtist} />
+            <Control color={t.redBrown} header="Name" state={nonArtist.name} onChange={(e) => {
+              console.log(e.target.value)
+              setNonArtist({...nonArtist, name: e.target.value})
+            }} />
+            <Control color={t.redBrown} header="Genre" state={nonArtist.genre} onChange={(e) => setNonArtist({...nonArtist, genre: e.target.value})} />
+            <Control color={t.redBrown} header="Introduction/Bio" state={nonArtist.description} onChange={(e) => setNonArtist({...nonArtist, description: e.target.value})} />
           </Modal.Body>
           <Modal.Footer>
             <Button variant="secondary" onClick={() => setShow(false)}>

@@ -25,6 +25,7 @@ function EditEvent({ event, updateSubState }: {
   const t = useMemo(() => new Theme(), []);
   const [name, sname] = useState(() => event.name);
   const [selectedArtist, setSelectedArtist] = useState<SearchArtist>();
+  const [nonArtist, setNonArtist] = useState<{ name: string, genre: string, description: string}>({ name: "", genre: "", description: ""})
   const [addedArtists, setAddedArtists] = useState<SearchArtist[]>(event.Artists.map(a => { return {value: a.id, label: a.name}}));
   const [removedArtists, setRemovedArtists] = useState<SearchArtist[]>([]);
   const [artists, setArtists] = useState<SearchArtist[]>(event.Artists.map(a => { return {value: a.id, label: a.name}}));
@@ -102,11 +103,21 @@ function EditEvent({ event, updateSubState }: {
             <Modal.Title>Add artist</Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            <Control color={t.redBrown} header="Name" state={selectedArtist?.value || ''} setState={setSelectedArtist}/>
-            <Control color={t.redBrown} header="Genre" state={selectedArtist?.value || ''}
-                     setState={setSelectedArtist}/>
-            <Control color={t.redBrown} header="Introduction/Bio" state={selectedArtist?.value || ''}
-                     setState={setSelectedArtist}/>
+            <Control
+              color={t.redBrown}
+              header="Name"
+              state={nonArtist.name}
+              onChange={(e) => setNonArtist({...nonArtist, name: e.target.value})} />
+            <Control
+              color={t.redBrown}
+              header="Genre"
+              state={nonArtist.genre}
+              onChange={(e) => setNonArtist({...nonArtist, genre: e.target.value})} />
+            <Control
+              color={t.redBrown}
+              header="Introduction/Bio"
+              state={nonArtist.description}
+              onChange={(e) => setNonArtist({...nonArtist, description: e.target.value})} />
           </Modal.Body>
           <Modal.Footer>
             <Button variant="secondary" onClick={() => setShow(false)}>
