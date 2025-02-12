@@ -23,9 +23,10 @@ class Artist extends Model {
   declare addBio: (bioId: number) => Promise<Bio | null>;
   declare addMember: (memberId: number) => Promise<Member | null>;
   declare removeMember: (memberId: number) => Promise<Member | null>;
-  declare getEvents: () => Promise<EventRead[]>;
-  declare getMembers: () => Promise<MemberRead[]>;
-  declare getBio: () => Promise<BioRead>;
+  declare getEvents: () => Promise<Event[]>;
+  declare getMembers: () => Promise<Member[]>;
+  declare getBio: () => Promise<Bio>;
+  declare removeEvent: (eventId: string) => Promise<Event | null>;
 }
 
 type ArtistRead = {

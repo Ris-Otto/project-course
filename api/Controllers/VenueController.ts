@@ -190,10 +190,24 @@ async function updateEvent(c: Context) {
     }
   }*/
 
+  //DISCLAIMER for below: Probably shit
+  const a = await event.getArtists();
+  const artistIds = a.map((a) => a.id);
+
+  //First, add artists to event that are present in request but not present in DB
   for (const artist of artists) {
     const artistRes = await Artist.findByPk(artist);
     if (!artistRes) continue;
-    await artistRes.addEvent(eventId);
+    if (!artistIds.includes(artist)) {
+      await artistRes.addEvent(eventId);
+    }
+  }
+
+  //Then, remove artists from that are present in DB but not present in request
+  for (const aa of a) {
+    if (!artists.includes(aa.id)) {
+      await aa.removeEvent(eventId);
+    }
   }
 
   return c.json(Ok(event));

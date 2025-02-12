@@ -34,6 +34,8 @@ export function AddEvent({
   const [name, sname] = useState("");
   const [selectedArtist, setSelectedArtist] = useState<SearchArtist>();
   const [addedArtists, setAddedArtists] = useState<SearchArtist[]>([]);
+  const [removedArtists, setRemovedArtists] = useState<SearchArtist[]>([]);
+  const [artists, setArtists] = useState<SearchArtist[]>([]);
   const [cost, scost] = useState(0);
   const [pm, spm] = useState(-1);
   const [start, setStart] = useState(new Date());
@@ -76,6 +78,11 @@ export function AddEvent({
       }
     }
 
+    if(addedArtists.length !== artists.length) {
+      toast.warn("Something went wrong, please try again later");
+      return false;
+    }
+
     const res = await postRequest<Event>(paths.venue.event.create, {
       name: name,
       start: start,
@@ -86,7 +93,7 @@ export function AddEvent({
       city: city,
       zip: zip,
       capacity: capacity,
-      artists: addedArtists.map(a => a.value),
+      addedArtists: addedArtists.map(a => a.value),
       type: type,
       tags: tags,
       VenueId: venue.id,
@@ -179,6 +186,10 @@ export function AddEvent({
             addedArtists={addedArtists}
             setAddedArtists={setAddedArtists}
             setShow={setShow}
+            artists={artists}
+            setArtists={setArtists}
+            removedArtists={removedArtists}
+            setRemovedArtists={setRemovedArtists}
         />
       </div>
   );

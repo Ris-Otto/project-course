@@ -54,6 +54,11 @@ type EventSpecificsProps = {
     addedArtists: SearchArtist[],
     setAddedArtists: StateHandler<SearchArtist[]>,
     setShow: StateHandler<boolean>,
+    artists: SearchArtist[];
+    setArtists: StateHandler<SearchArtist[]>;
+    removedArtists: SearchArtist[];
+    setRemovedArtists: StateHandler<SearchArtist[]>;
+    edit?: boolean;
 }
 
 export function EventSpecifics({
@@ -88,9 +93,31 @@ export function EventSpecifics({
     setSelectedArtist,
     addedArtists,
     setAddedArtists,
-    setShow
+    setShow,
+    artists,
+    setArtists,
+    removedArtists,
+    setRemovedArtists,
+    edit,
 }: EventSpecificsProps
 ) {
+    function handleRemoveArtist(a: SearchArtist, index: number) {
+        if(edit) {
+            setArtists(s => s.filter(item => s.indexOf(item) !== index));
+            setRemovedArtists(s => [...s, a]);
+        } else {
+            setArtists(s => s.filter(item => s.indexOf(item) !== index));
+            setAddedArtists(s => s.filter(item => s.indexOf(item) !== index));
+        }
+    }
+    function handleAddArtist(a: SearchArtist) {
+        if(edit) {
+            return;
+        } else {
+
+        }
+    }
+
     return <div className="profile mt-3">
         <Grid>
             <Col>
