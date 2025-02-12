@@ -31,7 +31,11 @@ class Event extends Model {
   declare BioId: number;
   declare published: boolean;
   declare cancelled: boolean;
-  declare addArtist: (ArtistId: string) => Promise<EventMapping | null>;
+  declare getArtists: () => Promise<Artist[]>;
+  declare getVenue: () => Promise<Venue>;
+  declare getBio: () => Promise<Bio>;
+  declare getPricing: () => Promise<Pricing>;
+  declare getEventMapping: () => Promise<EventMapping>;
 }
 
 Event.init(

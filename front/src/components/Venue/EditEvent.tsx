@@ -26,6 +26,8 @@ function EditEvent({ event, updateSubState }: {
   const [name, sname] = useState(() => event.name);
   const [selectedArtist, setSelectedArtist] = useState<SearchArtist>();
   const [addedArtists, setAddedArtists] = useState<SearchArtist[]>(event.Artists.map(a => { return {value: a.id, label: a.name}}));
+  const [removedArtists, setRemovedArtists] = useState<SearchArtist[]>([]);
+  const [artists, setArtists] = useState<SearchArtist[]>(event.Artists.map(a => { return {value: a.id, label: a.name}}));
   const [addr, saddr] = useState(() => event.Venue.address);
   const [zip, szip] = useState(() => event.Venue.zip);
   const [city, scity] = useState(() => event.Venue.city);
@@ -55,16 +57,14 @@ function EditEvent({ event, updateSubState }: {
 
   async function submit(): Promise<boolean> {
 
-      if(pm <= 0 && cost !== 0) {
-        toast.warn("Please choose a valid payment method")
-        return false;
-      }
-      if(pm !== 0 && cost <= 0) {
-        toast.warn("Please enter a valid price")
-        return false;
-      }
-
-      console.log(addedArtists.map(a => a.value))
+    if(pm <= 0 && cost !== 0) {
+      toast.warn("Please choose a valid payment method")
+      return false;
+    }
+    if(pm !== 0 && cost <= 0) {
+      toast.warn("Please enter a valid price")
+      return false;
+    }
 
     const res = await postRequest<Event>(`${paths.venue.event.update}/${event.id}`, {
       name: name,
@@ -162,6 +162,11 @@ function EditEvent({ event, updateSubState }: {
           addedArtists={addedArtists}
           setAddedArtists={setAddedArtists}
           setShow={setShow}
+          artists={artists}
+          setArtists={setArtists}
+          removedArtists={removedArtists}
+          setRemovedArtists={setRemovedArtists}
+          edit={true}
         />
       </div>
   );

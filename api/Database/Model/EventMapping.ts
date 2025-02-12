@@ -23,6 +23,12 @@ EventMapping.init(
   {
     tableName: "event_mapping",
     sequelize: sequelize,
+    indexes: [
+      {
+        unique: true,
+        fields: ["ArtistId", "EventId"],
+      },
+    ],
   },
 );
 
