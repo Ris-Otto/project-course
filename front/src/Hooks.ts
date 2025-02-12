@@ -1,5 +1,5 @@
 ﻿// @deno-types="@types/react"
-import { MutableRefObject, useEffect, useState } from "react";
+import { MutableRefObject, useCallback, useEffect, useState } from "react";
 import { getRequest } from "./api/APITemplate.ts";
 
 /**
@@ -40,23 +40,37 @@ export function useImageDimensions(maxHeight?: number) {
   return { dimensions, handleImageLoad };
 }
 
-export function useRequest<T>(path: string) {
+export function useRequest<T>(
+  path: string,
+): {
+  response: T | null;
+  isLoading: boolean;
+  isError: string | null;
+  refetch: () => void;
+} {
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState<string | null>(null);
   const [response, setResponse] = useState<T | null>(null);
-  useEffect(() => {
-    async function getData() {
-      const res = await getRequest<T>(path);
-      if (res.isSuccess()) {
-        setResponse(res.response);
-        setIsLoading(false);
-      } else {
-        setIsLoading(false);
-        setIsError(res.message);
-      }
-    }
-    getData();
-  }, []);
+  const [fetch, setFetch] = useState(false);
+  function refetch() {
+    setFetch((s) => !s);
+  }
 
-  return { response, isLoading, isError };
+  const fetchData = useCallback(async () => {
+    setIsLoading(true);
+    const res = await getRequest<T>(path);
+    if (res.isSuccess()) {
+      setResponse(res.response);
+    } else {
+      setIsError(res.message);
+    }
+    setIsLoading(false);
+  }, [fetch]);
+
+  useEffect(() => {
+    fetchData();
+    console.log(fetch);
+  }, [fetchData]);
+
+  return { response, isLoading, isError, refetch };
 }

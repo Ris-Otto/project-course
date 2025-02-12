@@ -1,176 +1,169 @@
 // @deno-types="@types/react";
 import { useState, useMemo } from "react";
 import { useImageDimensions } from "../../Hooks.ts";
-import { Radio, Control, TextArea } from "../../utilities/Functions.tsx";
-import { UnderwaveEnumeration } from "../../utilities/Types.tsx";
-import Grid from "../Misc/Grid.tsx";
-import { Col } from "react-bootstrap";
-//@ts-ignore bah
-import cd from "../../resources/Images-Assets/cd+cover.png";
+import {Control} from "../../utilities/Functions.tsx";
 import { Theme } from "../../theme.ts";
 import Event from "../../../../api/Database/Model/Event.ts";
+import { SearchArtist } from "./AddEvent.tsx";
+import Modal from 'react-bootstrap/Modal';
+import Button from 'react-bootstrap/Button';
+import {postRequest} from "../../api/APITemplate.ts";
+import paths from "../../../../Shared/paths.ts";
+import { convertToDateTimeLocalString } from "../../utilities/Functions.tsx";
+import { EventSpecifics } from "./EventSpecifics.tsx";
+import {EditButton} from "../User/StyledProfile.tsx";
+import type {SubState} from "./Venue.tsx";
+import { toast } from "react-toastify";
 
-const locs = {
-  0: "My venue",
-  1: "Other location",
-};
-
-const locsEnum: UnderwaveEnumeration<number, string> = {
-  entries: locs,
-  enumName: "Location",
-};
-
-function EditEvent({ event }: { event: Event }) {
+function EditEvent({ event, updateSubState }: {
+  event: Event,
+  updateSubState: (subState: SubState, refetch?: boolean) => void
+}) {
   const { dimensions, handleImageLoad } = useImageDimensions(
     globalThis.innerHeight / 4,
   );
   const t = useMemo(() => new Theme(), []);
-
   const [name, sname] = useState(() => event.name);
+  const [selectedArtist, setSelectedArtist] = useState<SearchArtist>();
+  const [addedArtists, setAddedArtists] = useState<SearchArtist[]>(event.Artists.map(a => { return {value: a.id, label: a.name}}));
   const [addr, saddr] = useState(() => event.Venue.address);
   const [zip, szip] = useState(() => event.Venue.zip);
   const [city, scity] = useState(() => event.Venue.city);
   const [bio, sbio] = useState(() => (event.Bio ? event.Bio.description : ""));
-  const [start, setStart] = useState("");
-  const [end, setEnd] = useState("");
+  const [start, setStart] = useState(() => convertToDateTimeLocalString(new Date(event.start)));
+  const [end, setEnd] = useState(() => convertToDateTimeLocalString(new Date(event.end)));
+  const [published, setPublished] = useState(() => event.published);
+  const [age, sage] = useState(() => event.age);
+  const [cost, scost] = useState(() => event.Pricing?.amount || 0);
+  const [pm, spm] = useState(() => event.Pricing?.type || 0);
+  const [capacity, scapacity] = useState(0);
+  const [type, stype] = useState("");
+  const [tags, stags] = useState("");
 
   const [image, setImage] = useState(
     event.Bio?.Media[0]?.href ? event.Bio?.Media[0].href : "",
   );
   const [loc, setLoc] = useState(0);
 
-  const urlPattern = useMemo(
-    () =>
-      /[-a-zA-Z0-9@:%._+~#=]{1,256}.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/,
-    [],
-  );
+  const [show, setShow] = useState(false);
+
+  function searchArtists(inputValue: string, callback: (options: SearchArtist[]) => void) {
+    return postRequest<SearchArtist[]>(paths.artist.search, { searchValue: inputValue })
+        .then(response => response.response)
+        .then(data => callback(data));
+  }
+
+  async function submit(): Promise<boolean> {
+
+      if(pm <= 0 && cost !== 0) {
+        toast.warn("Please choose a valid payment method")
+        return false;
+      }
+      if(pm !== 0 && cost <= 0) {
+        toast.warn("Please enter a valid price")
+        return false;
+      }
+
+      console.log(addedArtists.map(a => a.value))
+
+    const res = await postRequest<Event>(`${paths.venue.event.update}/${event.id}`, {
+      name: name,
+      start: start,
+      end: end,
+      bio: bio,
+      poster: image,
+      address: addr,
+      city: city,
+      zip: zip,
+      capacity: capacity,
+      artists: addedArtists.map(a => a.value),
+      type: type,
+      tags: tags,
+      published: published,
+      amount: cost,
+      age: age,
+      paymentMethod: pm,
+    })
+
+    const ret = res.isSuccess();
+
+    if(!ret) {
+      toast("Something went wrong, please try again later");
+    } else {
+      toast("Event updated");
+    }
+    return ret;
+  }
 
   return (
-    <div className="profile">
-      <Grid>
-        <Col>
-          <Grid
-            margin="0px"
-            cPadding="10px"
-            padding="0px"
-            gap="0px"
-            narrowColumnIndex={0}
-          >
-            <div className="silly-row-start">
-              <img
-                src={cd}
-                alt={"Event picture"}
-                style={{
-                  width: `${dimensions.width}px`,
-                  height: `${dimensions.height}px`,
-                  marginRight: "10%",
-                }}
-                onLoad={handleImageLoad}
-              />
-            </div>
-            <div>
-              <div className="silly-row-start">
-                <Control
-                  header={"Event name"}
-                  state={name}
-                  color={t.redBrown}
-                  setState={sname}
-                />
-              </div>
-              <div className="silly-row-sb-nowrap">
-                <Control
-                  header={"Start"}
-                  color={t.redBrown}
-                  state={start}
-                  setState={setStart}
-                  type="datetime-local"
-                />
-                <Control
-                  header={"End"}
-                  color={t.redBrown}
-                  state={end}
-                  setState={setEnd}
-                  type="datetime-local"
-                />
-              </div>
-            </div>
-          </Grid>
+      <div style={{textAlign: "right"}} className={"mb-3"}>
+        <Modal contentClassName="underwave-modal" show={show}>
+          <Modal.Header closeButton>
+            <Modal.Title>Add artist</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <Control color={t.redBrown} header="Name" state={selectedArtist?.value || ''} setState={setSelectedArtist}/>
+            <Control color={t.redBrown} header="Genre" state={selectedArtist?.value || ''}
+                     setState={setSelectedArtist}/>
+            <Control color={t.redBrown} header="Introduction/Bio" state={selectedArtist?.value || ''}
+                     setState={setSelectedArtist}/>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={() => setShow(false)}>
+              Cancel
+            </Button>
+            <Button variant="primary" onClick={() => setShow(false)}>
+              Add
+            </Button>
+          </Modal.Footer>
+        </Modal>
+        {/*TODO fix styling with page header*/}
+        <EditButton onClick={() => updateSubState("view")}>
+          Cancel
+        </EditButton>
+        <EditButton onClick={async () => {
+          const s = await submit();
+          if(s)
+            updateSubState("view", true)
+        }}>
+          Save
+        </EditButton>
 
-          <Radio
-            header={"Location"}
-            state={loc}
-            setState={setLoc}
-            template={locsEnum}
-            color={t.redBrown}
-          />
-
-          {/* <Control
-            header={"Location"}
-            state={addr}
-            color={t.redBrown}
-            setState={saddr}
-          /> */}
-
-          <div>
-            <Control
-              header={"Street address"}
-              state={addr}
-              color={t.redBrown}
-              setState={saddr}
-              disabled={loc === 0}
-            />
-
-            <div className="silly-row">
-              <Control
-                header={"City"}
-                state={city}
-                color={t.redBrown}
-                setState={scity}
-                disabled={loc === 0}
-              />
-              <Control
-                header={"Zip/Postal code"}
-                state={zip}
-                color={t.redBrown}
-                setState={szip}
-                disabled={loc === 0}
-              />
-            </div>
-          </div>
-        </Col>
-        <Col>
-          <TextArea
-            header="Bio"
-            as="h2"
-            state={bio}
-            color={t.redBrown}
-            setState={sbio}
-          />
-          <div className="mt-3 silly-column">
-            <Control
-              header="Poster"
-              state={image}
-              setState={setImage}
-              pattern={
-                //URL regex-pattern
-                urlPattern.source
-              }
-              color={t.redBrown}
-            />
-            {image && urlPattern.test(image) ? (
-              <img
-                src={image}
-                style={{
-                  width: `${dimensions.width}px`,
-                  height: `${dimensions.height}px`,
-                  marginLeft: "2px",
-                }}
-              />
-            ) : null}
-          </div>
-        </Col>
-      </Grid>
-    </div>
+        <EventSpecifics
+          dimensions={dimensions}
+          handleImageLoad={handleImageLoad}
+          image={image}
+          setImage={setImage}
+          name={name}
+          t={t}
+          sname={sname}
+          start={start}
+          setStart={setStart}
+          end={end}
+          setEnd={setEnd}
+          loc={loc}
+          setLoc={setLoc}
+          addr={addr}
+          saddr={saddr}
+          city={city}
+          scity={scity}
+          zip={zip}
+          szip={szip}
+          sage={sage}
+          age={age}
+          bio={bio}
+          sbio={sbio}
+          cost={cost}
+          scost={scost}
+          spm={spm}
+          selectedArtist={selectedArtist}
+          searchArtists={searchArtists}
+          setSelectedArtist={setSelectedArtist}
+          addedArtists={addedArtists}
+          setAddedArtists={setAddedArtists}
+          setShow={setShow}
+        />
+      </div>
   );
 }
 

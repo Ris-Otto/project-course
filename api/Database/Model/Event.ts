@@ -4,6 +4,7 @@ import Pricing from "./Pricing.ts";
 import type { Artist } from "./Artist.ts";
 import type { Venue } from "./Venue.ts";
 import { Bio } from "./Bio.ts";
+import EventMapping from "./EventMapping.ts";
 
 type EventRead = {
   id: number;
@@ -28,6 +29,9 @@ class Event extends Model {
   declare end: Date;
   declare Bio: Bio;
   declare BioId: number;
+  declare published: boolean;
+  declare cancelled: boolean;
+  declare addArtist: (ArtistId: string) => Promise<EventMapping | null>;
 }
 
 Event.init(
@@ -53,6 +57,10 @@ Event.init(
     },
     end: {
       type: DataTypes.DATE,
+      allowNull: false,
+    },
+    published: {
+      type: DataTypes.BOOLEAN,
       allowNull: false,
     },
   },

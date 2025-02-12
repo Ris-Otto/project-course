@@ -33,7 +33,7 @@ import {
   RequiredFieldContext,
   ValidatedContext,
   type ObjectWithKeys,
-  type UnderwaveEnumeration,
+  type UnderwaveEnumeration, StateHandler,
 } from "./Types.tsx";
 import { type DefaultAction } from "./Reducer.ts";
 import type { NavigateFunction } from "react-router-dom";
@@ -119,16 +119,6 @@ export const StyledUnderwaveField = styled.div`
 
   .underwave-toggle {
     border-color: ${({ theme }) => theme.redBrown} !important;
-  }
-
-  .form-check-input {
-    background-color: ${({ theme }) => theme.darkCream} !important;
-    border-color: ${({ theme }) => theme.redBrown} !important;
-    border-width: 2px;
-
-    &:checked {
-      background-color: ${({ theme }) => theme.redBrown} !important;
-    }
   }
 `;
 export const StyledHeaderField = styled.div<{
@@ -648,6 +638,7 @@ function StateRadioButtonField<
   required,
   color,
   disabled,
+    type
 }: EnumeratedField<TState, TDropdownValues>) {
   const context = useContext(RequiredFieldContext);
   const vContext = useContext(ValidatedContext);
@@ -678,9 +669,9 @@ function StateRadioButtonField<
             className="underwave-toggle mb-3"
             name={name}
             key={idx}
-            type="radio"
+            type={type ? type : "radio"}
             value={state}
-            label={v}
+            label={type ? undefined : v}
             checked={handleStateType(k) === state}
             onChange={() => setState(handleStateType(k))}
           />
@@ -692,7 +683,7 @@ function StateRadioButtonField<
 
 function StateToggleButtonField<
   TState extends number,
-  TDropdownValues extends UnderwaveEnumeration<TState, string>,
+  TDropdownValues extends UnderwaveEnumeration<TState, any>,
 >({
   state,
   header,
@@ -719,7 +710,7 @@ function StateToggleButtonField<
         <UnderwaveHeader
           header={header}
           notes={notes}
-          required={context.required || required}
+          required={required}
           as={as}
           color={color}
           disabled={disabled}
@@ -1014,6 +1005,56 @@ async function handleLogout(navigate: NavigateFunction) {
     navigate("/home");
   }
 }
+
+export function convertToDateTimeLocalString(date: Date){
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, "0");
+  const day = date.getDate().toString().padStart(2, "0");
+  const hours = date.getHours().toString().padStart(2, "0");
+  const minutes = date.getMinutes().toString().padStart(2, "0");
+
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+}
+
+export function handleSetPricingType(
+    e: MultiValue<{
+      value: number;
+      label: string;
+    }>,
+    spm: StateHandler<number>
+) {
+  let bits: number = 0b000;
+
+  for (const bit of e) {
+    bits = bits | bit.value;
+  }
+  spm(bits);
+}
+
+export function debounceApiCall(
+    func: (
+        ...args: [
+          string,
+          (options: OptionsOrGroups<unknown, GroupBase<unknown>>) => void
+        ]
+    ) => void,
+    wait: number
+) {
+  let timeout: ReturnType<typeof setInterval> | null;
+  return function executedFunction(
+      ...args: [
+        string,
+        (options: OptionsOrGroups<unknown, GroupBase<unknown>>) => void
+      ]
+  ) {
+    const later = () => {
+      timeout = null;
+      func(...args);
+    };
+    if (timeout) clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+};
 
 export const Toggle = StateToggleButtonField;
 export const Radio = StateRadioButtonField;

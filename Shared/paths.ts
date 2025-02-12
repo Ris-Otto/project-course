@@ -24,6 +24,7 @@ const Paths = {
     event: {
       create: "/venue/event/add",
       update: "/venue/event/update",
+      publish: "/venue/event/publish",
     },
     update: "/venue/update",
     bio: {

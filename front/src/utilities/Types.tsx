@@ -31,12 +31,6 @@ export type Event = {
   end: Date;
 };
 
-export const paymentMethods = [
-  { value: 0b001, label: "Cash" },
-  { value: 0b010, label: "Digital wallet" },
-  { value: 0b100, label: "Card" },
-] as const;
-
 export type NestedKeyOf<ObjectType extends object> = {
   [Key in keyof ObjectType & (string | number)]: ObjectType[Key] extends object
     ? `${Key}` | `${Key}.${NestedKeyOf<ObjectType[Key]>}`
@@ -157,3 +151,19 @@ function parseDecimalNumber<TState extends unknown>(val: TState) {
 export function ObjectEntries<T extends object>(t: T): Entries<T>[] {
   return Object.entries(t) as Entries<T>[];
 }
+
+export const locs = {
+  0: "My venue",
+  1: "Other location",
+};
+export const locsEnum: UnderwaveEnumeration<number, string> = {
+  entries: locs,
+  enumName: "Location",
+};
+
+export const paymentMethods = [
+  { value: 0b000, label: "Free" },
+  { value: 0b001, label: "Cash" },
+  { value: 0b010, label: "Digital wallet" },
+  { value: 0b100, label: "Card" },
+];

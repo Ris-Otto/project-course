@@ -1,6 +1,7 @@
 ﻿import { createGlobalStyle } from "styled-components";
 import { Theme } from "./theme.ts";
 
+// noinspection CssUnresolvedCustomProperty
 /**
  * Global styles for the application
  */
@@ -139,8 +140,24 @@ export const GlobalStyles = createGlobalStyle<{
             --bs-btn-active-color: #fff;
             --bs-btn-active-bg: ${({ theme }) => theme.tealPressed} !important;
             --bs-btn-active-border-color: ${({ theme }) =>
-              theme.teal} !important;
+  theme.teal} !important;
         }
+    }
+
+    .form-check-input {
+      background-color: ${({ theme }) => theme.darkCream} !important;
+      border-color: ${({ theme }) => theme.redBrown} !important;
+      border-width: 2px;
+
+      &:checked {
+        background-color: ${({ theme }) => theme.redBrown} !important;
+        color: ${({ theme }) => theme.redBrown} !important;
+      }
+    }
+
+    .underwave-modal, .modal-content {
+      background-color: ${({ theme }) => theme.darkCream} !important;
+      color: ${({ theme }) => theme.redBrown} !important;
     }
 
     .btn-outline-primary, .btn-outline-success, .btn-outline-primary:disabled, .btn-outline-success:disabled {
@@ -224,7 +241,7 @@ export const GlobalStyles = createGlobalStyle<{
     }
     
     .h1, .h2, .h3, .h4, .h5 {
-      font: 'Ranchers',serif
+      font-family: Nunito,serif
     }
 
     .sign-up-vinyl {

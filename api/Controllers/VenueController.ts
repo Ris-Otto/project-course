@@ -28,15 +28,21 @@ venueController.post(
 );
 venueController.post("/event/add", tokenMiddleware.verifyIsVenue, addEvent);
 venueController.post(
-  "/event/:eventId/update",
+  "/event/update/:eventId",
   tokenMiddleware.verifyIsVenue,
   updateEvent,
 );
 venueController.post(
-  "/event/:eventId/cancel",
+  "event/publish/:eventId",
+  tokenMiddleware.verifyIsVenue,
+  publishEvent,
+);
+venueController.post(
+  "/event/cancel/:eventId",
   tokenMiddleware.verifyIsVenue,
   cancelEvent,
 );
+
 venueController.post(
   "/rate/:artistId",
   tokenMiddleware.verifyIsVenue,
@@ -55,31 +61,55 @@ venueController.get("/public/:venueId", getVenueProfile);
 
 async function requestArtist(c: Context) {}
 
+async function publishEvent(c: Context) {
+  const eventId = c.req.param("eventId");
+
+  await Event.update({
+    published: 1,
+  }, {
+    where: {
+      id: eventId,
+    },
+  });
+
+  return c.json(Ok());
+}
+
 async function addEvent(c: Context) {
-  const payload = getCookie(c, "access_token");
-  if (!payload) return c.text("no token");
-  const token = await tokenMiddleware.verifyAndDecodeToken(payload);
+  const payload = c.get("tokenPayload");
   const event = await c.req.json();
+  const {
+    name,
+    start,
+    end,
+    bio,
+    poster,
+    address,
+    city,
+    zip,
+    capacity,
+    artists,
+    type,
+    tags,
+    published,
+    amount,
+    paymentMethod,
+    age,
+  } = event;
 
-  const bio = event.bio;
-  const pricing = event.pricing;
-
-  const name = event.name;
-  const age = event.age || null;
-  const start = event.start;
-  const end = event.end;
-
-  const bioRes = await Bio.create({ description: bio.description }).then(
+  const bioRes = await Bio.create({ description: bio }).then(
     (data) => data.get({ plain: true }),
   );
 
-  for (const media of bio.media) {
-    await Media.create({ internal: false, href: media, BioId: bioRes.id });
+  if (poster.length > 0) {
+    await Media.create({ internal: false, href: poster, BioId: bioRes.id });
   }
 
-  const pricingRes = await Pricing.create({ ...pricing }).then((data) =>
-    data.get({ plain: true })
-  );
+  const pricingRes = await Pricing.create({
+    amount: amount,
+    type: paymentMethod,
+    currency: "EUR",
+  });
 
   const eventRes = await Event.create({
     name: name,
@@ -87,60 +117,83 @@ async function addEvent(c: Context) {
     start: start,
     end: end,
     cancelled: 0,
-    VenueId: token!.id,
+    VenueId: payload.id,
     BioId: bioRes.id,
     PricingId: pricingRes.id,
+    published: published,
   }).then((data) => data.get({ plain: true }));
+
+  for (const artist of artists) {
+    const artistRes = await Artist.findByPk(artist);
+    if (!artistRes) continue;
+    await artistRes.addEvent(eventRes.id);
+  }
+
   return c.json(Ok(eventRes));
 }
 
 async function updateEvent(c: Context) {
-  const data = await c.req.json();
+  const payload = c.get("tokenPayload");
 
-  const payload = getCookie(c, "access_token");
-  if (!payload) return c.text("no token");
-  const token = await tokenMiddleware.verifyAndDecodeToken(payload);
+  const data = await c.req.json();
+  const {
+    name,
+    start,
+    end,
+    bio,
+    poster,
+    address,
+    city,
+    zip,
+    capacity,
+    artists,
+    type,
+    tags,
+    published,
+    amount,
+    paymentMethod,
+    age,
+  } = data;
 
   const eventId = c.req.param("eventId");
   const event = await Event.findOne({ where: { id: eventId } });
+  if (!event) return c.json(NotFound());
+  if (event.VenueId != payload.id) return c.json(Unauthorized());
 
-  if (!event) return c.text("found no event");
-  if (event.VenueId != token!.id) return c.text("does not own the event");
-
-  const name = data.name || event.name;
-  const age = data.age || event.age;
-  const start = data.start || event.start;
-  const end = data.end || event.end;
-
-  const pricing = await Pricing.findOne({ where: { id: event.PricingId } });
-  const bio = await Bio.findOne({ where: { id: event.Bio.id } });
+  const pricing = await Pricing.findByPk(event.PricingId);
+  const bioRes = await Bio.findByPk(event.BioId);
 
   const newPricing = {
-    currency: data.pricing.currency || pricing?.currency,
-    amount: data.pricing.amount || pricing?.amount,
-    type: data.pricing.type || pricing?.type,
+    currency: pricing?.currency ? pricing.currency : "EUR",
+    amount: amount || pricing?.amount,
+    type: paymentMethod || pricing?.type,
   };
 
   const newBio = {
-    description: data.bio.description || bio?.description,
+    description: data.bio.description || bioRes?.description,
     media: data.bio.media || null,
   };
-  console.log(newBio);
   await event.update({
     name: name,
     age: age,
     start: start,
     end: end,
+    published: published ? published : event.published,
   });
 
   await pricing?.update({ ...newPricing });
-  await bio?.update({ description: newBio.description });
-  console.log(data.bio.media);
-  if (newBio.media) {
+  await bioRes?.update({ description: newBio.description });
+  /*if (newBio.media) {
     await Media.destroy({ where: { BioId: bio?.id } });
     for (const media of data.bio.media) {
       await Media.create({ internal: false, href: media, BioId: bio?.id });
     }
+  }*/
+
+  for (const artist of artists) {
+    const artistRes = await Artist.findByPk(artist);
+    if (!artistRes) continue;
+    await artistRes.addEvent(eventId);
   }
 
   return c.json(Ok(event));

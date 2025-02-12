@@ -50,10 +50,10 @@ import {useAuth} from "../Auth.tsx";
 import {Hours} from "../../../../Shared/Types.ts";
 import {Bio} from "../../../../api/Database/Model/Bio.ts";
 import {toast} from "react-toastify";
+import { GoUpload } from "react-icons/go";
 
 export default function VenueProfilePublic() {
   const [sp] = useSearchParams();
-  const [a, setA] = useState<Venue>();
   const navigate = useNavigate();
 
 
@@ -66,8 +66,6 @@ export default function VenueProfilePublic() {
   if (venue.isError)
     return <div style={{ marginTop: "60px" }}>{venue.isError}</div>;
 
-
-
   return (
     <StyledArtistProfile
       className="top-level-component"
@@ -76,7 +74,7 @@ export default function VenueProfilePublic() {
       {/*@ts-ignore bah*/}
       <GoArrowLeft onClick={() => navigate(-1)} className="back-arrow-3" />
       <Container>
-        {a ? (
+        {venue.response ? (
           <Grid header={venue.response.name}>
             <VenueLeft venue={venue.response} />
             <VenueMiddle venue={venue.response} />
@@ -117,6 +115,13 @@ export function VenueProfile() {
 
   if (request.isError)
     return <div style={{ marginTop: "60px" }}>{request.isError}</div>;
+
+  function updateSubState(subState: SubState, refetch?: boolean) {
+    setSubState(subState)
+    if(refetch) {
+      request.refetch();
+    }
+  }
 
   return (
     <StyledVenueProfile>
@@ -161,13 +166,13 @@ export function VenueProfile() {
               <VenueViewProfile
                 venue={request.response}
                 subState={subState}
-                setSubState={setSubState}
+                updateSubState={updateSubState}
               />
             ) : pageState === "events" ? (
               <VenueEvents
-                venue={request.response}
                 subState={subState}
-                setSubState={setSubState}
+                venue={request.response}
+                updateSubState={updateSubState}
               />
             ) : null}
           </div>
@@ -180,59 +185,68 @@ export function VenueProfile() {
 export function VenueEvents({
   venue,
   subState,
-  setSubState,
+  updateSubState
 }: {
   venue: Venue;
   subState: SubState;
-  setSubState: StateHandler<SubState>;
+  updateSubState: (subState: SubState, refetch?: boolean) => void
 }) {
   const add = useMemo(() => subState === "add", [subState]);
   const edit = useMemo(() => subState === "edit", [subState]);
-  const [events, sevents] = useState(() => venue.Events);
+  const [events, sevents] = useState(venue.Events);
+  const [publishedEvents, setpublishedEvents] = useState<Event[]>(venue.Events.filter(a => a.published))
+  const [unpublishedEvents, setunpublishedEvents] = useState<Event[]>(venue.Events.filter(a => !a.published))
+  const [pastEvents, setpastEvents] = useState<Event[]>(venue.Events.filter(a => new Date(a.end) < new Date()));
+  const [upcomingEvents, setupcomingEvents] = useState<Event[]>(() => venue.Events.filter(a => new Date(a.start) > new Date()));
   const [currentEvent, setCurrentEvent] = useState<Event>();
+  const t = useMemo(() => new Theme(), []);
 
   return (
     <>
       <div className="silly-row-sb">
-        <h2>
-          {add ? "Create event" : edit ? "Edit event" : "Published events"}
+        <h2 style={{textDecoration: "underline"}}>
+          {add ? "Create event" : edit ? "Edit event" : "Events"}
         </h2>
         <div>
-          {add ? (
-            <>
-
-            </>
-          ) : edit ? (
-            <>
-              <EditButton onClick={() => setSubState("view")}>
-                Cancel
-              </EditButton>
-              <EditButton onClick={() => setSubState("view")}>Save</EditButton>
-            </>
-          ) : (
-            <EditButton onClick={() => setSubState("add")}>
+          {!add && !edit ? (
+            <EditButton onClick={() => updateSubState("add")}>
               New Event
               <LiaPlusSolid size={25} style={{ marginLeft: "5px" }} />
             </EditButton>
-          )}
+          ): null}
         </div>
       </div>
       {subState === "view" ? (
-        <div className="silly-row-start">
-          {events.map((a, i) => (
-            <div key={i} style={{ margin: "2%" }}>
-              <VenueEvent
-                event={a}
-                setCurrentEvent={setCurrentEvent}
-                setSubState={setSubState}
-              />
-            </div>
-          ))}
-        </div>
+        <>
+          <UnderwaveHeader as="h2" header={"Upcoming"} color={t.redBrown} />
+          <div className="silly-row-start">
+            {upcomingEvents.map((a, i) =>
+              <div key={i} style={{margin: "2%"}}>
+                <VenueEvent
+                    event={a}
+                    setCurrentEvent={setCurrentEvent}
+                    updateSubState={updateSubState}
+                />
+              </div>
+            )}
+          </div>
+          <UnderwaveHeader as="h2" header={"Past"} color={t.redBrown}/>
+          <div className="silly-row-start">
+            {pastEvents.map((a, i) => (
+                <div key={i} style={{ margin: "2%" }}>
+                  <VenueEvent
+                      event={a}
+                      setCurrentEvent={setCurrentEvent}
+                      updateSubState={updateSubState}
+                  />
+                </div>
+            ))}
+          </div>
+        </>
       ) : subState === "add" ? (
-        <AddEvent venue={venue} subState={subState} setSubState={setSubState} />
+        <AddEvent venue={venue} updateSubState={updateSubState} />
       ) : subState === "edit" ? (
-        <EditEvent event={currentEvent!} />
+        <EditEvent event={currentEvent!} updateSubState={updateSubState}/>
       ) : null}
     </>
   );
@@ -240,12 +254,12 @@ export function VenueEvents({
 
 export function VenueEvent({
   event,
+  updateSubState,
   setCurrentEvent,
-  setSubState,
 }: {
   event: Event;
+  updateSubState: (subState: SubState, refetch?: boolean) => void;
   setCurrentEvent?: React.Dispatch<React.SetStateAction<Event | undefined>>;
-  setSubState?: React.Dispatch<React.SetStateAction<SubState>>;
 }): React.ReactNode {
   const startTime = useMemo(() => {
     const time = new Date(event.start).toTimeString().split(" ")[0];
@@ -258,9 +272,19 @@ export function VenueEvent({
     return `${split[0]}:${split[1]}`;
   }, [event]);
   const { dimensions, handleImageLoad } = useImageDimensions(
-    globalThis.innerHeight / 6,
+    globalThis.innerHeight / 5,
   );
   const p = useMemo(() => dimensions.width * 0.12, [dimensions]);
+
+  async function publishEvent() {
+    const ret = await postRequest(`${paths.venue.event.publish}/${event.id}`);
+    if(ret.isSuccess()) {
+      toast.success("Event published");
+      updateSubState("view", true)
+    } else {
+      toast.error("Event failed to publish");
+    }
+  }
 
   return (
     <StyledHoverEvent
@@ -269,12 +293,18 @@ export function VenueEvent({
       }}
       padding={String(p)}
     >
-      {setSubState && setCurrentEvent ? (
+      {setCurrentEvent ? (
         <div style={{ textAlign: "right" }}>
+          {!event.published ? (
+              <Button onClick={() => publishEvent()}>
+                Publish
+                <GoUpload size={20}/>
+              </Button>
+          ): null}
           <Button
             onClick={() => {
               setCurrentEvent(event);
-              setSubState("edit");
+              updateSubState("edit");
             }}
           >
             <LiaPencilAltSolid size={30} />
@@ -378,12 +408,12 @@ function handleInitializeHours(venue: Venue) {
 
 export function VenueViewProfile({
   venue,
-  setSubState,
-  subState,
+    subState,
+  updateSubState
 }: {
   venue: Venue;
   subState: SubState;
-  setSubState: StateHandler<SubState>;
+  updateSubState: (subState: SubState, refetch?: boolean) => void;
 }) {
 
   const t = useMemo(() => new Theme(), []);
@@ -478,26 +508,26 @@ export function VenueViewProfile({
 
   useEffect(() => {
     return () => {
-      setSubState("view");
+      updateSubState("view");
     };
   }, []);
   return (
     <>
       <div className="silly-row-sb">
-        <h2>Profile</h2>
+        <h2 style={{textDecoration: "underline"}}>Profile</h2>
         <div style={{ textAlign: "right" }}>
           {edit ? (
             <>
               <EditButton onClick={() => {
                 reset();
-                setSubState("view")
+                updateSubState("view")
               }}>
                 Cancel
               </EditButton>
               <EditButton
                 onClick={async () => {
                   await submit();
-                  setSubState("view");
+                  updateSubState("view", true);
                 }}
               >
                 Save
@@ -506,7 +536,7 @@ export function VenueViewProfile({
             </>
           ) : (
             <>
-              <EditButton onClick={() => setSubState("edit")}>
+              <EditButton onClick={() => updateSubState("edit")}>
                 Edit
                 <LiaPencilAltSolid
                   size={20}

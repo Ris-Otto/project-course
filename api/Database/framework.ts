@@ -94,6 +94,10 @@ export function includeEvent() {
         exclude: ["createdAt", "updatedAt"],
       },
       includeBio(),
+      {
+        model: Artist,
+        exclude: ["password", "createdAt", "updatedAt"],
+      },
     ],
   });
 }
