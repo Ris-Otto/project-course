@@ -13,6 +13,11 @@ import Event from "../Database/Model/Event.ts";
 import { Bio } from "../Database/Model/Bio.ts";
 import Pricing from "../Database/Model/Pricing.ts";
 import { Media } from "../Database/Model/Media.ts";
+import { Link } from "../Database/Model/Link.ts";
+import { OpeningHour } from "../Database/Model/OpeningHour.ts";
+import { dl } from "../Utils/logger.ts";
+import sequelize from "../Database/database.ts";
+import { Artist } from "../Database/Model/Artist.ts";
 
 const venueController = new Hono();
 
@@ -43,6 +48,8 @@ venueController.post(
   tokenMiddleware.verifyIsVenue,
   uploadMedia,
 );
+venueController.post("/update", tokenMiddleware.verifyIsVenue, updateVenue);
+
 venueController.get("/", tokenMiddleware.verifyIsVenue, getVenue);
 venueController.get("/public/:venueId", getVenueProfile);
 
@@ -67,11 +74,11 @@ async function addEvent(c: Context) {
   );
 
   for (const media of bio.media) {
-    Media.create({ internal: false, href: media, BioId: bioRes.id });
+    await Media.create({ internal: false, href: media, BioId: bioRes.id });
   }
 
   const pricingRes = await Pricing.create({ ...pricing }).then((data) =>
-    data.get({ plain: true }),
+    data.get({ plain: true })
   );
 
   const eventRes = await Event.create({
@@ -119,20 +126,20 @@ async function updateEvent(c: Context) {
     media: data.bio.media || null,
   };
   console.log(newBio);
-  event.update({
+  await event.update({
     name: name,
     age: age,
     start: start,
     end: end,
   });
 
-  pricing?.update({ ...newPricing });
-  bio?.update({ description: newBio.description });
+  await pricing?.update({ ...newPricing });
+  await bio?.update({ description: newBio.description });
   console.log(data.bio.media);
   if (newBio.media) {
-    Media.destroy({ where: { BioId: bio?.id } });
+    await Media.destroy({ where: { BioId: bio?.id } });
     for (const media of data.bio.media) {
-      Media.create({ internal: false, href: media, BioId: bio?.id });
+      await Media.create({ internal: false, href: media, BioId: bio?.id });
     }
   }
 
@@ -140,48 +147,61 @@ async function updateEvent(c: Context) {
 }
 
 async function cancelEvent(c: Context) {
-  const payload = getCookie(c, "access_token");
-  if (!payload) return c.text("no token");
-  const token = await tokenMiddleware.verifyAndDecodeToken(payload);
+  const payload = c.get("tokenPayload");
 
   const eventId = c.req.param("eventId");
   const event = await Event.findOne({ where: { id: eventId } });
 
   if (!event) return c.text("found no event");
-  if (event.VenueId != token!.id) return c.text("does not own the event");
+  if (event.VenueId != payload.id) return c.text("does not own the event");
 
-  event.update({ cancelled: 1 });
-  return c.json(Ok(event));
+  const updatedEvent = await event.update({ cancelled: 1 });
+  return c.json(Ok(updatedEvent));
 }
 
 async function rateArtist(c: Context) {}
 
 async function updateBio(c: Context) {
-  const payload = getCookie(c, "access_token");
-  if (!payload) return c.text("no token");
+  const payload = c.get("tokenPayload");
   const data = await c.req.json();
-  const token = await tokenMiddleware.verifyAndDecodeToken(payload);
-  const venue = await Venue.findOne({ where: { id: token!.id } });
-  console.log(venue?.Bio.id);
-  var bio = await Bio.findOne({ where: { id: venue?.Bio.id } });
-  if (bio) {
-    const description = data.description || bio?.description;
-    bio?.update({ description: description });
+  const venue = await Venue.findOne({
+    where: { id: payload.id },
+  });
+  if (!venue) return c.json(NotFound());
+  if (venue.BioId === null) {
+    const bio = await Bio.create({ description: data.bio });
+    await updateMediaAndLinks(data, bio.id);
+    await venue.update({ BioId: bio.id });
+    return c.json(Ok(bio));
   } else {
-    bio = await Bio.create({ description: data.description }).then((data) =>
-      data.get({ plain: true }),
-    );
-
-    venue?.update({ BioId: bio?.id });
+    const bio = await Bio.findOne({
+      where: {
+        id: venue.BioId,
+      },
+    });
+    if (bio === null) return c.json(NotFound());
+    const updatedBio = await bio.update({ description: data.bio });
+    await updateMediaAndLinks(data, updatedBio.id);
+    const reloadedBio = await updatedBio.reload({ include: [Media, Link] });
+    return c.json(Ok(reloadedBio));
   }
+}
+
+async function updateMediaAndLinks(data: any, bioId: number) {
   if (data.media) {
-    Media.destroy({ where: { BioId: bio?.id } });
     for (const media of data.media) {
-      Media.create({ internal: false, href: media, BioId: bio?.id });
+      await Media.create({
+        internal: false,
+        href: media.image_link,
+        BioId: bioId,
+      });
     }
   }
-
-  return c.json(Ok(bio));
+  if (data.urls) {
+    for (const link of data.urls) {
+      await Link.create({ url: link.url, BioId: bioId });
+    }
+  }
 }
 
 async function uploadMedia(c: Context) {
@@ -196,7 +216,7 @@ async function getVenue(c: Context) {
       email: payload.email,
       id: payload.id,
     },
-    include: [includeBio(), includeEvent()],
+    include: [includeBio(), includeEvent(), OpeningHour],
   });
   if (venue === null) return c.json(NotFound());
 
@@ -216,6 +236,63 @@ async function getVenueProfile(c: Context) {
   }
 
   return c.json(Ok(venue.get({ plain: true })));
+}
+
+async function updateVenue(c: Context) {
+  const payload = c.get("tokenPayload");
+  const body = await c.req.json();
+  const { name, addr, zip, city, hrs, phone } = body;
+
+  const venue = await Venue.findOne({
+    where: {
+      email: payload.email,
+      id: payload.id,
+    },
+  });
+  if (!venue) return c.json(NotFound());
+
+  const venueUpdate = await venue.update({
+    name: name,
+    address: addr,
+    zip: zip,
+    city: city,
+    phone: phone,
+  });
+
+  await upsertOpeningHours(venue.id, {
+    monStart: hrs.mon.from,
+    monEnd: hrs.mon.to,
+    tueStart: hrs.tue.from,
+    tueEnd: hrs.tue.to,
+    wedStart: hrs.wed.from,
+    wedEnd: hrs.wed.to,
+    thuStart: hrs.thu.from,
+    thuEnd: hrs.thu.to,
+    friStart: hrs.fri.from,
+    friEnd: hrs.fri.to,
+    satStart: hrs.sat.from,
+    satEnd: hrs.sat.to,
+    sunStart: hrs.sun.from,
+    sunEnd: hrs.sun.to,
+  });
+  const ret = await venueUpdate.reload({
+    include: [includeBio(), includeEvent(), OpeningHour],
+  });
+
+  return c.json(Ok(ret));
+}
+async function upsertOpeningHours(
+  venueId: string,
+  hours: Record<string, string>,
+) {
+  // Merge hours and ensure correct structure
+  const fieldsToUpsert = {
+    VenueId: venueId,
+    ...hours,
+  };
+
+  // Upsert the record: Updates the row if VenueId already exists
+  await OpeningHour.upsert(fieldsToUpsert);
 }
 
 export default venueController;

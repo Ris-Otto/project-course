@@ -1,10 +1,8 @@
-import { getRequest } from "../../api/APITemplate.ts";
 import paths from "../../../../Shared/paths.ts";
-import { SuspenseConsumer } from "../../utilities/Types.tsx";
 import Event from "../../../../api/Database/Model/Event.ts";
 import "ag-grid-community/styles/ag-grid.css"; // Mandatory CSS required by the Data Grid
 import "ag-grid-community/styles/ag-theme-quartz.css";
-import { wrapPromise } from "../../Hooks.ts";
+import { useRequest } from "../../Hooks.ts";
 import PageHeader from "../Misc/PageHeader.tsx";
 import { useAtom } from "jotai";
 import { user } from "../../store.ts";
@@ -12,7 +10,7 @@ import { Row, Col } from "react-bootstrap";
 import { styled } from "styled-components";
 import { EventCalendar } from "../Event/EventCalendar.tsx";
 import Grid from "../Misc/Grid.tsx";
-import { useEffect } from "react";
+import { Loading } from "../../utilities/Loading.tsx";
 
 const StyledHome = styled.div`
   background: ${({ theme }) => theme.cream} !important;
@@ -26,17 +24,26 @@ const StyledHome = styled.div`
   }
 `;
 
-let paginatedEvents: SuspenseConsumer<Event[]>;
 export function Home() {
   const [u, _] = useAtom(user);
 
-  if (!paginatedEvents || paginatedEvents.invalidate) {
-    paginatedEvents = wrapPromise(getRequest<Event[]>(paths.event.all));
+  const { response, isLoading, isError } = useRequest<Event[]>(paths.event.all);
+
+  if (isLoading) {
+    return <Loading />;
   }
 
-  useEffect(() => {
-    return () => (paginatedEvents.invalidate = true);
-  }, []);
+  if (isError) {
+    return <div style={{ marginTop: "60px" }}>{isError}</div>;
+  }
+
+  if (!response) {
+    return (
+      <div style={{ marginTop: "60px" }}>
+        You don't have access to this page
+      </div>
+    );
+  }
 
   return (
     <StyledHome>
@@ -71,14 +78,13 @@ export function Home() {
                   borderRadius: "15px",
                 }}
               >
-                <EventCalendar events={paginatedEvents.read().response} />
+                <EventCalendar events={response} />
               </Col>
             </Row>
           </Col>
         </Grid>
       ) : (
-        <>
-          <PageHeader header="Upcoming events" color="black" />
+        <Grid header={"Home"}>
           <Row
             className="col-pane"
             style={{ margin: "60px", justifyContent: "center" }}
@@ -90,10 +96,10 @@ export function Home() {
                 borderRadius: "15px",
               }}
             >
-              <EventCalendar events={paginatedEvents.read().response} />
+              <EventCalendar events={response} />
             </Col>
           </Row>
-        </>
+        </Grid>
       )}
     </StyledHome>
   );

@@ -25,6 +25,7 @@ import { Post } from "./Database/Model/Post.ts";
 import { EventInterest } from "./Database/Model/EventInterest.ts";
 import { OpeningHour } from "./Database/Model/OpeningHour.ts";
 import { alterSyncDatabase } from "./Utilities.ts";
+import { Link } from "./Database/Model/Link.ts";
 
 const app = new Hono<{ Variables: JwtVariables }>();
 
@@ -79,6 +80,9 @@ User.belongsToMany(Venue, {
 User.hasMany(EventInterest);
 
 Bio.hasMany(Media);
+
+Link.belongsTo(Bio, { foreignKey: "BioId", onDelete: "CASCADE" }); // A Link belongs to a Bio
+Bio.hasMany(Link, { foreignKey: "BioId", onDelete: "CASCADE" }); // A Bio has many Links
 
 //await alterSyncDatabase();
 

@@ -8,6 +8,7 @@ import { Artist, ArtistMembersMapping } from "./Database/Model/Artist.ts";
 import { Member } from "./Database/Model/Member.ts";
 import { Venue } from "./Database/Model/Venue.ts";
 import { Role } from "./Database/Model/Role.ts";
+import { Hours } from "../Shared/Types.ts";
 
 export async function setupTestData() {
   const hefeUser = await User.create({
@@ -147,4 +148,7 @@ export class Task {
   public static async Delay(milliseconds: number) {
     return await new Promise((resolve) => setTimeout(resolve, milliseconds));
   }
+}
+
+export function mapOpeningHours(openingHours: Hours) {
 }

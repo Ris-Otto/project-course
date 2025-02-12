@@ -9,12 +9,7 @@
     "jsx": "react-jsx",
     "jsxImportSource": "npm:react",
     "jsxImportSourceTypes": "npm:@types/react",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "dom.asynciterable",
-      "deno.ns"
-    ]
+    "lib": ["dom", "dom.iterable", "dom.asynciterable", "deno.ns"]
   },
   "imports": {
     "@types/axios": "npm:@types/axios@^0.14.0",
@@ -33,6 +28,7 @@
     "react-dom": "npm:react-dom@^18.3.1",
     "react-helmet": "npm:react-helmet@^6.1.0",
     "react-icons": "npm:react-icons@^5.3.0",
+    "react-image": "npm:react-image@^4.1.0",
     "react-router-dom": "npm:react-router-dom@^6.26.2",
     "react-select": "npm:react-select@^5.9.0",
     "react-spinners": "npm:react-spinners@^0.14.1",

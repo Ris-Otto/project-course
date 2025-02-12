@@ -15,6 +15,7 @@ import {
   includeEvent,
   includeMember,
 } from "../Database/framework.ts";
+import sequelize from "../Database/database.ts";
 
 const artistController = new Hono();
 artistController.get("/artists", getArtists);
@@ -52,6 +53,8 @@ artistController.post(
 artistController.get("/public/:artistId", getArtistProfile);
 
 artistController.get("/", tokenMiddleware.verifyIsBand, self);
+
+artistController.post("/search", searchArtists);
 
 async function getArtists(c: Context) {
   const events = (await Artist.findAll()).map((e) => e.get({ plain: true }));
@@ -102,6 +105,28 @@ async function self(c: Context) {
     return c.json(Unauthorized());
   }
   return c.json(Ok(user));
+}
+
+async function searchArtists(c: Context) {
+  const body = await c.req.json();
+  const lookupValue = body.searchValue;
+
+  const results = await Artist.findAll({
+    limit: 10,
+    where: {
+      name: sequelize.where(
+        sequelize.fn("LOWER", sequelize.col("name")),
+        "LIKE",
+        "%" + lookupValue + "%",
+      ),
+    },
+  });
+
+  if (results.length === 0) return c.json(NotFound());
+  const ret = results.map((a) => {
+    return { value: a.id, label: a.name };
+  });
+  return c.json(Ok(ret));
 }
 
 export default artistController;

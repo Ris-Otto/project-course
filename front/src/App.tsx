@@ -17,11 +17,13 @@ import { GlobalStyles } from "./global.ts";
 import { UserProfile } from "./components/User/UserProfile.tsx";
 import ArtistProfilePublic, {
   ArtistProfile,
-} from "./components/User/Artist.tsx";
+} from "./components/Artist/Artist.tsx";
 import { AllEvents, EventPage } from "./components/Event/Event.tsx";
 import { Suspended } from "./utilities/Loading.tsx";
-import VenueProfilePublic, { VenueProfile } from "./components/User/Venue.tsx";
+import VenueProfilePublic, { VenueProfile } from "./components/Venue/Venue.tsx";
 import { CreateEvent } from "./components/Event/CreateEvent.tsx";
+import 'react-toastify/dist/ReactToastify.css'
+
 const theme = new Theme();
 
 const router = createBrowserRouter(
@@ -82,7 +84,7 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <GlobalStyles />
-      <ToastContainer />
+      <ToastContainer autoClose={6000} closeOnClick/>
       <RouterProvider router={router} />
     </ThemeProvider>
   );

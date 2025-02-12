@@ -1,10 +1,11 @@
-﻿import Event, { type EventRead } from "./Event.ts";
+﻿import Event from "./Event.ts";
 import sequelize from "../database.ts";
 import { DataTypes, Model } from "npm:sequelize";
 import Sequelize from "npm:sequelize";
 import * as bcrypt from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
 import { Bio, type BioRead } from "./Bio.ts";
 import type EventMapping from "./EventMapping.ts";
+import { OpeningHour } from "./OpeningHour.ts";
 
 class Venue extends Model {
   declare verified: 0 | 1;
@@ -16,6 +17,7 @@ class Venue extends Model {
   declare businessId: string;
   declare name: string;
   declare email: string;
+  declare phone: string;
   declare contactEmail: string;
   declare contactName: string;
   declare id: string;
@@ -23,8 +25,11 @@ class Venue extends Model {
   declare createdAt: Date;
   declare updatedAt: Date;
   declare Bio: Bio;
+  declare BioId: number;
+  declare OpeningHour: OpeningHour;
   declare authenticate: (enteredPassword: string) => Promise<boolean>;
   declare addEvent: (eventId: string) => Promise<EventMapping | null>;
+  declare addBio: (bioId: number) => Promise<Bio | null>;
 }
 
 type VenueRead = {
@@ -89,6 +94,9 @@ Venue.init(
     businessId: {
       type: DataTypes.STRING,
       allowNull: false,
+    },
+    phone: {
+      type: DataTypes.STRING,
     },
     verified: DataTypes.TINYINT,
   },

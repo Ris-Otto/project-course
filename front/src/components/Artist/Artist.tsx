@@ -18,7 +18,7 @@ import {
 import type { Artist } from "../../../../api/Database/Model/Artist.ts";
 import { Strong } from "../Event/Event.styled.ts";
 import { EventCalendar } from "../Event/EventCalendar.tsx";
-import { StyledArtistProfile, StyledListBox } from "./StyledProfile.tsx";
+import { StyledArtistProfile, StyledListBox } from "../User/StyledProfile.tsx";
 import { useAtom } from "jotai";
 import { user } from "../../store.ts";
 import type { StateHandler } from "../../utilities/Types.tsx";
@@ -103,7 +103,7 @@ export function ArtistProfile() {
 }
 
 export function ArtistMembers({ members }: { members: Member[] }) {
-  const [ms, setMs] = useState<Member[]>(() =>
+  const [ms, setMs] = useState(() =>
     members.map((m) => {
       return {
         name: m.name,
@@ -124,7 +124,7 @@ export function ArtistMembers({ members }: { members: Member[] }) {
         header="Members"
         array={ms}
         setArray={setMs}
-        pattern={/[A-Öa-ö]{1,}/}
+        pattern={/[A-Öa-ö]+/}
         template={{ name: "", role: "" }}
       />
       <Button onClick={submit}>Submit changes</Button>

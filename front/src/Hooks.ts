@@ -1,59 +1,17 @@
-﻿//TODO caching strategies
-export function wrapPromise<T>(promise: Promise<T>) {
-  let status = "pending";
-  let result: T;
-
-  const suspender = promise.then(
-    (r) => {
-      status = "fulfilled";
-      result = r;
-    },
-    (e) => {
-      status = "rejected";
-      result = e;
-    },
-  );
-  return {
-    read() {
-      if (status === "pending") {
-        throw suspender;
-      } else if (status === "rejected") {
-        throw result;
-      } else {
-        return result;
-      }
-    },
-    invalidate: false,
-  };
-}
-
-// @deno-types="@types/react"
+﻿// @deno-types="@types/react"
 import { MutableRefObject, useEffect, useState } from "react";
-
-export function useWrapPromise(promise: Promise<T>) {
-  const [ret, setRet] = useState<{
-    read(): T;
-    invalidate: boolean;
-  }>();
-  useEffect(() => {
-    console.log("hej");
-    setRet(wrapPromise(promise));
-    return () => (ret.invalidate = true);
-  }, [globalThis.location.pathname]);
-
-  return { ret };
-}
+import { getRequest } from "./api/APITemplate.ts";
 
 /**
  * @param {*} ref the reffered component
  * @param {*} handler handler function
  */
-export const useOnClickOutside = <T>(
-  ref: MutableRefObject<T>,
-  handler: (event: { target: unknown }) => void,
+export const useOnClickOutside = (
+  ref: MutableRefObject<HTMLDivElement>,
+  handler: (event: { target: HTMLDivElement }) => void,
 ) => {
   useEffect(() => {
-    const listener = (event: { target: unknown }) => {
+    const listener = (event: { target: any }) => {
       if (!ref.current || ref.current.contains(event.target)) {
         return;
       }
@@ -72,7 +30,7 @@ export function useImageDimensions(maxHeight?: number) {
     height: 0,
   });
 
-  const handleImageLoad = (e) => {
+  const handleImageLoad = (e: any) => {
     const { naturalHeight, naturalWidth } = e.target;
     const ratio = naturalWidth / naturalHeight;
     const height = maxHeight ? maxHeight : globalThis.innerHeight / 8;
@@ -80,4 +38,25 @@ export function useImageDimensions(maxHeight?: number) {
   };
 
   return { dimensions, handleImageLoad };
+}
+
+export function useRequest<T>(path: string) {
+  const [isLoading, setIsLoading] = useState(true);
+  const [isError, setIsError] = useState<string | null>(null);
+  const [response, setResponse] = useState<T | null>(null);
+  useEffect(() => {
+    async function getData() {
+      const res = await getRequest<T>(path);
+      if (res.isSuccess()) {
+        setResponse(res.response);
+        setIsLoading(false);
+      } else {
+        setIsLoading(false);
+        setIsError(res.message);
+      }
+    }
+    getData();
+  }, []);
+
+  return { response, isLoading, isError };
 }

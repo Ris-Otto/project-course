@@ -2,46 +2,42 @@
 import Event from "../../../../api/Database/Model/Event.ts";
 import { getRequest } from "../../api/APITemplate.ts";
 import paths from "../../../../Shared/paths.ts";
-import {
-  ObjectEntries,
-  paymentMethods,
-  SuspenseConsumer,
-} from "../../utilities/Types.tsx";
-import { useWrapPromise, wrapPromise } from "../../Hooks.ts";
+import { ObjectEntries, paymentMethods } from "../../utilities/Types.tsx";
 import {
   resolveBitmask,
   ToCurrencySymbol,
 } from "../../utilities/Functions.tsx";
-import { Strong, StyledEvent } from "./Event.styled.ts";
+import { Strong } from "./Event.styled.ts";
 import Grid from "../Misc/Grid.tsx";
 import { EventCalendar } from "./EventCalendar.tsx";
 // @deno-types="@types/react"
 import { useEffect, useState } from "react";
-import Select from "react-select";
-import { Searchable } from "../Misc/Searchable.tsx";
-import { FormCheck } from "react-bootstrap";
+import { useRequest } from "../../Hooks.ts";
+import { Loading } from "../../utilities/Loading.tsx";
 
-let event: SuspenseConsumer<Event> | null;
 function EventPage() {
   const eventId = useParams<{ eventId?: string }>();
 
-  if (!event || event.invalidate) {
-    event = wrapPromise(
-      getRequest<Event>(`${paths.event.get}/${eventId.eventId}`),
-    );
+  const { response, isLoading, isError } = useRequest<Event>(
+    `${paths.event.get}/${eventId.eventId}`,
+  );
+
+  if (isLoading) {
+    return <Loading />;
   }
 
-  useEffect(() => {
-    return () => {
-      if (!event) return;
-      event.invalidate = true;
-    };
-  }, []);
+  if (isError) {
+    return <div style={{ marginTop: "60px" }}>{isError}</div>;
+  }
+
+  if (!response) {
+    return <div style={{ marginTop: "60px" }}>Errors occured</div>;
+  }
   return (
     <>
       {/*@ts-ignore cba*/}
-      <Grid header={event.read().response.name}>
-        <RenderEvent event={event.read().response} />
+      <Grid header={response.name}>
+        <RenderEvent event={response} />
       </Grid>
     </>
   );

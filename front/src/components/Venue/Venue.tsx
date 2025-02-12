@@ -1,76 +1,72 @@
 // @deno-types="npm:@types/react"
-import React, { useEffect, useState, useMemo } from "react";
-import { getRequest, postRequest } from "../../api/APITemplate.ts";
+import React, {SyntheticEvent, useEffect, useMemo, useState} from "react";
+import {getRequest, postRequest} from "../../api/APITemplate.ts";
 import paths from "../../../../Shared/paths.ts";
+import {createSearchParams, useNavigate, useSearchParams,} from "react-router-dom";
+import {Button, Col, Container, Row, Tab, Tabs} from "react-bootstrap";
+import {IoImageOutline, IoLocationSharp, IoNewspaperSharp} from "react-icons/io5";
 import {
-  createSearchParams,
-  useNavigate,
-  useSearchParams,
-} from "react-router-dom";
-import { Row, Col, Button, Tab, Tabs, Container } from "react-bootstrap";
-import { IoImageOutline, IoNewspaperSharp } from "react-icons/io5";
-import {
+  LiaCalendarWeekSolid,
+  LiaClock,
   LiaEnvelope,
   LiaHeart,
   LiaHeartSolid,
   LiaPencilAltSolid,
   LiaPhoneAltSolid,
-  LiaShareAltSquareSolid,
-  LiaSave,
-  LiaTrashAltSolid,
   LiaPlusSolid,
-  LiaCalendarWeekSolid,
-  LiaClock,
+  LiaSave,
+  LiaShareAltSquareSolid,
+  LiaTrashAltSolid,
 } from "react-icons/lia";
-import { GiTicket } from "react-icons/gi";
-import { IoLocationSharp } from "react-icons/io5";
-import { Strong } from "../Event/Event.styled.ts";
-import { EventCalendar } from "../Event/EventCalendar.tsx";
-import { StyledArtistProfile, StyledListBox } from "./StyledProfile.tsx";
-import { useAtom } from "jotai";
-import { user } from "../../store.ts";
-import { GoArrowLeft } from "react-icons/go";
-import type { Venue } from "../../../../api/Database/Model/Venue.ts";
+import {GiTicket} from "react-icons/gi";
+import {Strong} from "../Event/Event.styled.ts";
+import {EventCalendar, StyledHoverEvent} from "../Event/EventCalendar.tsx";
+import {Circle, EditButton, StyledArtistProfile, StyledListBox, StyledVenueProfile} from "../User/StyledProfile.tsx";
+import {useAtom} from "jotai";
+import {user} from "../../store.ts";
+import {GoArrowLeft} from "react-icons/go";
+import type {Venue} from "../../../../api/Database/Model/Venue.ts";
 import Grid from "../Misc/Grid.tsx";
-import { Loading } from "../../utilities/Loading.tsx";
-import { StyledVenueProfile, EditButton, Circle } from "./StyledProfile.tsx";
+import {Loading} from "../../utilities/Loading.tsx";
 import {
   cfl,
   Control,
+  DynamicListForm,
   TextArea,
+  ToCurrencySymbol,
   UnderwaveHeader,
 } from "../../utilities/Functions.tsx";
-import { Theme } from "../../theme.ts";
+import {Theme} from "../../theme.ts";
 //@ts-ignore bah
 import cd from "../../resources/Images-Assets/cd+cover.png";
-import { logout } from "../../api/auth.ts";
-import { ObjectEntries, type StateHandler } from "../../utilities/Types.tsx";
-import {
-  DynamicListForm,
-  ToCurrencySymbol,
-} from "../../utilities/Functions.tsx";
-import { StyledHoverEvent } from "../Event/EventCalendar.tsx";
+import {logout} from "../../api/auth.ts";
+import {ObjectEntries, type StateHandler} from "../../utilities/Types.tsx";
 import Event from "../../../../api/Database/Model/Event.ts";
 
-import { useImageDimensions } from "../../Hooks.ts";
-import { EditEvent } from "./Venue/EditEvent.tsx";
-import { useAuth } from "../Auth.tsx";
+import {useImageDimensions, useRequest} from "../../Hooks.ts";
+import {EditEvent} from "./EditEvent.tsx";
+import {AddEvent} from "./AddEvent.tsx";
+import {useAuth} from "../Auth.tsx";
+import {Hours} from "../../../../Shared/Types.ts";
+import {Bio} from "../../../../api/Database/Model/Bio.ts";
+import {toast} from "react-toastify";
 
 export default function VenueProfilePublic() {
   const [sp] = useSearchParams();
   const [a, setA] = useState<Venue>();
-
-  const [u, _] = useAtom(user);
   const navigate = useNavigate();
-  useEffect(() => {
-    async function getData() {
-      const data = await getRequest<Venue>(`venue/public/${sp.get("venueId")}`);
-      if (data.isSuccess()) {
-        setA(data.response);
-      }
-    }
-    getData();
-  }, []);
+
+
+  const venue = useRequest<Venue>(`venue/public/${sp.get("venueId")}`);
+
+  if (!venue.response) return <div>Error</div>;
+
+  if (venue.isLoading) return <Loading />;
+
+  if (venue.isError)
+    return <div style={{ marginTop: "60px" }}>{venue.isError}</div>;
+
+
 
   return (
     <StyledArtistProfile
@@ -81,54 +77,55 @@ export default function VenueProfilePublic() {
       <GoArrowLeft onClick={() => navigate(-1)} className="back-arrow-3" />
       <Container>
         {a ? (
-          <Grid header={a.name}>
-            <VenueLeft venue={a} />
-            <VenueMiddle venue={a} />
-            <VenueRight venue={a} />
+          <Grid header={venue.response.name}>
+            <VenueLeft venue={venue.response} />
+            <VenueMiddle venue={venue.response} />
+            <VenueRight venue={venue.response} />
           </Grid>
-        ) : /* </div> */
+        ) :
         null}
       </Container>
     </StyledArtistProfile>
   );
 }
-type PageState = "profile" | "events" | "account" | "settings";
-const PageStates: PageState[] = [
+export type PageState = "profile" | "events" | "account" | "settings";
+export const PageStates: PageState[] = [
   "profile",
   "events",
   /* "account",
   "settings", */
 ] as const;
 
-type SubState = "view" | "edit" | "add";
+export type SubState = "view" | "edit" | "add";
 
 export function VenueProfile() {
-  const [a, setA] = useState<Venue>();
   const [pageState, setPageState] = useState<PageState>("profile");
   const [subState, setSubState] = useState<SubState>("view");
-  useAuth();
+  useAuth(2);
+
+  const request = useRequest<Venue>(paths.venue.self);
 
   useEffect(() => {
-    async function getData() {
-      const data = await getRequest<Venue>(`${paths.venue.self}`);
-      if (data.isSuccess()) {
-        setA(data.response);
-      }
-    }
-    getData();
-
     return () => {
       setSubState("view");
       setPageState("profile");
     };
   }, []);
+  if (!request.response) return <div>Error</div>;
 
-  if (!a) return <Loading />;
+  if (request.isLoading) return <Loading />;
+
+  if (request.isError)
+    return <div style={{ marginTop: "60px" }}>{request.isError}</div>;
 
   return (
     <StyledVenueProfile>
       <div style={{ textAlign: "right" }}>
-        <Grid header={a.name} narrowColumnIndex={0} wideColumnIndex={1}>
+        <Grid
+          header={request.response.name}
+          narrowColumnIndex={0}
+          wideColumnIndex={1}
+        >
           <div
             style={{
               display: "flex",
@@ -162,13 +159,13 @@ export function VenueProfile() {
           <div style={{ borderLeft: "1px solid black", paddingLeft: "50px" }}>
             {pageState === "profile" ? (
               <VenueViewProfile
-                venue={a}
+                venue={request.response}
                 subState={subState}
                 setSubState={setSubState}
               />
             ) : pageState === "events" ? (
               <VenueEvents
-                venue={a}
+                venue={request.response}
                 subState={subState}
                 setSubState={setSubState}
               />
@@ -179,16 +176,6 @@ export function VenueProfile() {
     </StyledVenueProfile>
   );
 }
-
-export function VenueAddEvent({
-  venue,
-  subState,
-  setSubState,
-}: {
-  venue: Venue;
-  subState: SubState;
-  setSubState: StateHandler<SubState>;
-}) {}
 
 export function VenueEvents({
   venue,
@@ -203,6 +190,7 @@ export function VenueEvents({
   const edit = useMemo(() => subState === "edit", [subState]);
   const [events, sevents] = useState(() => venue.Events);
   const [currentEvent, setCurrentEvent] = useState<Event>();
+
   return (
     <>
       <div className="silly-row-sb">
@@ -212,12 +200,7 @@ export function VenueEvents({
         <div>
           {add ? (
             <>
-              <EditButton onClick={() => setSubState("view")}>
-                Cancel
-              </EditButton>
-              <EditButton onClick={() => setSubState("view")}>
-                Create
-              </EditButton>
+
             </>
           ) : edit ? (
             <>
@@ -247,11 +230,7 @@ export function VenueEvents({
           ))}
         </div>
       ) : subState === "add" ? (
-        <VenueAddEvent
-          venue={venue}
-          subState={subState}
-          setSubState={setSubState}
-        />
+        <AddEvent venue={venue} subState={subState} setSubState={setSubState} />
       ) : subState === "edit" ? (
         <EditEvent event={currentEvent!} />
       ) : null}
@@ -345,7 +324,7 @@ function EventPicture({
   name,
   age,
 }: {
-  onImageLoad: (e) => void;
+  onImageLoad: (e: SyntheticEvent<HTMLImageElement>) => void;
   dimensions: {
     width: number;
     height: number;
@@ -364,10 +343,37 @@ function EventPicture({
           width: `${dimensions.width}px`,
           height: `${dimensions.height}px`,
         }}
-        src="https://bzglfiles.s3.ca-central-1.amazonaws.com/u/394702/c29ca7919a7b7ee69407d46c2f0b8c3d1c1a2327/original/all-around-the-mic-website-version.png?response-content-type=image%2Fpng&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIA2AEJH4L527DJJBYE%2F20250129%2Fca-central-1%2Fs3%2Faws4_request&X-Amz-Date=20250129T121026Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=6e376a9787d821fea41588e0c947d11428296b9f4997df560772e43d70c8ab42"
+        onError={({ currentTarget }) => {
+          currentTarget.onerror = null; // prevents looping
+          currentTarget.src = cd;
+        }}
+        src={cd}
       />
     </div>
   );
+}
+
+const openingHours: Hours = {
+  mon: {from: "", to: ""},
+  tue: {from: "", to: ""},
+  wed: {from: "", to: ""},
+  thu: {from: "", to: ""},
+  fri: {from: "", to: ""},
+  sat: {from: "", to: ""},
+  sun: {from: "", to: ""},
+}
+function handleInitializeHours(venue: Venue) {
+  const hours = venue.OpeningHour;
+  if(!hours) return openingHours;
+  return {
+    mon: { from: hours.monStart, to: hours.monEnd },
+    tue: { from: hours.tueStart, to: hours.tueEnd },
+    wed: { from: hours.wedStart, to: hours.wedEnd },
+    thu: { from: hours.thuStart, to: hours.thuEnd },
+    fri: { from: hours.friStart, to: hours.friEnd },
+    sat: { from: hours.satStart, to: hours.satEnd },
+    sun: { from: hours.sunStart, to: hours.sunEnd },
+  }
 }
 
 export function VenueViewProfile({
@@ -379,33 +385,39 @@ export function VenueViewProfile({
   subState: SubState;
   setSubState: StateHandler<SubState>;
 }) {
-  const openingHours = {
-    mon: { from: "18:00", to: "01:00", closed: true },
-    tue: { from: "18:00", to: "01:00", closed: false },
-    wed: { from: "18:00", to: "01:00", closed: false },
-    thu: { from: "19:00", to: "02:00", closed: false },
-    fri: { from: "20:00", to: "03:00", closed: false },
-    sat: { from: "20:00", to: "04:00", closed: false },
-    sun: { from: "16:00", to: "23:00", closed: false },
-  };
+
   const t = useMemo(() => new Theme(), []);
 
   const [name, sname] = useState(() => venue.name);
   const [addr, saddr] = useState(() => venue.address);
   const [zip, szip] = useState(() => venue.zip);
   const [city, scity] = useState(() => venue.city);
-  const [hrs, shrs] = useState(() => openingHours);
-  const [phone, sphone] = useState("");
+  const [hrs, shrs] = useState<Hours>(() => {
+    return handleInitializeHours(venue)
+  });
+  const [phone, sphone] = useState(() => venue.phone);
   const [email, semail] = useState(() => venue.email);
   const [bio, sbio] = useState(() => (venue.Bio ? venue.Bio.description : ""));
+  const [links, slinks] = useState< {url: string}>(() => {
+    return venue.Bio?.Links ? venue.Bio.Links : [];
+  } )
+
+  const [images, setImages] = useState<{ image_link: string }[]>(() => {
+    const media = venue.Bio?.Media;
+    if(!media || media.length === 0) {
+      return [];
+    }
+    return media.map((a) => { return { image_link: a.href }})
+  });
 
   const edit = useMemo(() => subState === "edit", [subState]);
 
   function handleOhrs(
-    key: keyof typeof hrs,
+    key: keyof Hours,
     value: string,
     fromto: "from" | "to",
   ) {
+    //baller shit
     const temp = {
       ...hrs,
       [key]: {
@@ -416,11 +428,53 @@ export function VenueViewProfile({
     shrs(temp);
   }
 
-  const [images, setImages] = useState<{ image_link: string }[]>([]);
+  function reset() {
+    sname(venue.name);
+    saddr(venue.address);
+    szip(venue.zip);
+    scity(venue.city);
+    shrs((a) => {
+      return handleInitializeHours(venue);
+    });
+    sphone(venue.phone);
+    semail(venue.email);
+    sbio((a) => (venue.Bio ? venue.Bio.description : ""));
+    slinks((a) => {
+      return venue.Bio?.Links ? venue.Bio.Links : [];
+    } )
+
+    setImages((a) => {
+      const media = venue.Bio?.Media;
+      if(!media || media.length === 0) {
+        return [];
+      }
+      return media.map((a) => { return { image_link: a.href }})
+    });
+  }
 
   const { dimensions, handleImageLoad } = useImageDimensions();
 
-  async function submit() {}
+  async function submit() {
+    //Submit venue-specific details
+    // name, addr, zip, city, hrs, phone
+    const venueUpdate = await postRequest<Venue>(paths.venue.update, { name, addr, zip, city, hrs, phone });
+    //Submit bio-specific details
+    // media, links, description
+    const media = images.filter(a => a.image_link.length > 0)
+    const urls = links.filter(a => a.url.length > 0)
+    const bioUpdate = await postRequest<Bio>(paths.venue.bio.update, { media, urls, bio });
+
+    if(venueUpdate.isSuccess()) {
+      toast.success("Venue details successfully updated")
+    } else {
+      toast.error("Venue details failed to update")
+    }
+    if(bioUpdate.isSuccess()) {
+      toast.success("Bio details successfully updated")
+    } else {
+      toast.error("Bio details failed to update")
+    }
+  }
 
   useEffect(() => {
     return () => {
@@ -434,11 +488,15 @@ export function VenueViewProfile({
         <div style={{ textAlign: "right" }}>
           {edit ? (
             <>
-              <EditButton onClick={() => setSubState("view")}>
+              <EditButton onClick={() => {
+                reset();
+                setSubState("view")
+              }}>
                 Cancel
               </EditButton>
               <EditButton
-                onClick={() => {
+                onClick={async () => {
+                  await submit();
                   setSubState("view");
                 }}
               >
@@ -531,46 +589,31 @@ export function VenueViewProfile({
                       {cfl(k)}
                     </div>
                     <div className="silly-row-sb-wrap">
-                      {!v.closed ? (
-                        <>
-                          <Control
-                            state={v.from}
-                            onChange={
-                              edit
+                      <Control
+                          state={v.from}
+                          onChange={
+                            edit
                                 ? (e) => handleOhrs(k, e.target.value, "from")
                                 : undefined
-                            }
-                          />
-                          <div
-                            style={{
-                              marginRight: "10px",
-                              marginLeft: "10px",
-                            }}
-                          >
-                            -
-                          </div>
-                          <Control
-                            state={v.to}
-                            onChange={
-                              edit
-                                ? (e) => handleOhrs(k, e.target.value, "to")
-                                : undefined
-                            }
-                          />
-                        </>
-                      ) : (
-                        <div
+                          }
+                      />
+                      <div
                           style={{
                             marginRight: "10px",
                             marginLeft: "10px",
-                            marginBottom: "10px",
                           }}
-                        >
-                          Closed
-                        </div>
-                      )}
+                      >
+                        -
+                      </div>
+                      <Control
+                          state={v.to}
+                          onChange={
+                            edit
+                                ? (e) => handleOhrs(k, e.target.value, "to")
+                                : undefined
+                          }
+                      />
                     </div>
-                    <div></div>
                   </Grid>
                 );
               })}
@@ -613,23 +656,37 @@ export function VenueViewProfile({
                       height: `${dimensions.height}px`,
                       marginLeft: "2px",
                     }}
+                   alt="image link"
                   />
                 );
               })}
             </div>
             {edit ? (
               <DynamicListForm
+                name={"images"}
                 array={images}
                 setArray={setImages}
                 template={{ image_link: "" }}
                 pattern={
                   //URL regex-pattern
-                  /[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/
+                  /[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&\/\/=]*)/
                 }
               />
             ) : null}
             <div className="mt-3">
               <UnderwaveHeader header="Links" as="h2" color={t.redBrown} />
+              {edit ? (<DynamicListForm
+                  disabled={!edit}
+                  array={links}
+                  name={"links"}
+                  setArray={slinks}
+                  pattern={/[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&\/\/=]*)/}
+                  template={{ url: "" }}
+              />): (
+                  <>
+                    {links.map((a, i) => {return <Control key={i} state={a.url} disabled/>})}
+                  </>
+              )}
             </div>
           </Col>
         </Grid>

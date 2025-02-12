@@ -1,33 +1,34 @@
 ﻿import paths from "../../../../Shared/paths.ts";
 import { FanProfile } from "../../../../Shared/Types.ts";
-import { ArtistList } from "./Artist.tsx";
+import { ArtistList } from "../Artist/Artist.tsx";
 import { StyledProfile } from "./StyledProfile.tsx";
-import { wrapPromise } from "../../Hooks.ts";
-import { getRequest } from "../../api/APITemplate.ts";
-import { SuspenseConsumer } from "../../utilities/Types.tsx";
+import { useRequest } from "../../Hooks.ts";
 import PageHeader from "../Misc/PageHeader.tsx";
-import { VenueList } from "./Venue.tsx";
+import { VenueList } from "../Venue/Venue.tsx";
 import { useAuth } from "../Auth.tsx";
-import { useState } from "react";
+import { Loading } from "../../utilities/Loading.tsx";
 
-let user: SuspenseConsumer<FanProfile>;
 export function UserProfile() {
   useAuth();
-  const [r, setr] = useState(false);
-  if (!user) {
-    try {
-      user = wrapPromise(getRequest<FanProfile>(paths.user.self));
-      setr(true);
-    } catch {}
+  const { response, isLoading, isError } = useRequest<FanProfile>(
+    paths.user.self,
+  );
+
+  if (isLoading) {
+    return <Loading />;
+  }
+
+  if (isError) {
+    return <div style={{ marginTop: "60px" }}>{isError}</div>;
   }
 
   return (
     <StyledProfile id="component-margin" className="top-level-component">
-      <PageHeader header={user.read().response.name} className={"mb-3"} />
+      <PageHeader header={response!.name} className={"mb-3"} />
       <h3>Artists</h3>
-      <ArtistList artists={user.read().response.Artists} followed />
+      <ArtistList artists={response!.Artists} followed />
       <h3>Venues</h3>
-      <VenueList venues={user.read().response.Venues} followed />
+      <VenueList venues={response!.Venues} followed />
     </StyledProfile>
   );
 }

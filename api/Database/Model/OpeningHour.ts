@@ -17,6 +17,7 @@ class OpeningHour extends Model {
   declare satEnd: string;
   declare sunStart: string;
   declare sunEnd: string;
+  declare VenueId: string;
 }
 
 OpeningHour.init(
@@ -26,53 +27,63 @@ OpeningHour.init(
       primaryKey: true,
       autoIncrement: true,
     },
-    day: {
-      type: DataTypes.TINYINT.UNSIGNED,
-    },
     monStart: {
-      type: DataTypes.DATE,
+      type: DataTypes.STRING(5),
     },
     monEnd: {
-      type: DataTypes.DATE,
+      type: DataTypes.STRING(5),
     },
     tueStart: {
-      type: DataTypes.DATE,
+      type: DataTypes.STRING(5),
     },
     tueEnd: {
-      type: DataTypes.DATE,
+      type: DataTypes.STRING(5),
     },
     wedStart: {
-      type: DataTypes.DATE,
+      type: DataTypes.STRING(5),
     },
     wedEnd: {
-      type: DataTypes.DATE,
+      type: DataTypes.STRING(5),
     },
     thuStart: {
-      type: DataTypes.DATE,
+      type: DataTypes.STRING(5),
     },
     thuEnd: {
-      type: DataTypes.DATE,
+      type: DataTypes.STRING(5),
     },
     friStart: {
-      type: DataTypes.DATE,
+      type: DataTypes.STRING(5),
     },
     friEnd: {
-      type: DataTypes.DATE,
+      type: DataTypes.STRING(5),
     },
     satStart: {
-      type: DataTypes.DATE,
+      type: DataTypes.STRING(5),
     },
     satEnd: {
-      type: DataTypes.DATE,
+      type: DataTypes.STRING(5),
     },
     sunStart: {
-      type: DataTypes.DATE,
+      type: DataTypes.STRING(5),
     },
     sunEnd: {
-      type: DataTypes.DATE,
+      type: DataTypes.STRING(5),
+    },
+    VenueId: {
+      type: DataTypes.UUID,
+      unique: true,
     },
   },
-  { tableName: "opening_hours", sequelize: sequelize },
+  {
+    tableName: "opening_hours",
+    sequelize: sequelize,
+    indexes: [
+      {
+        unique: true,
+        fields: ["VenueId"], // Enforce unique constraint on VenueId
+      },
+    ],
+  },
 );
 
 export { OpeningHour };

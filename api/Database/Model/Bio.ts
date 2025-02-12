@@ -1,11 +1,13 @@
 ﻿import { DataTypes, Model } from "npm:sequelize";
 import sequelize from "../database.ts";
 import type { Media, MediaRead } from "./Media.ts";
+import { Link } from "./Link.ts";
 
 class Bio extends Model {
   declare id: number;
   declare description: string;
   declare Media: Media[];
+  declare Links: Link[];
   declare createdAt: Date;
   declare updatedAt: Date;
 }

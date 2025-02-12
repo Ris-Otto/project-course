@@ -1,10 +1,6 @@
 ﻿import { decode, sign, verify } from "npm:hono/jwt";
 import * as config from "../config.ts";
-import {
-  ResolveUserType,
-  UserType,
-  type UserPayload,
-} from "../../Shared/Types.ts";
+import { ResolveUserType, UserType } from "../../Shared/Types.ts";
 import type { Context, Next } from "npm:hono";
 import { getCookie } from "npm:hono/cookie";
 import { Unauthorized } from "../../Shared/Result.ts";

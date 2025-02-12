@@ -33,13 +33,11 @@ import {
   RequiredFieldContext,
   ValidatedContext,
   type ObjectWithKeys,
-  type SuspenseConsumer,
   type UnderwaveEnumeration,
 } from "./Types.tsx";
 import { type DefaultAction } from "./Reducer.ts";
 import type { NavigateFunction } from "react-router-dom";
 import { checkToken, logout } from "../api/auth.ts";
-import { wrapPromise } from "../Hooks.ts";
 import { getRequest } from "../api/APITemplate.ts";
 
 export function ToCurrencySymbol(currency: string) {
@@ -120,7 +118,6 @@ export const StyledUnderwaveField = styled.div`
   }
 
   .underwave-toggle {
-    background-color: ${({ theme }) => theme.redBrown} !important;
     border-color: ${({ theme }) => theme.redBrown} !important;
   }
 
@@ -212,13 +209,11 @@ export declare type UnderwaveHeaderProps<E extends ElementType> =
     disabled?: boolean;
   };
 
-declare type DynamicListProps<T extends ObjectWithKeys> =
+declare type DynamicListProps<T extends object> =
   UnderwaveHeaderProps<ElementType> & {
-    array: string[] | T[];
+    array: T[];
     name: string;
-    setArray:
-      | React.Dispatch<SetStateAction<T[]>>
-      | React.Dispatch<SetStateAction<string[]>>;
+    setArray: React.Dispatch<SetStateAction<T[]>>
     pattern: RegExp;
     noDisable?: boolean;
     template: T;
@@ -253,16 +248,13 @@ export function DynamicListForm<T extends ObjectWithKeys>({
     let ret: boolean = true;
     for (const key of keys) {
       const temp = regex.test(obj[key]);
-      ret = ret & temp;
+      ret = ret && temp;
     }
     return ret;
   }
 
   useEffect(() => {
-    if (
-      arrStates.length === 0 ||
-      testPatternAgainstRequiredKeys(arrStates[arrStates.length - 1], pattern)
-    )
+    if (arrStates.length === 0)
       add(template);
   }, [arrStates]);
 
@@ -1019,7 +1011,7 @@ function TextArea<TState extends {}>(
 async function handleLogout(navigate: NavigateFunction) {
   const ret = await logout();
   if (ret.isSuccess()) {
-    checkToken();
+    navigate("/home");
   }
 }
 

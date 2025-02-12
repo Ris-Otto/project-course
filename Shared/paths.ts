@@ -14,6 +14,7 @@ const Paths = {
     public: "/artist/public",
     self: "/artist",
     login: "/auth/login/artist",
+    search: "/artist/search",
   },
   venue: {
     register: "/auth/register/venue",
@@ -23,6 +24,11 @@ const Paths = {
     event: {
       create: "/venue/event/add",
       update: "/venue/event/update",
+    },
+    update: "/venue/update",
+    bio: {
+      get: "/venue/bio",
+      update: "/venue/bio/update",
     },
   },
   event: {

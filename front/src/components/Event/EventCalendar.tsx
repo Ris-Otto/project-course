@@ -14,7 +14,7 @@ import type { Theme } from "../../theme.ts";
 import { StateHandler, paymentMethods } from "../../utilities/Types.tsx";
 import { Strong } from "./Event.styled.ts";
 import { RenderEvent } from "./Event.tsx";
-import { VenueEvent } from "../User/Venue.tsx";
+import { VenueEvent } from "../Venue/Venue.tsx";
 
 const StyledEventCalendar = styled.div<{ theme: Theme }>`
   display: flex;

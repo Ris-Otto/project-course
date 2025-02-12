@@ -12,12 +12,16 @@ const instance = axios.create({
 export async function postRequest<
   TResponse,
 >(path: string, data?: Record<string, {}>): Promise<Result<TResponse>> {
-  const response = await instance.post<ResponseData<TResponse>>(
-    path,
-    data,
-    { withCredentials: true },
-  );
-  return new Result(response.data);
+  try {
+    const response = await instance.post<ResponseData<TResponse>>(
+      path,
+      data,
+      { withCredentials: true },
+    );
+    return new Result(response.data);
+  } catch {
+    return new Result(null);
+  }
 }
 
 export async function getRequest<TResponse>(

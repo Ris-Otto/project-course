@@ -1,14 +1,14 @@
 // @deno-types="@types/react";
 import { useState, useMemo } from "react";
-import { useImageDimensions } from "../../../Hooks.ts";
-import { Radio, Control, TextArea } from "../../../utilities/Functions.tsx";
-import { UnderwaveEnumeration } from "../../../utilities/Types.tsx";
-import Grid from "../../Misc/Grid.tsx";
+import { useImageDimensions } from "../../Hooks.ts";
+import { Radio, Control, TextArea } from "../../utilities/Functions.tsx";
+import { UnderwaveEnumeration } from "../../utilities/Types.tsx";
+import Grid from "../Misc/Grid.tsx";
 import { Col } from "react-bootstrap";
 //@ts-ignore bah
-import cd from "../../../resources/Images-Assets/cd+cover.png";
-import { Theme } from "../../../theme.ts";
-import Event from "../../../../../api/Database/Model/Event.ts";
+import cd from "../../resources/Images-Assets/cd+cover.png";
+import { Theme } from "../../theme.ts";
+import Event from "../../../../api/Database/Model/Event.ts";
 
 const locs = {
   0: "My venue",
@@ -35,7 +35,7 @@ function EditEvent({ event }: { event: Event }) {
   const [end, setEnd] = useState("");
 
   const [image, setImage] = useState(
-    event.Bio?.Media[0].href ? event.Bio?.Media[0].href : "",
+    event.Bio?.Media[0]?.href ? event.Bio?.Media[0].href : "",
   );
   const [loc, setLoc] = useState(0);
 

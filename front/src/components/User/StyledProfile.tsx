@@ -167,6 +167,14 @@ export const StyledVenueProfile = styled.div<{ theme: Theme }>`
     flex-wrap: wrap;
   }
 
+    .silly-row-se {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-evenly;
+        min-width: min-content;
+        vertical-align: middle;
+    }
+
   .silly-column-sb {
     display: flex;
     flex-direction: column;

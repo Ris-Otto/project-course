@@ -46,18 +46,18 @@ export function Auth() {
   );
 }
 
-export function useAuth() {
+export function useAuth(accessType?: number) {
   const [u, setU] = useAtom(user);
-  console.log(u);
   const navigate = useNavigate();
   useEffect(() => {
-    console.log("Hej");
-    const check = async () => {
+    const check: () => void = async () => {
       const res = await checkToken();
-      console.log(res.data);
       if (res.isSuccess()) {
         //Successful, set the user state from the data received
         setU(res.response);
+        if (accessType && res.response.type < accessType) {
+          navigate("/home");
+        }
       } else {
         setU(null);
         //If the authentication failed, redirect to the login page with a state containing the path
