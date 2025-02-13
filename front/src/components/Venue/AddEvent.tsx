@@ -54,12 +54,6 @@ export function AddEvent({
         .then(data => callback(data));
   }
 
-  const urlPattern = useMemo(
-      () =>
-          /[-a-zA-Z0-9@:%._+~#=]{1,256}.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&\/=]*)/,
-      [],
-  );
-
   const [loc, setLoc] = useState(0);
 
   async function submit(publish?: boolean): Promise<boolean> {

@@ -33,6 +33,7 @@ import { Row, FlexCol } from "../Misc/CustomStyles.tsx";
 import {Link} from "../../../../api/Database/Model/Link.ts";
 import {urlPattern} from "../../utilities/Regex.ts";
 import {Media} from "../../../../api/Database/Model/Media.ts";
+import { ProfilePicture } from "../Misc/ProfilePicture.tsx";
 
 
 export default function ArtistProfilePublic() {
@@ -134,12 +135,19 @@ function ArtistViewProfile({ artist, subState, updateSubState }: { artist: Artis
   const [genre, setGenre] = useState(artist.genre);
   const [poster, setPoster] = useState("")
   const [images, setImages] = useState<Media[]>(artist.Bio?.Media ? artist.Bio.Media :[]);
-  const [links, setLinks] = useState<Link[]>(() => {
-    return artist.Bio?.Links ? artist.Bio.Links : [];
-  } )
+  const [links, setLinks] = useState<Link[]>(artist.Bio?.Links ? artist.Bio.Links : []);
 
   async function submit() {}
-  async function reset() {}
+  function reset() {
+    setName(artist.name);
+    setEmail(artist.email);
+    setBio(artist.Bio ? artist.Bio.description : "");
+    setMembers(artist.Members);
+    setGenre(artist.genre);
+    setPoster("");
+    setImages(artist.Bio?.Media ? artist.Bio.Media :[]);
+    setLinks(artist.Bio?.Links ? artist.Bio.Links : []);
+  }
 
   const edit = useMemo(() => subState === "edit", [subState]);
 
@@ -150,33 +158,23 @@ function ArtistViewProfile({ artist, subState, updateSubState }: { artist: Artis
         <Grid>
           <FlexCol>
             <div className="silly-row-start">
-              <img
-                  src={cd}
-                  alt={"Profile picture"}
-                  style={{
-                    width: `${dimensions.width}px`,
-                    height: `${dimensions.height}px`,
-                    marginRight: "10%",
-                  }}
-                  onLoad={handleImageLoad}
-              />
-
+              <ProfilePicture image={cd} dimensions={dimensions} handleImageLoad={handleImageLoad} />
               <Control
-                  header={"Artist name"}
-                  state={name}
-                  color={t.redBrown}
-                  setState={edit ? setName : undefined}
+                as={"h3"}
+                header={"Artist name"}
+                state={name}
+                color={t.redBrown}
+                setState={edit ? setName : undefined}
               />
 
             </div>
             <Row justifycontent="start">
             <FlexCol>
-
               <DynamicListForm
                 requiredKeys={["name"]}
                 array={members}
                 header={"Members"}
-                as="h2"
+                as="h3"
                 color={t.redBrown}
                 pattern={/.+/}
                 setArray={setMembers}
@@ -186,13 +184,13 @@ function ArtistViewProfile({ artist, subState, updateSubState }: { artist: Artis
               <Control
                 className="mt-3"
                 header={"Sample"}
-                as="h2" state={""}
+                as="h3" state={""}
                 setState={undefined}
                 color={t.redBrown}
               />
               <DynamicListForm
                 header={"Links"}
-                as="h2"
+                as="h3"
                 color={t.redBrown}
                 array={links}
                 setArray={setLinks}
@@ -200,22 +198,20 @@ function ArtistViewProfile({ artist, subState, updateSubState }: { artist: Artis
                 template={{ url: "" }}
                 disabled={!edit}
               />
-
-
             </FlexCol>
             </Row>
           </FlexCol>
           <FlexCol>
             <Control
               header="Genre"
-              as="h2"
+              as="h3"
               state={genre}
               setState={edit ? setGenre : undefined}
               color={t.redBrown}
             />
             <TextArea
               header="Bio"
-              as="h2"
+              as="h3"
               state={bio}
               setState={edit ? setBio : undefined}
               color={t.redBrown}
@@ -223,7 +219,7 @@ function ArtistViewProfile({ artist, subState, updateSubState }: { artist: Artis
             <div className="mt-3">
               <UnderwaveHeader
                 header="Contact"
-                as="h2"
+                as="h3"
                 color={t.redBrown}
                 disabled={!edit}
               />
@@ -237,7 +233,7 @@ function ArtistViewProfile({ artist, subState, updateSubState }: { artist: Artis
                 />
               </Row>
             </div>
-            <UnderwaveHeader header="Images" as="h2" color={t.redBrown} disabled={!edit} />
+            <UnderwaveHeader header="Images" as="h3" color={t.redBrown} disabled={!edit} />
             <div style={{display: "flex", justifyContent: "left"}}>
             <div style={{overflowX: "auto", width:"30vw", display: "inline-block", whiteSpace:"nowrap"}}  className="mt-3">
               {[0,1,2,3,4,5,6,7].map((i, idx) => {

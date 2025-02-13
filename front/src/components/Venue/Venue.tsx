@@ -45,6 +45,8 @@ import {toast} from "react-toastify";
 import {Divider, FlexCol, StyledListBox} from "../Misc/CustomStyles.tsx";
 import {Link} from "../../../../api/Database/Model/Link.ts";
 import {EditableProfileHeaders, EditableProfileMenu} from "../Misc/EditableProfileBase.tsx";
+import { ProfilePicture } from "../Misc/ProfilePicture.tsx";
+import { urlPattern } from "../../utilities/Regex.ts";
 
 declare type VenueProfileProps = {
   value: Venue;
@@ -125,7 +127,7 @@ export function VenueEvents({
       </div>
       {subState === "view" ? (
         <>
-          <UnderwaveHeader as="h2" header={"Upcoming"} color={t.redBrown} />
+          <UnderwaveHeader as="h3" header={"Upcoming"} color={t.redBrown} />
           <div className="silly-row-start">
             {upcomingEvents.map((a, i) =>
               <div key={i} style={{margin: "2%"}}>
@@ -137,7 +139,7 @@ export function VenueEvents({
               </div>
             )}
           </div>
-          <UnderwaveHeader as="h2" header={"Past"} color={t.redBrown}/>
+          <UnderwaveHeader as="h3" header={"Past"} color={t.redBrown}/>
           <div className="silly-row-start">
             {pastEvents.map((a, i) => (
                 <div key={i} style={{ margin: "2%" }}>
@@ -423,19 +425,10 @@ export function VenueViewProfile({
         <Grid>
           <Col>
             <div className="silly-row-start">
-              <img
-                src={cd}
-                alt={"Profile picture"}
-                style={{
-                  width: `${dimensions.width}px`,
-                  height: `${dimensions.height}px`,
-                  marginRight: "10%",
-                }}
-                onLoad={handleImageLoad}
-              />
-
+              <ProfilePicture image={cd} dimensions={dimensions} handleImageLoad={handleImageLoad} />
               <Control
                 header={"Venue name"}
+                as={"h3"}
                 state={name}
                 color={t.redBrown}
                 setState={edit ? sname : undefined}
@@ -444,6 +437,7 @@ export function VenueViewProfile({
             <div className="silly-row">
               <Control
                 header={"Street address"}
+                as={"h3"}
                 state={addr}
                 color={t.redBrown}
                 setState={edit ? saddr : undefined}
@@ -453,6 +447,7 @@ export function VenueViewProfile({
             <div className="silly-row-sb-wrap">
               <Control
                 header={"Postal/ZIP-code"}
+                as={"h3"}
                 state={zip}
                 color={t.redBrown}
                 setState={edit ? szip : undefined}
@@ -460,6 +455,7 @@ export function VenueViewProfile({
               />
               <Control
                 header={"City"}
+                as={"h3"}
                 state={city}
                 color={t.redBrown}
                 setState={edit ? scity : undefined}
@@ -469,7 +465,7 @@ export function VenueViewProfile({
             </div>
             <div style={{ alignItems: "center" }}>
               <UnderwaveHeader
-                as="h2"
+                as="h3"
                 header={"Opening hours"}
                 color={t.redBrown}
                 disabled={!edit}
@@ -526,13 +522,13 @@ export function VenueViewProfile({
           <Col>
             <TextArea
               header="Bio"
-              as="h2"
+              as="h3"
               state={bio}
               color={t.redBrown}
               setState={edit ? sbio : undefined}
             />
             <div className="mt-3">
-              <UnderwaveHeader header="Contact" as="h2" color={t.redBrown} disabled={!edit} />
+              <UnderwaveHeader header="Contact" as="h3" color={t.redBrown} disabled={!edit} />
               <div className="silly-row">
                 <FlexCol>
                   <LiaPhoneAltSolid size={45} style={{ color: edit ? t.redBrown : "grey" }} />
@@ -548,56 +544,31 @@ export function VenueViewProfile({
                 </FlexCol>
               </div>
             </div>
-            <UnderwaveHeader header="Images" as="h2" color={t.redBrown} disabled={!edit}/>
-            <div className="mt-3 silly-row">
-              {images.map((a, i) => {
-                if (i === images.length - 1) return null;
-                return (
-                  <img
-                    key={i}
-                    src={a.image_link}
-                    style={{
-                      width: `${dimensions.width}px`,
-                      height: `${dimensions.height}px`,
-                      marginLeft: "2px",
-                    }}
-                   alt="image link"
-                  />
-                );
-              })}
-            </div>
-            {edit ? (
-              <DynamicListForm
-                name={"images"}
-                array={images}
-                setArray={setImages}
-                template={{ image_link: "" }}
-                pattern={
-                  //URL regex-pattern
-                  /[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&\/\/=]*)/
-                }
-              />
-            ) : null}
-            <div className="mt-3">
-              <UnderwaveHeader header="Links" as="h2" color={t.redBrown} disabled={!edit}/>
-              {edit ? (<DynamicListForm
-                  disabled={!edit}
-                  array={links}
-                  name={"links"}
-                  setArray={slinks}
-                  pattern={/[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&\/\/=]*)/}
-                  template={{ url: "" }}
-              />): (
-                  <>
-                    {links.map((a, i) => {return <Control key={i} state={a.url} disabled/>})}
-                  </>
-              )}
-            </div>
+            <DynamicListForm
+              header={"Images"}
+              as={"h3"}
+              name={"images"}
+              array={images}
+              setArray={setImages}
+              template={{ image_link: "" }}
+              pattern={urlPattern}
+              disabled={!edit}
+              color={t.redBrown}
+            />
+            <DynamicListForm
+                disabled={!edit}
+                header={"Links"}
+                as={"h3"}
+                array={links}
+                name={"links"}
+                setArray={slinks}
+                pattern={urlPattern}
+                template={{ url: "" }}
+                color={t.redBrown}
+            />
           </Col>
         </Grid>
       </div>
     </>
   );
 }
-
-export function AllVenues() {}

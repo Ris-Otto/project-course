@@ -267,6 +267,7 @@ export function DynamicListForm<T extends ObjectWithKeys>({
         required={required}
         as={as}
         color={color}
+        disabled={disabled}
       />
       <div className="mb-3">
         {arrStates.map((a, idx) => {

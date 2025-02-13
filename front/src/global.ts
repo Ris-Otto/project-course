@@ -32,12 +32,25 @@ export const GlobalStyles = createGlobalStyle<{
 
     *, *::after, *::before {
         box-sizing: border-box;
+        font-size: 1.25rem;
     }
     
-    h1, h2, h3, h4, h5, h6 {
+    h1, h2, h4, h5, h6 {
         font-family: chorine-large, sans-serif;
         font-weight: 500;
         font-style: normal;
+        font-size: 2rem;
+    }
+    
+    h3 {
+        font-family: futura-pt-bold, sans-serif;
+    }
+    
+    div, span, p, a, button, input, label, select, textarea {
+        font-family: futura-pt, sans-serif;
+        font-weight: bold;
+        font-style: normal;
+        font-size: 1rem;
     }
 
     body {
