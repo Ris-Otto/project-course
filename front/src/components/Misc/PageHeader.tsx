@@ -5,7 +5,12 @@ const StyledHeader = styled.div`
   width: 100%;
   color: ${({ theme }) => theme.teal};
   justify-content: center;
-  .separator {
+    font-family: chorine-large, sans-serif;
+    font-weight: 500;
+    font-style: normal;
+    font-size: 2rem;
+
+    .separator {
     display: flex;
     align-items: center;
     text-align: center;

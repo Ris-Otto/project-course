@@ -20,9 +20,13 @@ import ArtistProfilePublic, {
 } from "./components/Artist/Artist.tsx";
 import { AllEvents, EventPage } from "./components/Event/Event.tsx";
 import { Suspended } from "./utilities/Loading.tsx";
-import VenueProfilePublic, { VenueProfile } from "./components/Venue/Venue.tsx";
+import { VenueProfile } from "./components/Venue/Venue.tsx";
 import { CreateEvent } from "./components/Event/CreateEvent.tsx";
 import 'react-toastify/dist/ReactToastify.css'
+import VenueProfilePublic from "./components/Venue/VenuePublic.tsx";
+import {AllArtists} from "./components/Artist/AllArtists.tsx";
+import paths from "../../Shared/paths.ts";
+import {EditableProfileBase} from "./components/Misc/EditableProfileBase.tsx";
 
 const theme = new Theme();
 
@@ -36,25 +40,21 @@ const router = createBrowserRouter(
         <Route path="venue" element={<VenueRegistration />} />
       </Route>
       <Route
-        path="home"
-        element={
-          <Suspended>
-            <Home />
-          </Suspended>
-        }
+        path=""
+        element={<Home />}
       />
       <Route path="users">
         <Route path="profile" element={<UserProfile />} />
       </Route>
       <Route path="artists">
-        <Route path="" element={<div>artist list</div>} />
+        <Route path="" element={<AllArtists />} />
         <Route path="public" element={<ArtistProfilePublic />} />
-        <Route path="profile" element={<ArtistProfile />} />
+        <Route path="profile" element={<EditableProfileBase Profile={ArtistProfile} requestPath={paths.artist.self} accessType={1} />} />
       </Route>
       <Route path="venues">
         <Route path="" element={<div>venue list</div>} />
         <Route path="public" element={<VenueProfilePublic />} />
-        <Route path="profile" element={<VenueProfile />} />
+        <Route path="profile" element={<EditableProfileBase Profile={VenueProfile} requestPath={paths.venue.self} accessType={2} /> } />
       </Route>
 
       <Route path="events">

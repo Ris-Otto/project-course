@@ -119,5 +119,41 @@ ArtistMembersMapping.init(
   },
 );
 
-export { Artist, ArtistMembersMapping };
+class NonArtist extends Model {
+  declare id: string;
+  declare name: string;
+  declare description: string;
+  declare genre: string;
+}
+
+NonArtist.init(
+  {
+    id: {
+      type: DataTypes.UUID,
+      defaultValue: Sequelize.UUIDV4,
+      allowNull: false,
+      primaryKey: true,
+    },
+    name: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: {
+        min: 0,
+        max: 32,
+      },
+    },
+    description: {
+      type: DataTypes.TEXT,
+    },
+    genre: {
+      type: DataTypes.STRING,
+    },
+  },
+  {
+    tableName: "non_artists",
+    sequelize: sequelize,
+  },
+);
+
+export { Artist, ArtistMembersMapping, NonArtist };
 export type { ArtistRead };

@@ -18,7 +18,7 @@ import {
 import sequelize from "../Database/database.ts";
 
 const artistController = new Hono();
-artistController.get("/artists", getArtists);
+artistController.get("/all", getArtists);
 artistController.post(
   "/announcements/publish",
   tokenMiddleware.verifyIsBand,
@@ -57,8 +57,13 @@ artistController.get("/", tokenMiddleware.verifyIsBand, self);
 artistController.post("/search", searchArtists);
 
 async function getArtists(c: Context) {
-  const events = (await Artist.findAll()).map((e) => e.get({ plain: true }));
-  return c.json(Ok(events));
+  const artists = (await Artist.findAll({
+    include: [includeBio()],
+    attributes: {
+      exclude: ["password", "createdAt", "updatedAt"],
+    },
+  })).map((e) => e.get({ plain: true }));
+  return c.json(Ok(artists));
 }
 
 async function publishAnnouncement(c: Context) {}

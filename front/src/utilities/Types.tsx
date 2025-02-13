@@ -1,6 +1,6 @@
-import { Result } from "../../../Shared/Result.ts";
+import {Result} from "../../../Shared/Result.ts";
 // @deno-types="npm:@types/react"
-import React, { SetStateAction, createContext } from "react";
+import React, {createContext, SetStateAction} from "react";
 
 export type SuspenseConsumer<T> = {
   read(): Result<T>;
@@ -167,3 +167,27 @@ export const paymentMethods = [
   { value: 0b010, label: "Digital wallet" },
   { value: 0b100, label: "Card" },
 ];
+export declare type SearchArtist = {
+    value: string; label: string;
+}
+export type PageState = "profile" | "events" | "account" | "settings";
+export const PageStates: PageState[] = [
+  "profile",
+  "events",
+  /* "account",
+  "settings", */
+] as const;
+export type SubState = "view" | "edit" | "add";
+export type Filter = {
+  [key: string]: {
+    value: string | boolean | number;
+    label: string;
+    type: string;
+  };
+};
+
+export type PictureProps = {
+  image?: string;
+  dimensions: { width: number, height: number};
+  handleImageLoad: (e: any) => void;
+}

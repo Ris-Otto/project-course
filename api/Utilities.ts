@@ -81,19 +81,19 @@ export async function setupTestData() {
 
   const pricingCash = await Pricing.create({
     currency: "EUR",
-    type: 0,
+    type: 1,
     amount: 10.0,
   });
 
   const pricingCard = await Pricing.create({
     currency: "EUR",
-    type: 2,
+    type: 5,
     amount: 7.99,
   });
 
   const pricingWallet = await Pricing.create({
     currency: "EUR",
-    type: 1,
+    type: 7,
     amount: 40.0,
   });
   const events = await Promise.all([
@@ -104,6 +104,7 @@ export async function setupTestData() {
       VenueId: supermanVenue.id,
       start: new Date(2024, 11, 13, 19),
       end: new Date(2024, 11, 13, 20),
+      published: 0,
     }),
     Event.create({
       name: "Event 2",
@@ -112,6 +113,7 @@ export async function setupTestData() {
       VenueId: supermanVenue.id,
       start: new Date(2024, 11, 14, 18),
       end: new Date(2024, 11, 14, 19),
+      published: 0,
     }),
     Event.create({
       name: "Event 3",
@@ -120,6 +122,7 @@ export async function setupTestData() {
       VenueId: supermanVenue.id,
       start: new Date(2024, 11, 15, 15),
       end: new Date(2024, 11, 15, 16),
+      published: 0,
     }),
   ]);
 

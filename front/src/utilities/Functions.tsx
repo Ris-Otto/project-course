@@ -10,6 +10,7 @@ import React, {
   KeyboardEvent,
   Dispatch,
   useContext,
+    useMemo
 } from "react";
 import {
   Button,
@@ -39,6 +40,7 @@ import { type DefaultAction } from "./Reducer.ts";
 import type { NavigateFunction } from "react-router-dom";
 import { checkToken, logout } from "../api/auth.ts";
 import { getRequest } from "../api/APITemplate.ts";
+import {Theme} from "../theme.ts";
 
 export function ToCurrencySymbol(currency: string) {
   switch (currency) {
@@ -126,7 +128,9 @@ export const StyledHeaderField = styled.div<{
   disabled?: boolean;
 }>`
   .underwave-form-label {
-    font-weight: bold;
+      font-family: futura-pt-bold, sans-serif;
+      font-weight: bold;
+      font-style: normal;
     color: ${({ color, theme, disabled }) =>
       disabled ? "grey" : color ? color : theme.teal};
     margin-bottom: 1px;
@@ -206,7 +210,7 @@ declare type DynamicListProps<T extends object> =
     setArray: React.Dispatch<SetStateAction<T[]>>
     pattern: RegExp;
     noDisable?: boolean;
-    template: T;
+    template: Partial<T>;
     requiredKeys?: (keyof T)[];
     showEmptyOnly?: boolean;
   };
@@ -226,6 +230,7 @@ export function DynamicListForm<T extends ObjectWithKeys>({
   requiredKeys,
   color,
   showEmptyOnly,
+  disabled
 }: DynamicListProps<T>) {
   //An internal array that keeps track of how long the array should be for the user to be able to input a value
   const { arrStates, add, update, remove } = useStateArrayFactory(array);
@@ -242,6 +247,8 @@ export function DynamicListForm<T extends ObjectWithKeys>({
     }
     return ret;
   }
+
+  const t = useMemo(() => new Theme(), []);
 
   useEffect(() => {
     if (arrStates.length === 0)
@@ -271,13 +278,15 @@ export function DynamicListForm<T extends ObjectWithKeys>({
           const isDisabled = idx !== arrStates.length - 1;
           return (
             <div key={idx}>
-              <InputGroup className="indented-input mt-3">
+              <InputGroup className="indented-input">
                 {idx !== arrStates.length - 1 ? (
                   <Row>
                     <Col>
                       <Button
+                        hidden={disabled}
                         className="add-remove-button"
                         variant="danger"
+                        style={{backgroundColor: t.orange}}
                         onClick={() => remove(idx)}
                       >
                         -
@@ -288,12 +297,13 @@ export function DynamicListForm<T extends ObjectWithKeys>({
 
                 <div className="input-fields-container">
                   {ObjectEntries(a).map(([k, v]) => {
+                    if(!(k in template) ) return null;
                     return (
                       <Row key={k}>
                         <Col>
                           <FormControl
                             className="field"
-                            placeholder={k}
+                            placeholder={cfl(k)}
                             type="text"
                             name={`${header}_${idx}`}
                             id={`dynamic-list-${idx}`}
@@ -324,7 +334,7 @@ export function DynamicListForm<T extends ObjectWithKeys>({
                                   remove(idx - 1);
                               }
                             }}
-                            disabled={!noDisable && isDisabled}
+                            disabled={!noDisable && isDisabled || disabled}
                           />
                         </Col>
                       </Row>
@@ -334,9 +344,11 @@ export function DynamicListForm<T extends ObjectWithKeys>({
                 {idx === arrStates.length - 1 ? (
                   <Col>
                     <Button
+                      hidden={disabled}
                       className="add-remove-button"
                       onClick={() => add(template)}
                       disabled={!testPatternAgainstRequiredKeys(a, pattern)}
+                      style={{backgroundColor: t.teal }}
                     >
                       +
                     </Button>
@@ -752,6 +764,7 @@ function StateCheckField<TState extends boolean>({
   as,
   className,
   disabled,
+  onChange
 }: UnderwaveStandaloneFieldBaseProps<TState>) {
   const context = useContext(RequiredFieldContext);
   return (
@@ -769,7 +782,7 @@ function StateCheckField<TState extends boolean>({
               required={context.required || required}
               as={as}
               color={color}
-              disabled={disabled}
+              disabled={disabled || !(setState || onChange)}
             />
           ) : undefined
         }
@@ -967,7 +980,7 @@ function TextArea<TState extends {}>(
         required={context.required || required}
         as={as}
         color={color}
-        disabled={disabled}
+        disabled={disabled || !(setState || onChange)}
       />
       <Form.Control
         name={name}
@@ -993,7 +1006,7 @@ function TextArea<TState extends {}>(
           vContext.validated && !isValid(String(state)) && validate(state)
         }
         isValid={false}
-        disabled={!(setState || onChange)}
+        disabled={disabled || !(setState || onChange)}
       />
     </StyledUnderwaveField>
   );

@@ -9,6 +9,13 @@ import { Theme } from "./theme.ts";
 export const GlobalStyles = createGlobalStyle<{
   theme?: Theme;
 }>`
+
+    @font-face {
+        font-family: chorine-large, futura-pt, futura-pt-bold;
+        src: url("https://use.typekit.net/exs7viz.css");
+        font-style: normal;
+    }
+    
   
     html {
         margin: 0;
@@ -25,7 +32,12 @@ export const GlobalStyles = createGlobalStyle<{
 
     *, *::after, *::before {
         box-sizing: border-box;
-        font-family: 'Nunito',sans-serif, bold, black !important;
+    }
+    
+    h1, h2, h3, h4, h5, h6 {
+        font-family: chorine-large, sans-serif;
+        font-weight: 500;
+        font-style: normal;
     }
 
     body {
@@ -39,6 +51,7 @@ export const GlobalStyles = createGlobalStyle<{
         text-rendering: optimizeLegibility;
         transition: all 0.50s linear;
         overflow-x: hidden;
+        
 
         @media (max-width: ${({ theme }) => theme.mobile}) {
             font-size: 1.5rem;
@@ -65,10 +78,10 @@ export const GlobalStyles = createGlobalStyle<{
         font-size: 0;
     }
 
-    .event-picture {
+    .picture {
     position: relative;
   }
-  .event-picture-name {
+  .picture-name {
     position: absolute;
     color: white;
     background-color: rgba(0, 0, 0, 0.7);
@@ -76,13 +89,13 @@ export const GlobalStyles = createGlobalStyle<{
     padding: 1%;
   }
 
-  .event-picture-age {
+  .picture-age {
     position: absolute;
     right: -5%;
     top: -10%;
   }
 
-  .event-description {
+  .description {
     color: ${({ theme }) => theme.brownText};
     overflow: hidden;
     height: calc(3 * var(--bs-body-font-size));
@@ -241,7 +254,7 @@ export const GlobalStyles = createGlobalStyle<{
     }
     
     .h1, .h2, .h3, .h4, .h5 {
-      font-family: Nunito,serif
+        
     }
 
     .sign-up-vinyl {

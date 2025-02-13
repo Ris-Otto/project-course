@@ -38,10 +38,10 @@ export function NavMenu() {
           border: "none",
           fontSize: 0,
         }}
-        onClick={() => navigate("/home")}
+        onClick={() => navigate("/")}
       >
         <Navbar.Brand className="mr-3">
-          <img src={logo} width={50} />
+          <img src={logo} width={50} alt="Logo" />
         </Navbar.Brand>
       </Button>
 

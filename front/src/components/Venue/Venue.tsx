@@ -1,30 +1,22 @@
 // @deno-types="npm:@types/react"
 import React, {SyntheticEvent, useEffect, useMemo, useState} from "react";
-import {getRequest, postRequest} from "../../api/APITemplate.ts";
+import {postRequest} from "../../api/APITemplate.ts";
 import paths from "../../../../Shared/paths.ts";
-import {createSearchParams, useNavigate, useSearchParams,} from "react-router-dom";
-import {Button, Col, Container, Row, Tab, Tabs} from "react-bootstrap";
-import {IoImageOutline, IoLocationSharp, IoNewspaperSharp} from "react-icons/io5";
+import {Button, Col} from "react-bootstrap";
+import {IoLocationSharp} from "react-icons/io5";
 import {
   LiaCalendarWeekSolid,
   LiaClock,
   LiaEnvelope,
-  LiaHeart,
-  LiaHeartSolid,
   LiaPencilAltSolid,
   LiaPhoneAltSolid,
   LiaPlusSolid,
   LiaSave,
-  LiaShareAltSquareSolid,
   LiaTrashAltSolid,
 } from "react-icons/lia";
 import {GiTicket} from "react-icons/gi";
-import {Strong} from "../Event/Event.styled.ts";
-import {EventCalendar, StyledHoverEvent} from "../Event/EventCalendar.tsx";
-import {Circle, EditButton, StyledArtistProfile, StyledListBox, StyledVenueProfile} from "../User/StyledProfile.tsx";
-import {useAtom} from "jotai";
-import {user} from "../../store.ts";
-import {GoArrowLeft} from "react-icons/go";
+import {Circle, EditButton, StyledVenueProfile} from "../User/StyledProfile.tsx";
+import {GoUpload} from "react-icons/go";
 import type {Venue} from "../../../../api/Database/Model/Venue.ts";
 import Grid from "../Misc/Grid.tsx";
 import {Loading} from "../../utilities/Loading.tsx";
@@ -40,7 +32,7 @@ import {Theme} from "../../theme.ts";
 //@ts-ignore bah
 import cd from "../../resources/Images-Assets/cd+cover.png";
 import {logout} from "../../api/auth.ts";
-import {ObjectEntries, type StateHandler} from "../../utilities/Types.tsx";
+import {ObjectEntries, PageState, PageStates, StateHandler, SubState} from "../../utilities/Types.tsx";
 import Event from "../../../../api/Database/Model/Event.ts";
 
 import {useImageDimensions, useRequest} from "../../Hooks.ts";
@@ -50,135 +42,50 @@ import {useAuth} from "../Auth.tsx";
 import {Hours} from "../../../../Shared/Types.ts";
 import {Bio} from "../../../../api/Database/Model/Bio.ts";
 import {toast} from "react-toastify";
-import { GoUpload } from "react-icons/go";
+import {Divider, FlexCol, StyledListBox} from "../Misc/CustomStyles.tsx";
+import {Link} from "../../../../api/Database/Model/Link.ts";
+import {EditableProfileHeaders, EditableProfileMenu} from "../Misc/EditableProfileBase.tsx";
 
-export default function VenueProfilePublic() {
-  const [sp] = useSearchParams();
-  const navigate = useNavigate();
+declare type VenueProfileProps = {
+  value: Venue;
+  subState: SubState;
+  updateSubState: (subState: SubState, refetch?: boolean) => void;
+  pageState: PageState;
+  setPageState: StateHandler<PageState>;
 
-
-  const venue = useRequest<Venue>(`venue/public/${sp.get("venueId")}`);
-
-  if (!venue.response) return <div>Error</div>;
-
-  if (venue.isLoading) return <Loading />;
-
-  if (venue.isError)
-    return <div style={{ marginTop: "60px" }}>{venue.isError}</div>;
-
-  return (
-    <StyledArtistProfile
-      className="top-level-component"
-      style={{ textAlign: "left" }}
-    >
-      {/*@ts-ignore bah*/}
-      <GoArrowLeft onClick={() => navigate(-1)} className="back-arrow-3" />
-      <Container>
-        {venue.response ? (
-          <Grid header={venue.response.name}>
-            <VenueLeft venue={venue.response} />
-            <VenueMiddle venue={venue.response} />
-            <VenueRight venue={venue.response} />
-          </Grid>
-        ) :
-        null}
-      </Container>
-    </StyledArtistProfile>
-  );
 }
-export type PageState = "profile" | "events" | "account" | "settings";
-export const PageStates: PageState[] = [
-  "profile",
-  "events",
-  /* "account",
-  "settings", */
-] as const;
 
-export type SubState = "view" | "edit" | "add";
+export function VenueProfile({value, subState, updateSubState, pageState, setPageState}: VenueProfileProps) {
 
-export function VenueProfile() {
-  const [pageState, setPageState] = useState<PageState>("profile");
-  const [subState, setSubState] = useState<SubState>("view");
-  useAuth(2);
-
-  const request = useRequest<Venue>(paths.venue.self);
-
-  useEffect(() => {
-    return () => {
-      setSubState("view");
-      setPageState("profile");
-    };
-  }, []);
-  if (!request.response) return <div>Error</div>;
-
-  if (request.isLoading) return <Loading />;
-
-  if (request.isError)
-    return <div style={{ marginTop: "60px" }}>{request.isError}</div>;
-
-  function updateSubState(subState: SubState, refetch?: boolean) {
-    setSubState(subState)
-    if(refetch) {
-      request.refetch();
-    }
-  }
+  const [request,_] = useState({
+    response: value,
+  })
 
   return (
-    <StyledVenueProfile>
-      <div style={{ textAlign: "right" }}>
-        <Grid
-          header={request.response.name}
-          narrowColumnIndex={0}
-          wideColumnIndex={1}
-        >
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              minHeight: "min-content",
-              minWidth: "max-content",
-              maxWidth: "max-content",
-            }}
-          >
-            {PageStates.map((s, i) => {
-              return (
-                <Button
-                  key={i}
-                  className={
-                    pageState === s ? "selected-page-state mb-3" : "mb-3"
-                  }
-                  onClick={() => {
-                    setPageState(s);
-                    setSubState("view");
-                  }}
-                  disabled={pageState === s}
-                >
-                  {cfl(s)}
-                </Button>
-              );
-            })}
-            <Button style={{ marginTop: "10vh" }} onClick={() => logout()}>
-              Sign out
-            </Button>
-          </div>
-          <div style={{ borderLeft: "1px solid black", paddingLeft: "50px" }}>
-            {pageState === "profile" ? (
-              <VenueViewProfile
-                venue={request.response}
-                subState={subState}
-                updateSubState={updateSubState}
-              />
-            ) : pageState === "events" ? (
-              <VenueEvents
-                subState={subState}
-                venue={request.response}
-                updateSubState={updateSubState}
-              />
-            ) : null}
-          </div>
-        </Grid>
-      </div>
-    </StyledVenueProfile>
+
+      <Grid
+        header={request.response.name}
+        narrowColumnIndex={0}
+        wideColumnIndex={1}
+      >
+        <EditableProfileMenu pageState={pageState} setPageState={setPageState} updateSubState={updateSubState} />
+        <Divider>
+          {pageState === "profile" ? (
+            <VenueViewProfile
+              venue={request.response}
+              subState={subState}
+              updateSubState={updateSubState}
+            />
+          ) : pageState === "events" ? (
+            <VenueEvents
+              subState={subState}
+              venue={request.response}
+              updateSubState={updateSubState}
+            />
+          ) : null}
+        </Divider>
+      </Grid>
+
   );
 }
 
@@ -287,10 +194,8 @@ export function VenueEvent({
   }
 
   return (
-    <StyledHoverEvent
-      style={{
-        minWidth: `${dimensions.width}px`,
-      }}
+    <StyledListBox
+      minwidth={`${dimensions.width}px`}
       padding={String(p)}
     >
       {setCurrentEvent ? (
@@ -322,10 +227,10 @@ export function VenueEvent({
           age={!!event.age}
         />
         <div
-          className="event-description mt-3 mb-3"
+          className="description mt-3 mb-3"
           style={{ maxWidth: `${dimensions.width}px` }}
         >
-          {event.Bio.description}
+          {event.Bio?.description ? event.Bio.description : "No description"}
         </div>
         <div>
           <LiaCalendarWeekSolid size={30} style={{ marginRight: "5px" }} />
@@ -341,10 +246,10 @@ export function VenueEvent({
         </div>
         <div>
           <IoLocationSharp size={30} style={{ marginRight: "5px" }} />
-          {event.Venue.address}
+          {event.address ? event.address : event.Venue.address}
         </div>
       </div>
-    </StyledHoverEvent>
+    </StyledListBox>
   );
 }
 
@@ -363,9 +268,9 @@ function EventPicture({
   age?: boolean;
 }) {
   return (
-    <div className="event-picture">
-      <h4 className="event-picture-name">{name}</h4>
-      {age ? <Circle className="event-picture-age">18+</Circle> : null}
+    <div className="picture">
+      <h4 className="picture-name">{name}</h4>
+      {age ? <Circle className="picture-age">18+</Circle> : null}
       <img
         onLoad={onImageLoad}
         style={{
@@ -418,17 +323,17 @@ export function VenueViewProfile({
 
   const t = useMemo(() => new Theme(), []);
 
-  const [name, sname] = useState(() => venue.name);
-  const [addr, saddr] = useState(() => venue.address);
-  const [zip, szip] = useState(() => venue.zip);
-  const [city, scity] = useState(() => venue.city);
+  const [name, sname] = useState(venue.name);
+  const [addr, saddr] = useState(venue.address);
+  const [zip, szip] = useState(venue.zip);
+  const [city, scity] = useState(venue.city);
   const [hrs, shrs] = useState<Hours>(() => {
     return handleInitializeHours(venue)
   });
-  const [phone, sphone] = useState(() => venue.phone);
-  const [email, semail] = useState(() => venue.email);
-  const [bio, sbio] = useState(() => (venue.Bio ? venue.Bio.description : ""));
-  const [links, slinks] = useState< {url: string}>(() => {
+  const [phone, sphone] = useState(venue.phone ? venue.phone : "");
+  const [email, semail] = useState(venue.email);
+  const [bio, sbio] = useState((venue.Bio?.description ? venue.Bio.description : ""));
+  const [links, slinks] = useState<Link[]>(() => {
     return venue.Bio?.Links ? venue.Bio.Links : [];
   } )
 
@@ -466,9 +371,9 @@ export function VenueViewProfile({
     shrs((a) => {
       return handleInitializeHours(venue);
     });
-    sphone(venue.phone);
+    sphone(venue.phone ? venue.phone : "");
     semail(venue.email);
-    sbio((a) => (venue.Bio ? venue.Bio.description : ""));
+    sbio((a) => (venue.Bio?.description ? venue.Bio.description : ""));
     slinks((a) => {
       return venue.Bio?.Links ? venue.Bio.Links : [];
     } )
@@ -513,41 +418,7 @@ export function VenueViewProfile({
   }, []);
   return (
     <>
-      <div className="silly-row-sb">
-        <h2 style={{textDecoration: "underline"}}>Profile</h2>
-        <div style={{ textAlign: "right" }}>
-          {edit ? (
-            <>
-              <EditButton onClick={() => {
-                reset();
-                updateSubState("view")
-              }}>
-                Cancel
-              </EditButton>
-              <EditButton
-                onClick={async () => {
-                  await submit();
-                  updateSubState("view", true);
-                }}
-              >
-                Save
-                <LiaSave size={20} />
-              </EditButton>
-            </>
-          ) : (
-            <>
-              <EditButton onClick={() => updateSubState("edit")}>
-                Edit
-                <LiaPencilAltSolid
-                  size={20}
-                  style={{ marginLeft: "5px", marginBottom: "2px" }}
-                />
-              </EditButton>
-            </>
-          )}
-        </div>
-      </div>
-
+      <EditableProfileHeaders reset={reset} submit={submit} subState={subState} updateSubState={updateSubState} />
       <div className="profile">
         <Grid>
           <Col>
@@ -601,6 +472,7 @@ export function VenueViewProfile({
                 as="h2"
                 header={"Opening hours"}
                 color={t.redBrown}
+                disabled={!edit}
               />
               {ObjectEntries(hrs).map(([k, v], i) => {
                 return (
@@ -614,6 +486,7 @@ export function VenueViewProfile({
                     <div
                       style={{
                         textAlign: "left",
+                        color: edit ? t.redBrown : "grey"
                       }}
                     >
                       {cfl(k)}
@@ -631,6 +504,7 @@ export function VenueViewProfile({
                           style={{
                             marginRight: "10px",
                             marginLeft: "10px",
+                            color: edit ? t.redBrown : "grey"
                           }}
                       >
                         -
@@ -658,22 +532,23 @@ export function VenueViewProfile({
               setState={edit ? sbio : undefined}
             />
             <div className="mt-3">
-              <UnderwaveHeader header="Contact" as="h2" color={t.redBrown} />
+              <UnderwaveHeader header="Contact" as="h2" color={t.redBrown} disabled={!edit} />
               <div className="silly-row">
-                <LiaPhoneAltSolid size={40} />
-                <Control
-                  type="text"
-                  state={phone}
-                  setState={edit ? sphone : undefined}
-                />
-              </div>
-
-              <div className="silly-row">
-                <LiaEnvelope size={45} />
-                <Control state={email} setState={edit ? semail : undefined} />
+                <FlexCol>
+                  <LiaPhoneAltSolid size={45} style={{ color: edit ? t.redBrown : "grey" }} />
+                  <LiaEnvelope size={45} style={{ color: edit ? t.redBrown : "grey" }} />
+                </FlexCol>
+                <FlexCol>
+                  <Control
+                    type="text"
+                    state={phone}
+                    setState={edit ? sphone : undefined}
+                  />
+                  <Control state={email} setState={edit ? semail : undefined} />
+                </FlexCol>
               </div>
             </div>
-            <UnderwaveHeader header="Images" as="h2" color={t.redBrown} />
+            <UnderwaveHeader header="Images" as="h2" color={t.redBrown} disabled={!edit}/>
             <div className="mt-3 silly-row">
               {images.map((a, i) => {
                 if (i === images.length - 1) return null;
@@ -704,7 +579,7 @@ export function VenueViewProfile({
               />
             ) : null}
             <div className="mt-3">
-              <UnderwaveHeader header="Links" as="h2" color={t.redBrown} />
+              <UnderwaveHeader header="Links" as="h2" color={t.redBrown} disabled={!edit}/>
               {edit ? (<DynamicListForm
                   disabled={!edit}
                   array={links}
@@ -722,161 +597,6 @@ export function VenueViewProfile({
         </Grid>
       </div>
     </>
-  );
-}
-
-export function VenueBox({ venue, followed }: VenueBoxProps) {
-  const navigate = useNavigate();
-  const [u, _] = useAtom(user);
-  const [fState, setFState] = useState<"empty" | "filled">("empty");
-
-  async function FollowVenue() {
-    await postRequest(`/user/venue/follow/${venue.id}`);
-  }
-  return (
-    <StyledListBox>
-      <Row hidden={!u || followed} className="follow-heart-right">
-        <Col
-          xs={2}
-          md={{ span: 2, offset: 10 }}
-          onMouseEnter={() => setFState("filled")}
-          onMouseLeave={() => setFState("empty")}
-          onClick={async () => await FollowVenue()}
-        >
-          {fState === "empty" ? (
-            <LiaHeart size={30} />
-          ) : (
-            <LiaHeartSolid size={30} />
-          )}
-        </Col>
-      </Row>
-      <Row
-        onClick={() =>
-          navigate({
-            pathname: `/venues/public`,
-            search: createSearchParams({
-              venueId: venue.id,
-            }).toString(),
-          })
-        }
-      >
-        <IoImageOutline size={200} />
-        <br />
-        <Strong>{venue.name}</Strong>
-      </Row>
-    </StyledListBox>
-  );
-}
-
-export function VenueList({ venues, followed }: ListProps) {
-  return (
-    <div className="artist-list">
-      {venues.map((a, i) => {
-        return <VenueBox venue={a} key={i} followed={followed} />;
-      })}
-    </div>
-  );
-}
-
-type ListProps = {
-  venues: Venue[];
-  followed?: boolean;
-};
-
-type VenueProps = {
-  venue: Venue;
-};
-
-type VenueBoxProps = {
-  venue: Venue;
-  followed?: boolean;
-};
-
-function VenueLeft(props: VenueProps) {
-  const [u, _] = useAtom(user);
-  const [fState, setFState] = useState<"empty" | "filled">("empty");
-
-  async function FollowVenue() {
-    await postRequest(`/user/venues/follow/${props.venue.id}`);
-  }
-  return (
-    <Col>
-      <IoImageOutline size={350} />
-      <br />
-      <div style={{ textAlign: "left", marginLeft: 30 }}>
-        <Button
-          style={{ marginRight: "10px" }}
-          className="follow-share-button mb-3"
-        >
-          <LiaShareAltSquareSolid size={30} />
-        </Button>
-        <Button
-          hidden={!u || u.type !== 0}
-          onMouseEnter={() => setFState("filled")}
-          onMouseLeave={() => setFState("empty")}
-          onClick={async () => await FollowVenue()}
-          className="follow-share-button mb-3"
-        >
-          {fState === "empty" ? (
-            <LiaHeart size={30} />
-          ) : (
-            <LiaHeartSolid size={30} />
-          )}
-          Follow
-        </Button>
-      </div>
-      <a style={{ marginLeft: 30 }} href={`mailto:${props.venue.email}`}>
-        <LiaEnvelope size={60} />
-        {props.venue.email}
-      </a>
-    </Col>
-  );
-}
-
-function VenueMiddle(props: VenueProps) {
-  return (
-    <Col>
-      <br />
-      <h3 className="mb-3">About</h3>
-      {props.venue.Bio ? (
-        <div>{props.venue.Bio.description}</div>
-      ) : (
-        "Nothing to show"
-      )}
-    </Col>
-  );
-}
-
-function VenueRight(props: VenueProps) {
-  return (
-    <Col>
-      <Row className="mb-3">
-        <h1>Posts</h1>
-        <IoNewspaperSharp size={300} />
-      </Row>
-      <Row>
-        <Tabs fill>
-          <Tab
-            eventKey="upcoming"
-            title="Upcoming events"
-            style={{ margin: "5px" }}
-          >
-            <EventCalendar
-              events={props.venue.Events.filter(
-                (a) => new Date(a.start) > new Date(),
-              )}
-            />
-          </Tab>
-          <Tab eventKey="past" title="Past events" style={{ margin: "5px" }}>
-            <EventCalendar
-              events={props.venue.Events.filter(
-                (a) => new Date(a.start) <= new Date(),
-              )}
-            />
-          </Tab>
-        </Tabs>
-      </Row>
-    </Col>
   );
 }
 

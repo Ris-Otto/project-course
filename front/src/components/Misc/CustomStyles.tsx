@@ -1,77 +1,50 @@
 ﻿import { styled } from "styled-components";
-import { Button } from "react-bootstrap";
-import type { Theme } from "../../theme.ts";
+import type {Theme} from "../../theme.ts";
 
-export const StyledProfile = styled.div<{ theme: Theme }>`
+const StyledListBox = styled.div<
+    { minwidth?: string; padding?: string }
+>`
+  background-color: ${({ theme }) => theme.darkCream};
+  box-shadow: ${({ theme }) => theme.darkCream};
+  border-radius: 15px;
+  padding: ${({ padding }) => (padding ? padding : "5")}px;
+  color: black;
+    min-width: ${({ minWidth }) => (minWidth ? minWidth : "min-content")};
+`;
+
+
+const ListWrapper = styled.div`
+    .row-wrap-sb {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        min-width: max-content;
+        vertical-align: middle;
+        flex-wrap: wrap;
+    }
+    
+    .row-wrap-start {
+        display: flex;
+        flex-direction: row;
+        justify-content: start;
+        min-width: min-content;
+        flex-wrap: wrap;
+    }
+
+    .follow-heart-right {
+        text-align: right;
+        margin-right: 5px;
+        margin-top: 5px;
+        justify-items: right;
+    }
+`
+
+const StyledEditableProfile = styled.div<{ theme: Theme }>`
   /*idk*/
   justify-items: left;
   justify-content: left;
   justify-self: left;
-  display: flex;
-  flex-direction: column;
-  color: ${({ theme }) => theme.redBrown};
-
-  .follow-heart-right {
     text-align: right;
-    margin-right: 5px;
-    margin-top: 5px;
-    justify-items: right;
-  }
-
-  .artist-list {
-    min-width: 40%;
-    display: flex;
-    flex-direction: column;
-    @media (min-width: 1024px) {
-      flex-direction: row;
-    }
-  }
-`;
-
-export const StyledArtistProfile = styled.div<{ theme: Theme }>`
-  .artist-helmet {
-    background-color: ${({ theme }) => theme.teal};
-    color: ${({ theme }) => theme.cream};
-  }
-
-  .follow-share-button {
-    background-color: ${({ theme }) => theme.orange};
-    border-color: ${({ theme }) => theme.orange};
-    color: ${({ theme }) => theme.text};
-
-    &:focus {
-      box-shadow: ${({ theme }) => theme.darkOrange};
-    }
-
-    &:hover {
-      background-color: ${({ theme }) => theme.darkOrange};
-      border-color: ${({ theme }) => theme.darkOrange} !important;
-    }
-
-    &:active {
-      background-color: ${({ theme }) => theme.darkOrange};
-      border-color: ${({ theme }) => theme.darkOrange};
-      --bs-btn-active-color: #fff;
-      --bs-btn-active-bg: ${({ theme }) => theme.darkOrange} !important;
-      --bs-btn-active-border-color: ${({ theme }) =>
-        theme.darkOrange} !important;
-    }
-  }
-`;
-
-export const StyledListBox = styled.div<{ theme: Theme }>`
-  margin-right: 40px;
-  margin-bottom: 40px;
-  border: 5px solid ${({ theme }) => theme.orange};
-  background-color: white;
-  cursor: pointer;
-`;
-
-export const StyledVenueProfile = styled.div<{ theme: Theme }>`
-  /*idk*/
-  justify-items: left;
-  justify-content: left;
-  justify-self: left;
   display: flex;
   flex-direction: column;
   color: ${({ theme }) => theme.redBrown};
@@ -105,7 +78,7 @@ export const StyledVenueProfile = styled.div<{ theme: Theme }>`
       --bs-btn-active-color: #fff;
       --bs-btn-active-bg: ${({ theme }) => theme.darkCream2} !important;
       --bs-btn-active-border-color: ${({ theme }) =>
-        theme.darkCream} !important;
+    theme.darkCream} !important;
     }
   }
 
@@ -199,20 +172,29 @@ export const StyledVenueProfile = styled.div<{ theme: Theme }>`
   }
 `;
 
-export const EditButton = styled(Button)`
-  background-color: ${({ theme }) => theme.teal} !important;
-  color: white !important;
-`;
+const Divider = styled.div`
+    border-left: 1px solid black;
+    padding-left: 50px;
+`
 
-export const Circle = styled.div`
-  height: 50px;
-  width: 50px;
-  text-align: center;
-  border-radius: 50%;
-  padding: 5px;
-  display: flex;
-  flex-direction: column;
-  background-color: red;
-  font-weight: bold;
-  justify-content: center;
-`;
+const Row = styled.div<{ flexwrap?: string, justifycontent: string}>`
+    display: flex;
+    flex-direction: row;
+    justify-content: ${({ justifycontent }) => (justifycontent ? justifycontent : "space-evenly")};
+    min-width: min-content;
+    vertical-align: middle;
+    flex-wrap: ${({ flexwrap }) => (flexwrap ? flexwrap : "")};
+`
+
+const FlexCol = styled.div<{ flexwrap?: string, justifycontent: string}>`
+    display: flex;
+    flex-direction: column;
+    justify-content: ${({ justifycontent }) => (justifycontent ? justifycontent : "space-evenly")};
+    vertical-align: middle;
+    flex-wrap: ${({ flexwrap }) => (flexwrap ? flexwrap : "")};
+    
+`
+
+export { StyledListBox, ListWrapper, StyledEditableProfile, Divider, Row, FlexCol };
+
+

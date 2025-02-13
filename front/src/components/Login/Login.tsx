@@ -25,7 +25,7 @@ function LoginForm({ userType, path }: { userType: number; path: string }) {
     const response = await postRequest<UserPayload>(path, requestBody);
     if (response.isSuccess()) {
       setU(response.response);
-      navigate("/home");
+      navigate("/");
     }
     setPassword("");
   }

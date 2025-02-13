@@ -4,7 +4,6 @@ import { useImageDimensions } from "../../Hooks.ts";
 import {Control} from "../../utilities/Functions.tsx";
 import { Theme } from "../../theme.ts";
 import Event from "../../../../api/Database/Model/Event.ts";
-import { SearchArtist } from "./AddEvent.tsx";
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import {postRequest} from "../../api/APITemplate.ts";
@@ -12,8 +11,8 @@ import paths from "../../../../Shared/paths.ts";
 import { convertToDateTimeLocalString } from "../../utilities/Functions.tsx";
 import { EventSpecifics } from "./EventSpecifics.tsx";
 import {EditButton} from "../User/StyledProfile.tsx";
-import type {SubState} from "./Venue.tsx";
 import { toast } from "react-toastify";
+import {SearchArtist, SubState} from "../../utilities/Types.tsx";
 
 function EditEvent({ event, updateSubState }: {
   event: Event,

@@ -4,9 +4,9 @@ import { ArtistList } from "../Artist/Artist.tsx";
 import { StyledProfile } from "./StyledProfile.tsx";
 import { useRequest } from "../../Hooks.ts";
 import PageHeader from "../Misc/PageHeader.tsx";
-import { VenueList } from "../Venue/Venue.tsx";
 import { useAuth } from "../Auth.tsx";
 import { Loading } from "../../utilities/Loading.tsx";
+import {VenueList} from "../Venue/VenuePublic.tsx";
 
 export function UserProfile() {
   useAuth();

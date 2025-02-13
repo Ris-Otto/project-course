@@ -24,7 +24,10 @@ import { logRequestInfo } from "./Middleware/LoggerMiddleware.ts";
 import { Post } from "./Database/Model/Post.ts";
 import { EventInterest } from "./Database/Model/EventInterest.ts";
 import { OpeningHour } from "./Database/Model/OpeningHour.ts";
-import { alterSyncDatabase } from "./Utilities.ts";
+import {
+  alterSyncDatabase,
+  forceSyncDatabaseAndSetupTestData,
+} from "./Utilities.ts";
 import { Link } from "./Database/Model/Link.ts";
 
 const app = new Hono<{ Variables: JwtVariables }>();
@@ -85,6 +88,7 @@ Link.belongsTo(Bio, { foreignKey: "BioId", onDelete: "CASCADE" }); // A Link bel
 Bio.hasMany(Link, { foreignKey: "BioId", onDelete: "CASCADE" }); // A Bio has many Links
 
 //await alterSyncDatabase();
+//await forceSyncDatabaseAndSetupTestData();
 
 app.use("*", (c, next) => {
   const corsMiddlewareHandler = cors({

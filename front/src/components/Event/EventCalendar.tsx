@@ -1,20 +1,16 @@
 import type Event from "../../../../api/Database/Model/Event.ts";
-import { styled } from "styled-components";
-import { Col, Row } from "react-bootstrap";
-import { IoTimeSharp, IoLocationSharp } from "react-icons/io5";
+import {styled} from "styled-components";
+import {Col, Row} from "react-bootstrap";
+import {IoLocationSharp, IoTimeSharp} from "react-icons/io5";
 // @deno-types="@types/react"
-import { useState, useMemo } from "react";
-import {
-  ExtractHoursMinutes,
-  ToCurrencySymbol,
-  resolveBitmask,
-} from "../../utilities/Functions.tsx";
-import { createSearchParams, useNavigate } from "react-router-dom";
-import type { Theme } from "../../theme.ts";
-import { StateHandler, paymentMethods } from "../../utilities/Types.tsx";
-import { Strong } from "./Event.styled.ts";
-import { RenderEvent } from "./Event.tsx";
-import { VenueEvent } from "../Venue/Venue.tsx";
+import {useMemo, useState} from "react";
+import {ExtractHoursMinutes, resolveBitmask, ToCurrencySymbol,} from "../../utilities/Functions.tsx";
+import {createSearchParams, useNavigate} from "react-router-dom";
+import type {Theme} from "../../theme.ts";
+import {paymentMethods, StateHandler} from "../../utilities/Types.tsx";
+import {Strong} from "./Event.styled.ts";
+import {VenueEvent} from "../Venue/Venue.tsx";
+import {StyledListBox} from "../Misc/CustomStyles.tsx";
 
 const StyledEventCalendar = styled.div<{ theme: Theme }>`
   display: flex;
@@ -69,14 +65,6 @@ const StyledEventCalendar = styled.div<{ theme: Theme }>`
 
   .hover-event {
   }
-`;
-
-const StyledHoverEvent = styled.div<{ padding?: string }>`
-  background-color: ${({ theme }) => theme.darkCream};
-  box-shadow: ${({ theme }) => theme.darkCream};
-  border-radius: 15px;
-  padding: ${({ padding }) => (padding ? padding : "5")}px;
-  color: black;
 `;
 
 type EventCalendarProps = {
@@ -223,7 +211,7 @@ function CalendarDate({ date, event }: { date: Date; event: Event }) {
 function RenderHoverEvent({ event }: { event: Event }) {
   const navigate = useNavigate();
   return (
-    <StyledHoverEvent>
+    <StyledListBox>
       <h3>
         Price:{" "}
         {`${event.Pricing.amount}${ToCurrencySymbol(
@@ -248,8 +236,8 @@ function RenderHoverEvent({ event }: { event: Event }) {
       <br />
       <Strong>{event.Venue.address}</Strong>
       {/* Venue shit */}
-    </StyledHoverEvent>
+    </StyledListBox>
   );
 }
 
-export { EventCalendar, EventInCalendar, RenderHoverEvent, StyledHoverEvent };
+export { EventCalendar, EventInCalendar, RenderHoverEvent };

@@ -1,5 +1,4 @@
-﻿import {SearchArtist} from "./AddEvent.tsx";
-import Grid from "../Misc/Grid.tsx";
+﻿import Grid from "../Misc/Grid.tsx";
 import {
     Control,
     debounceApiCall,
@@ -8,7 +7,7 @@ import {
     TextArea,
     UnderwaveHeader
 } from "../../utilities/Functions.tsx";
-import { locsEnum, paymentMethods} from "../../utilities/Types.tsx";
+import {locsEnum, paymentMethods, SearchArtist} from "../../utilities/Types.tsx";
 import {EditButton} from "../User/StyledProfile.tsx";
 
 import cd from "../../resources/Images-Assets/cd+cover.png";

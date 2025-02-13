@@ -15,6 +15,7 @@ const Paths = {
     self: "/artist",
     login: "/auth/login/artist",
     search: "/artist/search",
+    all: "/artist/all",
   },
   venue: {
     register: "/auth/register/venue",

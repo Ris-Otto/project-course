@@ -31,6 +31,9 @@ class Event extends Model {
   declare BioId: number;
   declare published: boolean;
   declare cancelled: boolean;
+  declare address: string;
+  declare zip: string;
+  declare city: string;
   declare getArtists: () => Promise<Artist[]>;
   declare getVenue: () => Promise<Venue>;
   declare getBio: () => Promise<Bio>;
@@ -66,6 +69,15 @@ Event.init(
     published: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
+    },
+    address: {
+      type: DataTypes.STRING,
+    },
+    zip: {
+      type: DataTypes.STRING,
+    },
+    city: {
+      type: DataTypes.STRING,
     },
   },
   {

@@ -69,7 +69,6 @@ export function useRequest<T>(
 
   useEffect(() => {
     fetchData();
-    console.log(fetch);
   }, [fetchData]);
 
   return { response, isLoading, isError, refetch };

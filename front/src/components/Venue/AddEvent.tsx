@@ -1,23 +1,18 @@
-import { StateHandler } from "../../utilities/Types.tsx";
-import type { SubState } from "./Venue.tsx";
-import { Venue } from "../../../../api/Database/Model/Venue.ts";
+import {SearchArtist, SubState} from "../../utilities/Types.tsx";
+import {Venue} from "../../../../api/Database/Model/Venue.ts";
 //@deno-types="npm:@types/react"
-import { useState, useMemo } from "react";
+import {useMemo, useState} from "react";
 import {Control} from "../../utilities/Functions.tsx";
 import {useImageDimensions} from "../../Hooks.ts";
 import {Theme} from "../../theme.ts";
-import { toast } from "react-toastify";
+import {toast} from "react-toastify";
 import {EditButton} from "../User/StyledProfile.tsx";
 import {postRequest} from "../../api/APITemplate.ts";
 import paths from "../../../../Shared/paths.ts";
-import { Button } from "react-bootstrap";
+import {Button} from "react-bootstrap";
 import Modal from 'react-bootstrap/Modal';
 import Event from "../../../../api/Database/Model/Event.ts";
 import {EventSpecifics} from "./EventSpecifics.tsx";
-
-export declare type SearchArtist = {
-  value: string; label: string;
-}
 
 export function AddEvent({
   venue,
