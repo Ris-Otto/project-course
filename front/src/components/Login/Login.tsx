@@ -19,6 +19,7 @@ function LoginForm({ userType, path }: { userType: number; path: string }) {
   const [password, setPassword] = useState<string>("");
   const [, setU] = useAtom(user);
 
+
   async function handleLogin(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const requestBody = { email, password, type: userType };

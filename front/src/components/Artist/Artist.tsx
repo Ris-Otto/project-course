@@ -19,13 +19,13 @@ import { Strong } from "../Event/Event.styled.ts";
 import { EventCalendar } from "../Event/EventCalendar.tsx";
 import {StyledArtistProfile, StyledListBox} from "../User/StyledProfile.tsx";
 import { useAtom } from "jotai";
-import { user } from "../../store.ts";
+import { artistFollowing, user } from "../../store.ts";
 import {PageState, StateHandler, SubState} from "../../utilities/Types.tsx";
-import { FollowHeartButton } from "../Misc/MiscComponents.tsx";
+import { FollowHeartButton, FollowHeartSmall } from "../Misc/MiscComponents.tsx";
 import Grid from "../Misc/Grid.tsx";
-import { Member } from "../../../../api/Database/Model/Member.ts";
-import {compareArrays, Control, DynamicListForm, TextArea, UnderwaveHeader} from "../../utilities/Functions.tsx";
+import {Control, DynamicListForm, TextArea, UnderwaveHeader} from "../../utilities/Functions.tsx";
 import {EditableProfileHeaders, EditableProfileMenu} from "../Misc/EditableProfileBase.tsx";
+//@ts-ignore bah
 import cd from "../../resources/Images-Assets/cd+cover.png";
 import { useImageDimensions} from "../../Hooks.ts";
 import { Theme } from "../../theme.ts"
@@ -34,7 +34,9 @@ import {Link} from "../../../../api/Database/Model/Link.ts";
 import {urlPattern} from "../../utilities/Regex.ts";
 import {Media} from "../../../../api/Database/Model/Media.ts";
 import { ProfilePicture } from "../Misc/ProfilePicture.tsx";
-
+import paths from "../../../../Shared/paths.ts";
+import { toast } from "react-toastify";
+import Event from "../../../../api/Database/Model/Event.ts";
 
 export default function ArtistProfilePublic() {
   const [sp] = useSearchParams();
@@ -137,7 +139,26 @@ function ArtistViewProfile({ artist, subState, updateSubState }: { artist: Artis
   const [images, setImages] = useState<Media[]>(artist.Bio?.Media ? artist.Bio.Media :[]);
   const [links, setLinks] = useState<Link[]>(artist.Bio?.Links ? artist.Bio.Links : []);
 
-  async function submit() {}
+  async function submit() {
+    const data = {
+      name: name,
+      email: email,
+      bio: bio,
+      members: members,
+      genre: genre,
+      poster: poster,
+      images: images,
+      links: links
+    }
+
+    const res = await postRequest<Artist>(paths.artist.update, data);
+
+    if(res.isSuccess()) {
+      toast.success("Profile updated");
+    } else {
+      toast.error("Error updating profile");
+    }
+  }
   function reset() {
     setName(artist.name);
     setEmail(artist.email);
@@ -236,8 +257,8 @@ function ArtistViewProfile({ artist, subState, updateSubState }: { artist: Artis
             <UnderwaveHeader header="Images" as="h3" color={t.redBrown} disabled={!edit} />
             <div style={{display: "flex", justifyContent: "left"}}>
             <div style={{overflowX: "auto", width:"30vw", display: "inline-block", whiteSpace:"nowrap"}}  className="mt-3">
-              {[0,1,2,3,4,5,6,7].map((i, idx) => {
-                return <ArtistImage image={{href: cd}} key={idx}/>
+              {[0,1,2,3,4,5,6,7].map((i) => {
+                return <ArtistImage image={{href: cd}} key={i}/>
               })}
             </div>
             </div>
@@ -253,64 +274,37 @@ function ArtistImage({image}:{image: Partial<Media>}) {
 }
 
 function ArtistEvents({ artist, subState, updateSubState }: { artist: Artist, subState: SubState, updateSubState: (subState: SubState, refetch?: boolean) => void }) {
-  return <div></div>;
+  const [pastEvents, setpastEvents] = useState<Event[]>(artist.Events.filter(a => new Date(a.end) < new Date()));
+  const [upcomingEvents, setupcomingEvents] = useState<Event[]>(() => artist.Events.filter(a => new Date(a.start) > new Date()));
+  const [currentEvent, setCurrentEvent] = useState<Event>();
+  const t = useMemo(() => new Theme(), []);
+
+  return (<div>
+
+  </div>);
 }
 
-export function ArtistMembers({ members }: { members: Member[] }) {
-  const [ms, setMs] = useState(() =>
-    members.map((m) => {
-      return {
-        name: m.name,
-        role: m.Roles.find((r) => r.MemberId === m.id)?.description,
-      };
-    }),
-  );
-
-  const [ogMems] = useState(() => ms);
-
-  async function submit() {
-    console.log(compareArrays(ogMems, ms));
-  }
-
-  return (
-    <div>
-      {/*<DynamicListForm
-        header="Members"
-        array={ms}
-        setArray={setMs}
-        pattern={/[A-Öa-ö]+/}
-        template={{ name: "", role: "" }}
-      />*/}
-      <Button onClick={submit}>Submit changes</Button>
-    </div>
-  );
-}
-
-export function ArtistBox({ artist, followed }: ArtistBoxProps) {
+export function ArtistBox({ artist }: ArtistBoxProps) {
   const navigate = useNavigate();
   const [u, _] = useAtom(user);
-  const [fState, setFState] = useState<"empty" | "filled">("empty");
+  const [af, setAF] = useAtom(artistFollowing);
+  const followedArtist = useMemo(() => 1 === af.filter((a) => a.id === artist.id).length, [af]);
+  async function followArtist() {
+    const res = await postRequest<Artist>(`/user/artists/follow/${artist.id}`);
+    if(res.isSuccess()) {
+      setAF((af) => [...af, res.response]);
+    }
+  }
 
-  async function FollowArtist() {
-    await postRequest(`/user/artists/follow/${artist.id}`);
+  async function unfollowArtist() {
+    const res = await postRequest<Artist>(`/user/artists/unfollow/${artist.id}`);
+    if(res.isSuccess()) {
+      setAF((prev) => [prev.filter((a) => a.ArtistId !== artist.id)]);
+    }
   }
   return (
     <StyledListBox>
-      <Row hidden={!u || followed} className="follow-heart-right">
-        <Col
-          xs={2}
-          md={{ span: 2, offset: 10 }}
-          onMouseEnter={() => setFState("filled")}
-          onMouseLeave={() => setFState("empty")}
-          onClick={async () => await FollowArtist()}
-        >
-          {fState === "empty" ? (
-            <LiaHeart size={30} />
-          ) : (
-            <LiaHeartSolid size={30} />
-          )}
-        </Col>
-      </Row>
+      <FollowHeartSmall follow={followArtist} unfollow={unfollowArtist} followed={followedArtist} />
       <Row
         onClick={() =>
           navigate({
@@ -329,11 +323,11 @@ export function ArtistBox({ artist, followed }: ArtistBoxProps) {
   );
 }
 
-export function ArtistList({ artists, followed }: ListProps) {
+export function ArtistList({ artists }: ListProps) {
   return (
     <div className="artist-list">
       {artists.map((a, i) => {
-        return <ArtistBox artist={a} key={i} followed={followed} />;
+        return <ArtistBox artist={a} key={i} />;
       })}
     </div>
   );
@@ -354,7 +348,6 @@ type ArtistBoxProps = {
 };
 
 function ArtistLeft(props: ArtistProps) {
-  const [u, _] = useAtom(user);
   const [fState, setFState] = useState<"empty" | "filled">(() =>
     props.followed ? "filled" : "empty",
   );
@@ -406,9 +399,7 @@ function ArtistMiddle(props: ArtistProps) {
           <Row key={idx}>
             <Col>{m.name}</Col>
             <Col>
-              {m.Roles.map((r) => {
-                return r.MemberId === m.id ? r.description : null;
-              })}
+              {m.Role.role}
             </Col>
           </Row>
         );

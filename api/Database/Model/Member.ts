@@ -1,7 +1,6 @@
 ﻿import sequelize from "../database.ts";
 import { DataTypes, Model } from "npm:sequelize";
-import type { Artist, ArtistRead } from "./Artist.ts";
-import type { Role, RoleRead } from "./Role.ts";
+import type { Artist, Role } from "./Artist.ts";
 
 class Member extends Model {
   declare id: number;
@@ -11,12 +10,6 @@ class Member extends Model {
   declare Roles: Role[];
   declare Artists: Artist[];
 }
-
-type MemberRead = {
-  id: number;
-  name: string;
-  Roles: RoleRead[];
-};
 
 Member.init(
   {
@@ -30,8 +23,13 @@ Member.init(
   {
     tableName: "members",
     sequelize: sequelize,
+    indexes: [
+      {
+        unique: true,
+        fields: ["name", "id"],
+      },
+    ],
   },
 );
 
 export { Member };
-export type { MemberRead };

@@ -4,6 +4,7 @@ import Sequelize, { DataTypes, Model } from "npm:sequelize";
 class Media extends Model {
   declare media_id: string;
   declare internal: boolean;
+  declare poster: boolean;
   declare createdAt: Date;
   declare updatedAt: Date;
   declare href: string;
@@ -31,10 +32,24 @@ Media.init(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    poster: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+    },
   },
   {
     tableName: "media",
     sequelize: sequelize,
+    indexes: [
+      {
+        unique: true,
+        fields: ["BioId", "poster"],
+      },
+      {
+        unique: true,
+        fields: ["BioId", "href", "media_id"],
+      },
+    ],
   },
 );
 

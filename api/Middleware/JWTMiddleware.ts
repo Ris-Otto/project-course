@@ -54,7 +54,7 @@ export async function verifyIsBand(c: Context, next: Next) {
   if (token === null) {
     return c.json(Unauthorized(), 401);
   }
-  if (Number(token.type) !== 1) {
+  if (Number(token.type) < 1) {
     return c.json(Unauthorized(), 401);
   }
   await next();
@@ -65,7 +65,7 @@ export async function verifyIsVenue(c: Context, next: Next) {
   if (token === null) {
     return c.json(Unauthorized(), 401);
   }
-  if (Number(token.type) !== 2) {
+  if (Number(token.type) < 2) {
     return c.json(Unauthorized(), 401);
   }
   await next();
@@ -76,7 +76,7 @@ export async function verifyIsUser(c: Context, next: Next) {
   if (token === null) {
     return c.json(Unauthorized(), 401);
   }
-  if (Number(token.type) !== 0) {
+  if (Number(token.type) < 0) {
     return c.json(Unauthorized(), 401);
   }
   await next();

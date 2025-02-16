@@ -9,7 +9,7 @@ const StyledListBox = styled.div<
   border-radius: 15px;
   padding: ${({ padding }) => (padding ? padding : "5")}px;
   color: black;
-    min-width: ${({ minWidth }) => (minWidth ? minWidth : "min-content")};
+    min-width: ${({ minwidth }) => (minwidth ? minwidth : "min-content")};
 `;
 
 
@@ -177,7 +177,7 @@ const Divider = styled.div`
     padding-left: 50px;
 `
 
-const Row = styled.div<{ flexwrap?: string, justifycontent: string}>`
+const Row = styled.div<{ flexwrap?: string, justifycontent?: string}>`
     display: flex;
     flex-direction: row;
     justify-content: ${({ justifycontent }) => (justifycontent ? justifycontent : "space-evenly")};
@@ -186,7 +186,7 @@ const Row = styled.div<{ flexwrap?: string, justifycontent: string}>`
     flex-wrap: ${({ flexwrap }) => (flexwrap ? flexwrap : "")};
 `
 
-const FlexCol = styled.div<{ flexwrap?: string, justifycontent: string}>`
+const FlexCol = styled.div<{ flexwrap?: string, justifycontent?: string}>`
     display: flex;
     flex-direction: column;
     justify-content: ${({ justifycontent }) => (justifycontent ? justifycontent : "space-evenly")};

@@ -1,9 +1,9 @@
 ﻿import {ListFilter} from "../Misc/Filter.tsx";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {Filter, PictureProps} from "../../utilities/Types.tsx";
 import Grid from "../Misc/Grid.tsx";
 import {ListWrapper, StyledListBox} from "../Misc/CustomStyles.tsx";
-import {useImageDimensions, useRequest} from "../../Hooks.ts";
+import { useAuth, useImageDimensions, useRequest } from "../../Hooks.ts";
 import {Artist} from "../../../../api/Database/Model/Artist.ts";
 import paths from "../../../../Shared/paths.ts";
 import {Loading} from "../../utilities/Loading.tsx";
@@ -13,9 +13,13 @@ import {useMemo} from "react";
 import cd from "../../resources/Images-Assets/cd+cover.png";
 import {FollowHeartSmall} from "../Misc/MiscComponents.tsx";
 import {postRequest} from "../../api/APITemplate.ts";
+import { artistFollowing, refetchFollowedArtists, refetchFollowing } from "../../store.ts";
+import { useAtom } from "jotai";
+import {followArtist, unfollowArtist} from "../../api/Common.ts";
 
 
 function AllArtists() {
+    useAuth(-1);
     const [filters, setFilters] = useState<Filter>({
         genre: {
             value: "",
@@ -60,23 +64,23 @@ function ArtistInList({artist}: {artist: Artist}) {
     const { dimensions, handleImageLoad } = useImageDimensions(
         globalThis.innerHeight / 5,
     );
+    const [af, setAF] = useAtom(artistFollowing)
+    const isFollowing = useMemo(() => {
+        console.log(af);
+        return 1 === af.filter((a) => a.id === artist.id).length;
+    }, [af]);
+    const [, setRefetch] = useAtom(refetchFollowedArtists)
     const p = useMemo(() => dimensions.width * 0.12, [dimensions]);
     const navigate = useNavigate();
-
-    async function followArtist() {
-        await postRequest(`/user/artists/follow/${artist.id}`);
-    }
-
-    const [fState, setFState] = useState<"empty" | "filled">("empty");
 
     return (
         <StyledListBox
             minwidth={`${dimensions.width}px`}
             padding={String(p)}
             className="m-3"
-            onClick={() => navigate(`/artists/public?artistId=${artist.id}`)}
         >
-            <FollowHeartSmall fState={fState} setFState={setFState} followArtist={followArtist} followed={false} />
+            <FollowHeartSmall setRefetch={setRefetch} id={artist.id} follow={followArtist} unfollow={unfollowArtist} followed={isFollowing} />
+            <div onClick={() => navigate(`/artists/public?artistId=${artist.id}`)}>
             <ArtistPicture
                 artist={artist}
                 image={""}
@@ -88,6 +92,7 @@ function ArtistInList({artist}: {artist: Artist}) {
                 style={{ maxWidth: `${dimensions.width}px` }}
             >
                 {artist.Bio?.description ? artist.Bio.description : "No description"}
+            </div>
             </div>
         </StyledListBox>
     )
@@ -120,4 +125,4 @@ function ArtistPicture({artist, image, dimensions, handleImageLoad}: ArtistPictu
     )
 }
 
-export {AllArtists}
+export {AllArtists, ArtistInList}

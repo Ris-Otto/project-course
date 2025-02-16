@@ -3,11 +3,11 @@ import type { Context } from "npm:hono";
 import * as tokenMiddleware from "../Middleware/JWTMiddleware.ts";
 import Event from "../Database/Model/Event.ts";
 import { NotFound, Ok, Unauthorized } from "../../Shared/Result.ts";
-import { Venue } from "../Database/Model/Venue.ts";
-import { Artist } from "../Database/Model/Artist.ts";
+import { Artist, Role } from "../Database/Model/Artist.ts";
+import { Bio } from "../Database/Model/Bio.ts";
+import { Link } from "../Database/Model/Link.ts";
 import { Member } from "../Database/Model/Member.ts";
-import { Role } from "../Database/Model/Role.ts";
-import Pricing from "../Database/Model/Pricing.ts";
+
 import { deleteCookie } from "npm:hono/cookie";
 
 import {
@@ -16,6 +16,7 @@ import {
   includeMember,
 } from "../Database/framework.ts";
 import sequelize from "../Database/database.ts";
+import { Media } from "../Database/Model/Media.ts";
 
 const artistController = new Hono();
 artistController.get("/all", getArtists);
@@ -70,7 +71,73 @@ async function publishAnnouncement(c: Context) {}
 
 async function updateMembers(c: Context) {}
 
-async function updateArtist(c: Context) {}
+async function updateArtist(c: Context) {
+  const payload = c.get("tokenPayload");
+  const data = await c.req.json();
+  const {
+    name,
+    email,
+    bio,
+    members,
+    genre,
+    poster,
+    images,
+    links,
+  } = data;
+
+  const artist = await Artist.findByPk(payload.id);
+
+  if (!artist) {
+    return c.json(NotFound());
+  }
+
+  const artistUpdateRes = await artist.update({
+    name: name,
+    email: email,
+    genre: genre,
+  });
+
+  const bioRes = await artistUpdateRes.getBio();
+  await bioRes.update({ description: bio });
+  const mediaRes = await bioRes.getMedia();
+
+  const mainPoster = mediaRes.find((m) => m.poster === true);
+  if (mainPoster) {
+    await mainPoster.update({ href: poster });
+  }
+
+  for (const image of images) {
+    await Media.upsert({
+      href: image.href,
+      media_id: image.media_id,
+    });
+  }
+
+  for (const member of members) {
+    await Member.upsert(
+      {
+        name: member.name,
+        id: member.id,
+      },
+    );
+    await Role.upsert({
+      MemberId: member.id,
+      ArtistId: artist.id,
+      role: member.role,
+    });
+  }
+
+  for (const link of links) {
+    await Link.upsert({
+      url: link.url,
+      BioId: bioRes.id,
+    });
+  }
+
+  return c.json(
+    Ok(artistUpdateRes.reload({ include: [Member, Event, Bio, Media, Link] })),
+  );
+}
 
 async function rateVenue(c: Context) {}
 
@@ -83,7 +150,7 @@ async function registerForEvent(c: Context) {}
 async function getArtistProfile(c: Context) {
   const pk = c.req.param("artistId");
   const artist = await Artist.findByPk(pk, {
-    include: [includeEvent(), includeMember(), includeBio()],
+    include: [includeEvent(), Bio, Member],
     attributes: {
       exclude: ["password", "createdAt", "updatedAt", "BioId"],
     },
@@ -101,7 +168,7 @@ async function self(c: Context) {
       email: payload.email,
       id: payload.id,
     },
-    include: [includeMember()],
+    include: [Member, Event],
     attributes: { exclude: ["password", "verified"] },
   }).then((a) => (a === null ? null : a.get({ plain: true })));
   if (!user) {

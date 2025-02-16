@@ -1,36 +1,47 @@
 import { LiaHeart, LiaHeartSolid, LiaEnvelope } from "react-icons/lia";
-import type { StateHandler } from "../../utilities/Types.tsx";
+import { useState } from "react";
 import { useAtom } from "jotai";
 import { user } from "../../store.ts";
 import { Row, Button, Col } from "react-bootstrap";
 
 type FollowHeartProps = {
-  fState: "empty" | "filled";
-  setFState: StateHandler<"empty" | "filled">;
-  followArtist: () => Promise<void>;
+  setRefetch: (s: any | ((s: any) => void)) => void;
+  id: string;
   followed?: boolean;
+  follow: (id: string, callback: (s: any | ((s: any) => void)) => void) => Promise<void>;
+  unfollow: (id: string, callback: (s: any | ((s: any) => void)) => void) => Promise<void>;
 };
 
 export function FollowHeartSmall({
-  fState,
-  setFState,
-  followArtist,
+  setRefetch,
+  id,
   followed,
+  follow,
+  unfollow
 }: FollowHeartProps) {
+  const [fState, setFState] = useState(followed);
   const [u, _] = useAtom(user);
+  function handleMouseOver() {
+    setFState(!followed);
+  }
+  function handleMouseLeave() {
+    setFState(followed);
+  }
   return (
-    <Row hidden={!u || followed} className="follow-heart-right">
+    <Row hidden={!u} className="follow-heart-right">
       <Col
         xs={2}
         md={{ span: 2, offset: 10 }}
-        onMouseEnter={() => setFState("filled")}
-        onMouseLeave={() => setFState("empty")}
-        onClick={async () => await followArtist()}
+        onMouseOver={() => handleMouseOver()}
+        onMouseLeave={() => handleMouseLeave()}
+        onClick={async () => {
+          followed ? await unfollow(id, setRefetch) : await follow(id, setRefetch);
+        }}
       >
-        {fState === "empty" ? (
-          <LiaHeart size={30} />
-        ) : (
+        {fState ? (
           <LiaHeartSolid size={30} />
+        ) : (
+          <LiaHeart size={30} />
         )}
       </Col>
     </Row>
@@ -38,24 +49,32 @@ export function FollowHeartSmall({
 }
 
 export function FollowHeartButton({
-  fState,
-  setFState,
-  followArtist,
+  setRefetch,
+  id,
+  unfollow,
+  follow,
   followed,
 }: FollowHeartProps) {
-  const [u, _] = useAtom(user);
+  const [fState, setFState] = useState(followed);
+  const [u,] = useAtom(user);
+  function handleMouseOver() {
+    setFState(!followed);
+  }
+  function handleMouseLeave() {
+    setFState(followed);
+  }
   return (
     <Button
       hidden={!u}
-      onMouseEnter={() => (followed ? setFState("empty") : setFState("filled"))}
-      onMouseLeave={() => (followed ? setFState("filled") : setFState("empty"))}
-      onClick={async () => await followArtist()}
+      onMouseEnter={handleMouseOver}
+      onMouseLeave={handleMouseLeave}
+      onClick={async () => followed ? await unfollow(id, setRefetch) : await follow(id, setRefetch)}
       className="follow-share-button mb-3"
     >
-      {fState === "empty" ? (
-        <LiaHeart size={30} />
-      ) : (
+      {fState ? (
         <LiaHeartSolid size={30} />
+      ) : (
+        <LiaHeart size={30} />
       )}
       Follow
     </Button>

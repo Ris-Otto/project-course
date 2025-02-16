@@ -8,6 +8,8 @@ const Paths = {
     login: "/auth/login",
     events: "/user/events",
     self: "/user",
+    artists: "user/artists/following",
+    venues: "user/venues/following",
   },
   artist: {
     register: "/auth/register/artist",
@@ -16,6 +18,7 @@ const Paths = {
     login: "/auth/login/artist",
     search: "/artist/search",
     all: "/artist/all",
+    update: "/artist/update",
   },
   venue: {
     register: "/auth/register/venue",

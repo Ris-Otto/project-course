@@ -126,18 +126,6 @@ async function getUser(c: Context) {
       email: payload.email,
       id: payload.id,
     },
-    include: [
-      includeModel({
-        model: Artist,
-        exclude: ["password", "BioId"],
-        excludeMapping: true,
-      }),
-      includeModel({
-        model: Venue,
-        exclude: ["password"],
-        excludeMapping: true,
-      }),
-    ],
     attributes: { exclude: ["password", "verified"] },
   }).then((a) => (a === null ? null : a.get({ plain: true })));
   if (!user) {
@@ -187,6 +175,7 @@ async function followArtist(c: Context) {
   });
   if (!user) return c.json(NotFound());
   const add = await user.addArtist(artistId);
+  console.log(add);
   if (!add) return c.json(InternalError() /*or not found*/);
   return c.json(Ok(add));
 }
@@ -203,7 +192,7 @@ async function unfollowArtist(c: Context) {
   if (!user) return c.json(NotFound());
   const add = await user.removeArtist(artistId);
   if (!add) return c.json(InternalError() /*or not found*/);
-  return c.json(Ok(add));
+  return c.json(Ok({ id: artistId }));
 }
 
 async function followVenue(c: Context) {
@@ -231,7 +220,7 @@ async function unfollowVenue(c: Context) {
     },
   });
   if (!user) return c.json(NotFound());
-  const add = await user.addVenue(venueId);
+  const add = await user.removeVenue(venueId);
   if (!add) return c.json(InternalError() /*or not found*/);
   return c.json(Ok(add));
 }

@@ -10,11 +10,10 @@ import { User } from "./Database/Model/User.ts";
 import EventMapping from "./Database/Model/EventMapping.ts";
 import { ArtistFollowing, VenueFollowing } from "./Database/Model/Following.ts";
 import { Bio } from "./Database/Model/Bio.ts";
-import { Artist, ArtistMembersMapping } from "./Database/Model/Artist.ts";
+import { Artist, Role } from "./Database/Model/Artist.ts";
 import { Member } from "./Database/Model/Member.ts";
 import { Venue } from "./Database/Model/Venue.ts";
 import { Media } from "./Database/Model/Media.ts";
-import { Role } from "./Database/Model/Role.ts";
 import { Review } from "./Database/Model/Review.ts";
 import userController from "./Controllers/UserController.ts";
 import authController from "./Controllers/AuthController.ts";
@@ -45,12 +44,11 @@ Event.hasMany(Review);
 Event.hasMany(EventInterest);
 
 Member.belongsToMany(Artist, {
-  through: { model: ArtistMembersMapping, unique: false },
+  through: { model: Role, unique: false },
 });
-Member.hasMany(Role);
 
 Artist.belongsToMany(Member, {
-  through: { model: ArtistMembersMapping, unique: false },
+  through: { model: Role, unique: false },
 });
 Artist.belongsToMany(Event, {
   through: { model: EventMapping, unique: false },

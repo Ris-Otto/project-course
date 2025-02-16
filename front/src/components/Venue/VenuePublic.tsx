@@ -1,9 +1,10 @@
 ﻿import type { Venue } from "../../../../api/Database/Model/Venue.ts";
-import { useRequest } from "../../Hooks.ts";
+import { useAuth, useImageDimensions, useRequest } from "../../Hooks.ts";
 import { Loading } from "../../utilities/Loading.tsx";
-import { StyledArtistProfile, StyledListBox } from "../User/StyledProfile.tsx";
+import { StyledArtistProfile } from "../User/StyledProfile.tsx";
+import { StyledListBox } from "../Misc/CustomStyles.tsx";
 import Grid from "../Misc/Grid.tsx";
-import { user } from "../../store.ts";
+import { refetchFollowedVenues, refetchFollowing, user, venueFollowing } from "../../store.ts";
 import { postRequest } from "../../api/APITemplate.ts";
 import { Strong } from "../Event/Event.styled.ts";
 import { EventCalendar } from "../Event/EventCalendar.tsx";
@@ -29,11 +30,16 @@ import {
     Tabs,
 } from "react-bootstrap";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useAtom } from "jotai";
 import { createSearchParams } from "react-router-dom";
+import { FollowHeartButton, FollowHeartSmall } from "../Misc/MiscComponents.tsx";
+import { PictureProps } from "../../utilities/Types.tsx";
+import cd from "../../resources/Images-Assets/cd+cover.png";
+import { followVenue, unfollowVenue } from "../../api/Common.ts";
 
 export default function VenueProfilePublic() {
+  useAuth(-1);
     const [sp] = useSearchParams();
     const navigate = useNavigate();
 
@@ -134,13 +140,11 @@ type VenueBoxProps = {
     followed?: boolean;
 };
 
-function VenueLeft(props: VenueProps) {
-    const [u, _] = useAtom(user);
-    const [fState, setFState] = useState<"empty" | "filled">("empty");
+function VenueLeft({ venue }: VenueProps) {
+    const [vf] = useAtom(venueFollowing);
+    const isFollowing = useMemo(() => 1 === vf.filter((a) => a.id === venue.id).length, [vf]);
+    const [, setRefetch] = useAtom(refetchFollowedVenues);
 
-    async function FollowVenue() {
-        await postRequest(`/user/venues/follow/${props.venue.id}`);
-    }
     return (
         <Col>
             <IoImageOutline size={350} />
@@ -149,25 +153,17 @@ function VenueLeft(props: VenueProps) {
                 <Button
                     style={{ marginRight: "10px" }}
                     className="follow-share-button mb-3"
+                    onClick={() => {
+
+                    }}
                 >
                     <LiaShareAltSquareSolid size={30} />
                 </Button>
-                <Button
-                    hidden={!u || u.type !== 0}
-                    onMouseEnter={() => setFState("filled")}
-                    onMouseLeave={() => setFState("empty")}
-                    onClick={async () => await FollowVenue()}
-                    className="follow-share-button mb-3"
-                >
-                    {fState === "empty"
-                        ? <LiaHeart size={30} />
-                        : <LiaHeartSolid size={30} />}
-                    Follow
-                </Button>
+                <FollowHeartButton setRefetch={setRefetch} id={venue.id} follow={followVenue} unfollow={unfollowVenue} followed={isFollowing} />
             </div>
-            <a style={{ marginLeft: 30 }} href={`mailto:${props.venue.email}`}>
+            <a style={{ marginLeft: 30 }} href={`mailto:${venue.email}`}>
                 <LiaEnvelope size={60} />
-                {props.venue.email}
+                {venue.email}
             </a>
         </Col>
     );
@@ -221,3 +217,67 @@ function VenueRight(props: VenueProps) {
       </Col>
     );
 }
+
+function VenueInList({venue}: {venue: Venue}) {
+  const { dimensions, handleImageLoad } = useImageDimensions(
+    globalThis.innerHeight / 5,
+  );
+  const [vf,] = useAtom(venueFollowing)
+  const [, setRefetch] = useAtom(refetchFollowedVenues)
+  const isFollowing = useMemo(() => 1 === vf.filter((a) => a.id === venue.id).length, [vf]);
+  const p = useMemo(() => dimensions.width * 0.12, [dimensions]);
+  const navigate = useNavigate();
+
+  return (
+    <StyledListBox
+      minwidth={`${dimensions.width}px`}
+      padding={String(p)}
+      className="m-3"
+    >
+      <FollowHeartSmall setRefetch={setRefetch} id={venue.id} follow={followVenue} unfollow={unfollowVenue} followed={isFollowing} />
+      <div onClick={() => navigate(`/venues/public?venueId=${venue.id}`)}>
+        <VenuePicture
+          venue={venue}
+          image={""}
+          dimensions={dimensions}
+          handleImageLoad={handleImageLoad}
+        />
+        <div
+          className="description mt-3 mb-3"
+          style={{ maxWidth: `${dimensions.width}px` }}
+        >
+          {venue.Bio?.description ? venue.Bio.description : "No description"}
+        </div>
+      </div>
+    </StyledListBox>
+  )
+}
+
+type VenuePictureProps = {
+  venue: Venue
+} & PictureProps
+
+function VenuePicture({venue, image, dimensions, handleImageLoad}: VenuePictureProps) {
+
+  return (
+    <div className="picture">
+      <h4 className="picture-name">{venue.name}</h4>
+      <img
+        onLoad={handleImageLoad}
+        style={{
+          borderRadius: "10px",
+          width: `${dimensions.width}px`,
+          height: `${dimensions.height}px`,
+        }}
+        onError={({ currentTarget }) => {
+          currentTarget.onerror = null; // prevents looping
+          currentTarget.src = cd;
+        }}
+        src={image}
+        alt={"Poster"}
+      />
+    </div>
+  )
+}
+
+export { VenuePicture, VenueInList }

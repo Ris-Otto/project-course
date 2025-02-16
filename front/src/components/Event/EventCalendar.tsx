@@ -55,8 +55,8 @@ const StyledEventCalendar = styled.div<{ theme: Theme }>`
   }
 
   .event-in-calendar {
-    min-height: min-content !important;
-    max-height: min-content !important;
+    min-height: max-content !important;
+    max-height: max-content !important;
   }
 
   .event-calendar {

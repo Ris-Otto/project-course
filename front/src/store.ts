@@ -3,8 +3,14 @@ import type { UserPayload } from "../../Shared/Types.ts";
 import Event from "../../api/Database/Model/Event.ts";
 // @deno-types="npm:@types/react"
 import { useCallback } from "react";
-import { ArtistFollowing } from "../../api/Database/Model/Following.ts";
+import {
+  ArtistFollowing,
+  VenueFollowing,
+} from "../../api/Database/Model/Following.ts";
 import Pricing from "../../api/Database/Model/Pricing.ts";
+import { Artist } from "../../api/Database/Model/Artist.ts";
+import { Venue } from "../../api/Database/Model/Venue.ts";
+import { User } from "../../api/Database/Model/User.ts";
 
 declare interface UserRegister {
   email: string;
@@ -93,13 +99,17 @@ const userRegisterAtom = atom(initialUser);
 const venueRegisterAtom = atom(initialVenue);
 const artistRegisterAtom = atom(initialArtist);
 
+const artistFollowing = atom<Artist[]>([]);
+const venueFollowing = atom<Venue[]>([]);
+
+const refetchFollowing = atom(false);
+
+const refetchFollowedVenues = atom(false);
+const refetchFollowedArtists = atom(false);
+
 const events = atom<Event[]>([]);
 
 const user = atom<UserPayload | null>(null);
-
-const pricingAtom = atom<Pricing | null>(null);
-
-const userFollowing = atom<ArtistFollowing[] | null>(null);
 
 store.set(events, []);
 store.set(user, null);
@@ -107,13 +117,16 @@ store.set(user, null);
 const open = atom(false);
 
 export {
+  artistFollowing,
   artistRegisterAtom,
   events,
+  open,
+  refetchFollowedArtists,
+  refetchFollowedVenues,
+  refetchFollowing,
   store,
   user,
-  userFollowing,
   userRegisterAtom,
+  venueFollowing,
   venueRegisterAtom,
-  pricingAtom,
-  open,
 };

@@ -4,10 +4,9 @@ import { ArtistFollowing } from "./Database/Model/Following.ts";
 import Event from "./Database/Model/Event.ts";
 import Pricing from "./Database/Model/Pricing.ts";
 import EventMapping from "./Database/Model/EventMapping.ts";
-import { Artist, ArtistMembersMapping } from "./Database/Model/Artist.ts";
+import { Artist, Role } from "./Database/Model/Artist.ts";
 import { Member } from "./Database/Model/Member.ts";
 import { Venue } from "./Database/Model/Venue.ts";
-import { Role } from "./Database/Model/Role.ts";
 import { Hours } from "../Shared/Types.ts";
 
 export async function setupTestData() {
@@ -35,25 +34,15 @@ export async function setupTestData() {
       name: "Heston",
     }),
   ]);
-  const amm: ArtistMembersMapping[] = [];
-  for (const mem of mems) {
-    amm.push(
-      await ArtistMembersMapping.create({
-        MemberId: mem.id,
-        ArtistId: artistWithMems.id,
-      }),
-    );
-  }
   const roles = ["guitar", "bass", "drums", "provisions"];
-  for (let i = 0; i < amm.length; i++) {
-    const a = amm[i];
+  for (let i = 0; i < mems.length; i++) {
+    const mem = mems[i];
     await Role.create({
-      description: roles[i],
-      MemberId: a.MemberId,
-      ArtistId: a.ArtistId,
+      MemberId: mem.id,
+      ArtistId: artistWithMems.id,
+      role: roles[i],
     });
   }
-
   await ArtistFollowing.create({
     UserId: hefeUser.id,
     ArtistId: artistWithMems.id,

@@ -6,7 +6,7 @@ import {
 } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import Login from "./components/Login/Login.tsx";
-import { Auth } from "./components/Auth.tsx";
+import { UserSession } from "./components/UserSession.tsx";
 import { Register } from "./components/Register/Register.tsx";
 import { ThemeProvider } from "styled-components";
 import { Home } from "./components/Home/Home.tsx";
@@ -32,7 +32,7 @@ const theme = new Theme();
 
 const router = createBrowserRouter(
   createRoutesFromElements(
-    <Route path={"/"} element={<Auth />}>
+    <Route path={"/"} element={<UserSession />}>
       <Route path="login" element={<Login />} />
       <Route path="register">
         <Route path="" element={<Register />} />

@@ -203,7 +203,7 @@ export declare type UnderwaveHeaderProps<E extends ElementType> =
     disabled?: boolean;
   };
 
-declare type DynamicListProps<T extends object> =
+declare type DynamicListProps<T extends ObjectWithKeys> =
   UnderwaveHeaderProps<ElementType> & {
     array: T[];
     name: string;

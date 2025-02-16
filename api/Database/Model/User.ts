@@ -16,8 +16,9 @@ class User extends Model {
   declare updatedAt: Date;
   declare authenticate: (enteredPassword: string) => Promise<boolean>;
   declare addVenue: (venueId: string) => Promise<VenueFollowing | null>;
-  declare addArtist: (artistId: string) => Promise<ArtistFollowing | null>;
-  declare removeArtist: (artistId: string) => Promise<ArtistFollowing | null>;
+  declare addArtist: (artistId: string) => Promise<Artist | null>;
+  declare removeArtist: (artistId: string) => Promise<Artist | null>;
+  declare removeVenue: (venueId: string) => Promise<Venue | null>;
   declare getVenues: () => Promise<Venue[]>;
   declare getArtists: () => Promise<Artist[]>;
 }

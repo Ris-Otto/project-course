@@ -1,6 +1,10 @@
 ﻿// @deno-types="@types/react"
 import { MutableRefObject, useCallback, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAtom } from "jotai";
 import { getRequest } from "./api/APITemplate.ts";
+import { user } from "./store.ts";
+import { checkToken } from "./api/auth.ts";
 
 /**
  * @param {*} ref the reffered component
@@ -72,4 +76,26 @@ export function useRequest<T>(
   }, [fetchData]);
 
   return { response, isLoading, isError, refetch };
+}
+
+export function useAuth(accessType?: number) {
+  const [_, setU] = useAtom(user);
+  const navigate = useNavigate();
+  useEffect(() => {
+    const check: () => void = async () => {
+      const res = await checkToken();
+      if (res.isSuccess()) {
+        //Successful, set the user state from the data received
+        setU(res.response);
+        if (accessType && res.response.type < accessType) {
+          navigate("/");
+        }
+      } else {
+        setU(null);
+        //If the authentication failed, redirect to the login page with a state containing the path
+        navigate("/");
+      }
+    };
+    check();
+  }, []);
 }

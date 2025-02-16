@@ -11,15 +11,13 @@ import {
   LiaPencilAltSolid,
   LiaPhoneAltSolid,
   LiaPlusSolid,
-  LiaSave,
   LiaTrashAltSolid,
 } from "react-icons/lia";
 import {GiTicket} from "react-icons/gi";
-import {Circle, EditButton, StyledVenueProfile} from "../User/StyledProfile.tsx";
+import {Circle, EditButton} from "../User/StyledProfile.tsx";
 import {GoUpload} from "react-icons/go";
 import type {Venue} from "../../../../api/Database/Model/Venue.ts";
 import Grid from "../Misc/Grid.tsx";
-import {Loading} from "../../utilities/Loading.tsx";
 import {
   cfl,
   Control,
@@ -31,14 +29,12 @@ import {
 import {Theme} from "../../theme.ts";
 //@ts-ignore bah
 import cd from "../../resources/Images-Assets/cd+cover.png";
-import {logout} from "../../api/auth.ts";
-import {ObjectEntries, PageState, PageStates, StateHandler, SubState} from "../../utilities/Types.tsx";
+import {ObjectEntries, PageState, StateHandler, SubState} from "../../utilities/Types.tsx";
 import Event from "../../../../api/Database/Model/Event.ts";
 
-import {useImageDimensions, useRequest} from "../../Hooks.ts";
+import {useImageDimensions} from "../../Hooks.ts";
 import {EditEvent} from "./EditEvent.tsx";
 import {AddEvent} from "./AddEvent.tsx";
-import {useAuth} from "../Auth.tsx";
 import {Hours} from "../../../../Shared/Types.ts";
 import {Bio} from "../../../../api/Database/Model/Bio.ts";
 import {toast} from "react-toastify";
@@ -285,6 +281,7 @@ function EventPicture({
           currentTarget.src = cd;
         }}
         src={cd}
+        alt="event-picture"
       />
     </div>
   );
@@ -370,16 +367,11 @@ export function VenueViewProfile({
     saddr(venue.address);
     szip(venue.zip);
     scity(venue.city);
-    shrs((a) => {
-      return handleInitializeHours(venue);
-    });
+    shrs(handleInitializeHours(venue));
     sphone(venue.phone ? venue.phone : "");
     semail(venue.email);
-    sbio((a) => (venue.Bio?.description ? venue.Bio.description : ""));
-    slinks((a) => {
-      return venue.Bio?.Links ? venue.Bio.Links : [];
-    } )
-
+    sbio((venue.Bio?.description ? venue.Bio.description : ""));
+    slinks(venue.Bio?.Links ? venue.Bio.Links : []);
     setImages((a) => {
       const media = venue.Bio?.Media;
       if(!media || media.length === 0) {

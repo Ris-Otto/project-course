@@ -1,10 +1,10 @@
-﻿import Event, { type EventRead } from "./Event.ts";
+﻿import Event from "./Event.ts";
 import sequelize from "../database.ts";
 import { DataTypes, Model } from "npm:sequelize";
 import Sequelize from "npm:sequelize";
 import * as bcrypt from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
-import type { Member, MemberRead } from "./Member.ts";
-import type { Bio, BioRead } from "./Bio.ts";
+import type { Member } from "./Member.ts";
+import type { Bio } from "./Bio.ts";
 
 class Artist extends Model {
   declare name: string;
@@ -28,15 +28,6 @@ class Artist extends Model {
   declare getBio: () => Promise<Bio>;
   declare removeEvent: (eventId: string) => Promise<Event | null>;
 }
-
-type ArtistRead = {
-  name: string;
-  email: string;
-  id: string;
-  genre: string;
-  Members: MemberRead[];
-  Bio: BioRead;
-};
 
 Artist.init(
   {
@@ -91,13 +82,14 @@ Artist.addHook("beforeCreate", async (artist: Artist) => {
   artist.password = await bcrypt.hash(artist.password, salt);
 });
 
-class ArtistMembersMapping extends Model {
+class Role extends Model {
   declare id: number;
   declare MemberId: number;
   declare ArtistId: string;
+  declare role: string;
 }
 
-ArtistMembersMapping.init(
+Role.init(
   {
     id: {
       type: DataTypes.INTEGER,
@@ -112,10 +104,19 @@ ArtistMembersMapping.init(
       type: DataTypes.UUID,
       allowNull: false,
     },
+    role: {
+      type: DataTypes.STRING,
+    },
   },
   {
-    tableName: "artist_member_mapping",
+    tableName: "roles",
     sequelize: sequelize,
+    indexes: [
+      {
+        unique: true,
+        fields: ["MemberId", "ArtistId"],
+      },
+    ],
   },
 );
 
@@ -155,5 +156,4 @@ NonArtist.init(
   },
 );
 
-export { Artist, ArtistMembersMapping, NonArtist };
-export type { ArtistRead };
+export { Artist, NonArtist, Role };

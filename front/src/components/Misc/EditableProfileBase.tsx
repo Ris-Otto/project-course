@@ -1,6 +1,5 @@
 ﻿import {PageState, PageStates, StateHandler, SubState} from "../../utilities/Types.tsx";
-import {useAuth} from "../Auth.tsx";
-import {useRequest} from "../../Hooks.ts";
+import { useAuth, useRequest } from "../../Hooks.ts";
 import {Loading} from "../../utilities/Loading.tsx";
 //deno-types="npm:@types/react;
 import React, {useEffect, useState, useMemo} from "react";

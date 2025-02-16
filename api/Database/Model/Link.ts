@@ -31,5 +31,11 @@ Link.init(
   {
     sequelize: sequelize,
     tableName: "links", // Specify table name explicitly
+    indexes: [
+      {
+        unique: true,
+        fields: ["url", "BioId"],
+      },
+    ],
   },
 );

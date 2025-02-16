@@ -1,6 +1,5 @@
-﻿import { Artist } from "./Model/Artist.ts";
+﻿import { Artist, Role } from "./Model/Artist.ts";
 import { Member } from "./Model/Member.ts";
-import { Role } from "./Model/Role.ts";
 import type { Model, ModelStatic } from "npm:sequelize";
 import Event from "./Model/Event.ts";
 import { Venue } from "./Model/Venue.ts";
@@ -73,10 +72,6 @@ export function includeMember() {
     model: Member,
     excludeMapping: true,
     exclude: ["createdAt", "updatedAt"],
-    include: {
-      model: Role,
-      exclude: ["createdAt", "updatedAt"],
-    },
   });
 }
 

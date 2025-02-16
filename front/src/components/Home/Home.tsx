@@ -2,7 +2,7 @@ import paths from "../../../../Shared/paths.ts";
 import Event from "../../../../api/Database/Model/Event.ts";
 import "ag-grid-community/styles/ag-grid.css"; // Mandatory CSS required by the Data Grid
 import "ag-grid-community/styles/ag-theme-quartz.css";
-import { useRequest } from "../../Hooks.ts";
+import { useAuth, useRequest } from "../../Hooks.ts";
 import PageHeader from "../Misc/PageHeader.tsx";
 import { useAtom } from "jotai";
 import { user } from "../../store.ts";
@@ -25,6 +25,7 @@ const StyledHome = styled.div`
 `;
 
 export function Home() {
+  useAuth(-1);
   const [u, _] = useAtom(user);
 
   const { response, isLoading, isError } = useRequest<Event[]>(paths.event.all);
