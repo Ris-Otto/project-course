@@ -175,7 +175,6 @@ async function followArtist(c: Context) {
   });
   if (!user) return c.json(NotFound());
   const add = await user.addArtist(artistId);
-  console.log(add);
   if (!add) return c.json(InternalError() /*or not found*/);
   return c.json(Ok(add));
 }
