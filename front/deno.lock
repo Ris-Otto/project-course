@@ -17,6 +17,7 @@
     "npm:ag-grid-react@^32.2.2": "32.2.2_react@18.3.1_react-dom@18.3.1__react@18.3.1",
     "npm:axios@^1.7.7": "1.7.7",
     "npm:bootstrap@^5.3.3": "5.3.3_@popperjs+core@2.11.8",
+    "npm:fuse.js@^7.1.0": "7.1.0",
     "npm:jotai@^2.10.0": "2.10.0_@types+react@18.3.9_react@18.3.1",
     "npm:lodash@^4.17.21": "4.17.21",
     "npm:react-bootstrap@^2.10.7": "2.10.7_@types+react@18.3.9_react@18.3.1_react-dom@18.3.1__react@18.3.1",
@@ -25,6 +26,8 @@
     "npm:react-helmet@^6.1.0": "6.1.0_react@18.3.1",
     "npm:react-icons@^5.3.0": "5.3.0_react@18.3.1",
     "npm:react-image@^4.1.0": "4.1.0_@babel+runtime@7.26.0_react@18.3.1_react-dom@18.3.1__react@18.3.1",
+    "npm:react-images-uploading@3.1.7": "3.1.7_react@18.3.1_react-dom@18.3.1__react@18.3.1",
+    "npm:react-images-uploading@^3.1.7": "3.1.7_react@18.3.1_react-dom@18.3.1__react@18.3.1",
     "npm:react-router-dom@^6.26.2": "6.26.2_react@18.3.1_react-dom@18.3.1__react@18.3.1",
     "npm:react-select@^5.9.0": "5.9.0_react@18.3.1_react-dom@18.3.1__react@18.3.1_@types+react@18.3.9",
     "npm:react-spinners@~0.14.1": "0.14.1_react@18.3.1_react-dom@18.3.1__react@18.3.1",
@@ -908,6 +911,9 @@
     "function-bind@1.1.2": {
       "integrity": "sha512-7XHNxH7qX9xG5mIwxkhumTox/MIRNcOgDrxWsMt2pAr23WHp6MrRlN7FBSFpCpr+oVO0F744iUgR82nJMfG2SA=="
     },
+    "fuse.js@7.1.0": {
+      "integrity": "sha512-trLf4SzuuUxfusZADLINj+dE8clK1frKdmqiJNb1Es75fmI5oY6X2mxLVUciLLjxqw/xr72Dhy+lER6dGd02FQ=="
+    },
     "gensync@1.0.0-beta.2": {
       "integrity": "sha512-3hN7NaskYvMDLQY55gnW3NQ+mesEAepTqlg+VEbj7zzqEMBVNhzcGYYeqFo/TlYz6eQiFcp1HcsCZO+nGgS8zg=="
     },
@@ -1175,6 +1181,13 @@
       "integrity": "sha512-qwPNlelQe9Zy14K2pGWSwoL+vHsAwmJKS6gkotekDgRpcnRuzXNap00GfibD3eEPYu3WCPlyIUUNzcyHOrLHjw==",
       "dependencies": [
         "@babel/runtime",
+        "react",
+        "react-dom"
+      ]
+    },
+    "react-images-uploading@3.1.7_react@18.3.1_react-dom@18.3.1__react@18.3.1": {
+      "integrity": "sha512-woET50eCezm645iIeP4gCoN7HjdR3T64UXC5l53yd+2vHFp+pwABH8Z/aAO5IXDeC1aP6doQ+K738L701zswAw==",
+      "dependencies": [
         "react",
         "react-dom"
       ]
@@ -1897,6 +1910,7 @@
       "npm:ag-grid-react@^32.2.2",
       "npm:axios@^1.7.7",
       "npm:bootstrap@^5.3.3",
+      "npm:fuse.js@^7.1.0",
       "npm:jotai@^2.10.0",
       "npm:lodash@^4.17.21",
       "npm:react-bootstrap@^2.10.7",
@@ -1904,6 +1918,7 @@
       "npm:react-helmet@^6.1.0",
       "npm:react-icons@^5.3.0",
       "npm:react-image@^4.1.0",
+      "npm:react-images-uploading@^3.1.7",
       "npm:react-router-dom@^6.26.2",
       "npm:react-select@^5.9.0",
       "npm:react-spinners@~0.14.1",

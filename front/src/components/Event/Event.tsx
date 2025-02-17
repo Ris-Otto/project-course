@@ -14,6 +14,7 @@ import {Loading} from "../../utilities/Loading.tsx";
 import {ListFilter} from "../Misc/Filter.tsx";
 import {useAtom} from "jotai";
 import {user} from "../../store.ts";
+import Fuse from "fuse.js";
 
 function EventPage() {
   const eventId = useParams<{ eventId?: string }>();
@@ -48,7 +49,7 @@ export function AllEvents() {
   const [filteredList, setFilteredList] = useState<Event[]>([]);
   const [filters, setFilters] = useState<Filter>({
     name: { value: "", label: "Search by name", type: "text" },
-    location: { value: "", label: "Location", type: "text" },
+    address: { value: "", label: "Address", type: "text" },
     age: { value: false, label: "Age restriction (18+) ", type: "checkbox" },
   } as const);
 
@@ -63,7 +64,14 @@ export function AllEvents() {
     getData();
   }, []);
 
-  useEffect(() => {
+  function fuseText<T extends object>(list: T[], key: keyof Filter) {
+    const fuse = new Fuse(list, {
+      keys: [String(key)],
+    });
+    return fuse.search(String(filters[key].value))
+  }
+
+  function onFilter() {
     for (const [k, v] of ObjectEntries(filters)) {
       switch (k) {
         case "age":
@@ -77,11 +85,18 @@ export function AllEvents() {
         case "name":
           if (v.value !== "") {
             setTimeout(() => {
-              setFilteredList((s) =>
-                s?.filter((a) => a.name.includes(String(v.value).trim())),
+              setFilteredList(fuseText(filteredList, "name").map((a) => a.item)
               );
             }, 200);
-            break;
+            return;
+          }
+          break;
+        case "address":
+          if (v.value !== "") {
+            setTimeout(() => {
+              setFilteredList(fuseText(filteredList, "address").map((a) => a.item));
+            }, 0);
+            return;
           }
           break;
         default:
@@ -89,13 +104,13 @@ export function AllEvents() {
       }
     }
     setFilteredList(list ? list : []);
-  }, [filters]);
+  }
 
   return (
     <>
       {list ? (
         <Grid header={"Events"} wideColumnIndex={1}>
-          <ListFilter filters={filters} setFilters={setFilters}/>
+          <ListFilter filters={filters} setFilters={setFilters} onFilter={onFilter}/>
           <div style={{ textAlign: "center" }}>
             <EventCalendar events={filteredList} />
           </div>

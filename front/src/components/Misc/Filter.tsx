@@ -1,9 +1,14 @@
 ﻿import {Filter} from "../../utilities/Types.tsx";
-import {useMemo} from "react";
+//@deno-types="npm:@types/react"
+import {useMemo, useEffect} from "react";
 
-export function ListFilter({filters, setFilters}: {filters: Filter, setFilters: (filter: Filter) => void}) {
+export function ListFilter({filters, setFilters, onFilter}: {filters: Filter, setFilters: (filter: Filter) => void, onFilter?: () => void}) {
 
   const keys = useMemo(() => Object.keys(filters), [filters]);
+
+  useEffect(() => {
+    if(onFilter) onFilter()
+  }, [filters])
 
   return (
       <div className="mt-3 mb-3" style={{ display: "flex",
@@ -20,14 +25,16 @@ export function ListFilter({filters, setFilters}: {filters: Filter, setFilters: 
                     <input
                         id={v.label}
                         className="mb-3"
+                        //@ts-ignore bah
                         value={v.value}
                         type="checkbox"
-                        onChange={(e) => {
+                        onChange={() => {
                           setFilters({
                             ...filters,
                             [k]: {
                               ...v,
-                              value: e.target.value,
+                              //ugh silly input-checkbox! *waves fist*
+                              value: !v.value,
                             },
                           })
                         }}
@@ -40,6 +47,7 @@ export function ListFilter({filters, setFilters}: {filters: Filter, setFilters: 
                 <input
                   key={i}
                   className="mb-3"
+                  //@ts-ignore bah
                   value={v.value}
                   placeholder={v.label}
                   type="text"

@@ -28,6 +28,8 @@ import {
   forceSyncDatabaseAndSetupTestData,
 } from "./Utilities.ts";
 import { Link } from "./Database/Model/Link.ts";
+import { HonoDiskStorage } from "npm:@hono-storage/node-disk";
+import { dl } from "./Utils/logger.ts";
 
 const app = new Hono<{ Variables: JwtVariables }>();
 
@@ -87,6 +89,12 @@ Bio.hasMany(Link, { foreignKey: "BioId", onDelete: "CASCADE" }); // A Bio has ma
 
 //await alterSyncDatabase();
 //await forceSyncDatabaseAndSetupTestData();
+
+export const storage = new HonoDiskStorage({
+  dest: "./uploads/",
+  filename: (c, file) =>
+    `${file.originalname}-${new Date().getTime()}.${file.extension}`,
+});
 
 app.use("*", (c, next) => {
   const corsMiddlewareHandler = cors({

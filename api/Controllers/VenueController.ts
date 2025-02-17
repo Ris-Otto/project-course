@@ -15,6 +15,7 @@ import { Media } from "../Database/Model/Media.ts";
 import { Link } from "../Database/Model/Link.ts";
 import { OpeningHour } from "../Database/Model/OpeningHour.ts";
 import { Artist } from "../Database/Model/Artist.ts";
+import { storage } from "../main.ts";
 
 const venueController = new Hono();
 
@@ -57,6 +58,12 @@ venueController.get("/", tokenMiddleware.verifyIsVenue, getVenue);
 venueController.get("/public/:venueId", getVenueProfile);
 
 venueController.get("/all", getVenues);
+
+venueController.post(
+  "bio/update/poster",
+  tokenMiddleware.verifyIsVenue,
+  updatePoster,
+);
 
 async function getVenues(c: Context) {
   const venues = (await Venue.findAll({
@@ -237,6 +244,11 @@ async function cancelEvent(c: Context) {
 
 async function rateArtist(c: Context) {}
 
+async function updatePoster(c: Context) {
+  storage.single("image");
+  return c.json(Ok());
+}
+
 async function updateBio(c: Context) {
   const payload = c.get("tokenPayload");
   const data = await c.req.json();
@@ -266,9 +278,9 @@ async function updateBio(c: Context) {
 async function updateMediaAndLinks(data: any, bioId: number) {
   if (data.media) {
     for (const media of data.media) {
-      await Media.create({
+      await Media.upsert({
         internal: false,
-        href: media.image_link,
+        href: media.data_url,
         BioId: bioId,
       });
     }

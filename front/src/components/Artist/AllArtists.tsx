@@ -90,7 +90,6 @@ function ArtistInList({artist}: {artist: Artist}) {
           <div style={{cursor: "pointer"}} onClick={() => navigate(`/artists/public?artistId=${artist.id}`)}>
             <ProfilePicture
               item={artist}
-              image={artist.Bio?.Media?.find(a => a.poster) || {href: "", poster: true,}}
               dimensions={dimensions}
               handleImageLoad={handleImageLoad}
               showName={true}

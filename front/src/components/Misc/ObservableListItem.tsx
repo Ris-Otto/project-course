@@ -8,8 +8,6 @@ import { useNavigate } from "react-router-dom";
 import { PrimitiveAtom } from "jotai/vanilla/atom"
 import { Media } from "../../../../api/Database/Model/Media.ts";
 
-
-
 export type ObservableItem = {
   id: string;
   name: string;
@@ -21,11 +19,11 @@ export type ObservableItem = {
 
 type ObservableListItemProps<T extends ObservableItem> = {
   item: T;
-  setRefetch: (s: any | ((s: any) => void)) => void;
+  setRefetch: (s: boolean | ((s: boolean) => boolean)) => void;
   refetchAtom: PrimitiveAtom<T[]>;
   navigatePath?: string;
-  follow: (id: string, callback: (s: any | ((s: any) => void)) => void) => Promise<boolean>;
-  unfollow: (id: string, callback: (s: any | ((s: any) => void)) => void) => Promise<boolean>;
+  follow: (id: string, callback: (s: boolean | ((s: boolean) => boolean)) => void) => Promise<boolean>;
+  unfollow: (id: string, callback: (s: boolean | ((s: boolean) => boolean)) => void) => Promise<boolean>;
 }
 
 const def = { href: "", poster: true, }
@@ -41,11 +39,6 @@ function ObservableListItem<T extends ObservableItem>({ item, setRefetch, refetc
   const p = useMemo(() => dimensions.width * 0.12, [dimensions]);
   const navigate = useNavigate();
 
-  const image = useMemo(() => {
-
-    return item.Bio ? item.Bio.Media ? item.Bio.Media.find(a => a.poster) : def : def;
-  }, item.Bio)
-
   return (
     <StyledListBox
       minwidth={`${dimensions.width}px`}
@@ -57,7 +50,6 @@ function ObservableListItem<T extends ObservableItem>({ item, setRefetch, refetc
         <ProfilePicture
           item={item}
           showName={true}
-          image={image}
           dimensions={dimensions}
           handleImageLoad={handleImageLoad}
         />

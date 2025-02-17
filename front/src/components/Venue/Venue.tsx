@@ -1,6 +1,6 @@
 // @deno-types="npm:@types/react"
 import React, {SyntheticEvent, useEffect, useMemo, useState} from "react";
-import {postRequest} from "../../api/APITemplate.ts";
+import { postFileRequest, postRequest } from "../../api/APITemplate.ts";
 import paths from "../../../../Shared/paths.ts";
 import {Button, Col} from "react-bootstrap";
 import {IoLocationSharp} from "react-icons/io5";
@@ -43,6 +43,10 @@ import {Link} from "../../../../api/Database/Model/Link.ts";
 import {EditableProfileHeaders, EditableProfileMenu} from "../Misc/EditableProfileBase.tsx";
 import { ProfilePicture } from "../Misc/ProfilePicture.tsx";
 import { urlPattern } from "../../utilities/Regex.ts";
+import ImageUploading from "react-images-uploading";
+import ReactImageUploading from "react-images-uploading";
+import { ExportInterface } from "react-images-uploading/dist/typings";
+import { ImageListType } from "npm:react-images-uploading@3.1.7";
 
 declare type VenueProfileProps = {
   value: Venue;
@@ -336,12 +340,14 @@ export function VenueViewProfile({
     return venue.Bio?.Links ? venue.Bio.Links : [];
   } )
 
-  const [images, setImages] = useState<{ image_link: string }[]>(() => {
+  const [images, setImages] = useState<ImageListType>([]);
+
+  const [poster, setPoster] = useState<ImageListType>(() => {
     const media = venue.Bio?.Media;
     if(!media || media.length === 0) {
       return [];
     }
-    return media.map((a) => { return { image_link: a.href }})
+    return media.map((a) => { return { data_url: a.href }})
   });
 
   const edit = useMemo(() => subState === "edit", [subState]);
@@ -372,12 +378,17 @@ export function VenueViewProfile({
     semail(venue.email);
     sbio((venue.Bio?.description ? venue.Bio.description : ""));
     slinks(venue.Bio?.Links ? venue.Bio.Links : []);
-    setImages((a) => {
+    setImages([]);
+    setPoster(() => {
       const media = venue.Bio?.Media;
       if(!media || media.length === 0) {
         return [];
       }
-      return media.map((a) => { return { image_link: a.href }})
+      const ret = media.find((a) => a.poster);
+      if(ret) {
+        return [{data_url: ret.href}]
+      } else return []
+      //return media.map((a) => { return { data_url: a.href }})
     });
   }
 
@@ -389,10 +400,11 @@ export function VenueViewProfile({
     const venueUpdate = await postRequest<Venue>(paths.venue.update, { name, addr, zip, city, hrs, phone });
     //Submit bio-specific details
     // media, links, description
-    const media = images.filter(a => a.image_link.length > 0)
+    const media = images.filter(a => a.data_url.length > 0)
     const urls = links.filter(a => a.url.length > 0)
-    const bioUpdate = await postRequest<Bio>(paths.venue.bio.update, { media, urls, bio });
+    const bioUpdate = await postRequest<Bio>(paths.venue.bio.update, { media, urls, bio, poster: { href: poster[0].data_url, poster: true} });
 
+    const posterUpdate = await postFileRequest<any>("/venue/bio/update/poster", poster[0]);
     if(venueUpdate.isSuccess()) {
       toast.success("Venue details successfully updated")
     } else {
@@ -404,6 +416,12 @@ export function VenueViewProfile({
       toast.error("Bio details failed to update")
     }
   }
+
+  const onChange = (imageList: ImageListType, addUpdateIndex: number) => {
+    // data for submit
+    console.log(imageList, addUpdateIndex);
+    setPoster(imageList);
+  };
 
   useEffect(() => {
     return () => {
@@ -417,7 +435,51 @@ export function VenueViewProfile({
         <Grid>
           <Col>
             <div className="silly-row-start">
-              <ProfilePicture image={cd} dimensions={dimensions} handleImageLoad={handleImageLoad} />
+              <div>
+                {/*@ts-ignore bah*/}
+                <ReactImageUploading
+                  value={poster}
+                  onChange={onChange}
+                  maxNumber={1}
+                  dataURLKey="data_url"
+                >
+                  {({
+                      imageList,
+                      onImageUpload,
+                      onImageUpdate,
+                      onImageRemove,
+                      isDragging,
+                      dragProps,
+                    }: ExportInterface) => (
+                    // write your building UI
+                    <div className="upload__image-wrapper">
+                      {(edit && poster.length === 0) ? (
+                        <>
+                      <Button
+                        style={isDragging ? { color: 'red' } : undefined}
+                        onClick={onImageUpload}
+                        {...dragProps}
+                      >
+                        Click or Drop here
+                      </Button>
+                          &nbsp;
+                        </>
+                      ): null}
+                      {imageList.map((image, index) => (
+                        <div key={index} className="image-item">
+                          <ProfilePicture item={venue} image={image.data_url} dimensions={dimensions} handleImageLoad={handleImageLoad} />
+                          {edit ? (
+                          <div style={{textAlign: "center"}}>
+                            <Button onClick={() => onImageUpdate(index)}><LiaPencilAltSolid /></Button>
+                            <Button onClick={() => onImageRemove(index)}><LiaTrashAltSolid/></Button>
+                          </div>
+                          ): null}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </ReactImageUploading>
+              </div>
               <Control
                 header={"Venue name"}
                 as={"h3"}
@@ -542,7 +604,7 @@ export function VenueViewProfile({
               name={"images"}
               array={images}
               setArray={setImages}
-              template={{ image_link: "" }}
+              template={{ data_url: "" }}
               pattern={urlPattern}
               disabled={!edit}
               color={t.redBrown}

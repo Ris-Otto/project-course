@@ -9,6 +9,29 @@ const instance = axios.create({
   },
 });
 
+const fileInstance = axios.create({
+  baseURL: "http://localhost:8000",
+  headers: {
+    "Content-Type": "multipart/form-data",
+    "transfer-encoding": "chunked",
+  },
+});
+
+export async function postFileRequest<
+  TResponse,
+>(path: string, data?: Record<string, {}>): Promise<Result<TResponse>> {
+  try {
+    const response = await fileInstance.post<ResponseData<TResponse>>(
+      path,
+      data,
+      { withCredentials: true },
+    );
+    return new Result(response.data);
+  } catch {
+    return new Result(null);
+  }
+}
+
 export async function postRequest<
   TResponse,
 >(path: string, data?: Record<string, {}>): Promise<Result<TResponse>> {
