@@ -35,6 +35,7 @@ import { useAtom } from "jotai";
 import { createSearchParams } from "react-router-dom";
 import { FollowHeartButton, FollowHeartSmall } from "../Misc/MiscComponents.tsx";
 import { PictureProps } from "../../utilities/Types.tsx";
+//@ts-ignore bah
 import cd from "../../resources/Images-Assets/cd+cover.png";
 import { followVenue, unfollowVenue } from "../../api/Common.ts";
 

@@ -25,6 +25,7 @@ const Paths = {
     self: "/venue",
     public: "/venue/public",
     login: "/auth/login/venue",
+    all: "/venue/all",
     event: {
       create: "/venue/event/add",
       update: "/venue/event/update",

@@ -3,7 +3,7 @@ import {styled} from "styled-components";
 import {Col, Row} from "react-bootstrap";
 import {IoLocationSharp, IoTimeSharp} from "react-icons/io5";
 // @deno-types="@types/react"
-import {useMemo, useState} from "react";
+import React, {useMemo, useState} from "react";
 import {ExtractHoursMinutes, resolveBitmask, ToCurrencySymbol,} from "../../utilities/Functions.tsx";
 import {createSearchParams, useNavigate} from "react-router-dom";
 import type {Theme} from "../../theme.ts";
@@ -30,11 +30,12 @@ const StyledEventCalendar = styled.div<{ theme: Theme }>`
     font-size: 24px;
     border-radius: 10px 0px 0px 10px;
     cursor: pointer;
-    padding-left: 5%;
+    padding: 10%;
     border-left: 1px solid black;
     border-top: 1px solid black;
     border-bottom: 1px solid black;
-    min-width: min-content !important;
+    min-width: min-content;
+    min-height: 100%;
   }
 
   .calendar-info {
@@ -44,10 +45,10 @@ const StyledEventCalendar = styled.div<{ theme: Theme }>`
     color: #432;
     background-color: #b3e6ff;
     padding-left: 5%;
-    border-radius: 0px 10px 10px 0px;
+    border-radius: 0 10px 10px 0;
     cursor: pointer;
     min-width: 100%;
-    max-height: 100%;
+    min-height: 100%;
     white-space: nowrap;
     border-right: 1px solid black;
     border-top: 1px solid black;
@@ -55,12 +56,13 @@ const StyledEventCalendar = styled.div<{ theme: Theme }>`
   }
 
   .event-in-calendar {
-    min-height: max-content !important;
+    min-height: 100% !important;
     max-height: max-content !important;
+    position: relative;
   }
 
   .event-calendar {
-    flex-row: nowrap;
+    flex-wrap: nowrap;
   }
 
   .hover-event {
@@ -77,6 +79,8 @@ type EventInCalendarProps = {
 function EventCalendar({ events }: EventCalendarProps) {
   return (
     <StyledEventCalendar>
+      {events.length > 0 ? (
+      <>
       {events.map((e, idx) => {
         return (
           <div className="mb-3" key={idx}>
@@ -84,6 +88,8 @@ function EventCalendar({ events }: EventCalendarProps) {
           </div>
         );
       })}
+      </>
+      ): "Nothing to show"}
     </StyledEventCalendar>
   );
 }
@@ -96,6 +102,7 @@ function EventInCalendar({ event }: EventInCalendarProps) {
     [event],
   );
   const end = useMemo(() => ExtractHoursMinutes(new Date(event.end)), [event]);
+  const [rect, setRect] = useState<DOMRect>();
 
   return (
     <Row className="event-in-calendar ">
@@ -107,13 +114,13 @@ function EventInCalendar({ event }: EventInCalendarProps) {
           event={event}
           start={start}
           end={end}
-          isHovering={isHovering}
           setIsHovering={setIsHovering}
+          setRect={setRect}
         />
       </Col>
       {isHovering ? (
         <div style={{ zIndex: 10 }}>
-          <EventHover event={event} />
+          <EventHover event={event} rect={rect} />
         </div>
       ) : null}
     </Row>
@@ -124,16 +131,19 @@ function CalendarInfo({
   event,
   start,
   end,
-  isHovering,
   setIsHovering,
+  setRect
 }: {
   event: Event;
   start: string;
   end: string;
-  isHovering: boolean;
   setIsHovering: StateHandler<boolean>;
+  setRect: StateHandler<DOMRect|undefined>;
 }) {
-  const handleMouseOver = () => {
+
+  const handleMouseOver = (e: any) => {
+    const rect = e.target.getBoundingClientRect();
+    setRect(rect);
     setIsHovering(true);
   };
 
@@ -149,8 +159,8 @@ function CalendarInfo({
           pathname: `/events/${String(event.id)}`,
         })
       }
-      onMouseEnter={() => {
-        handleMouseOver();
+      onMouseEnter={(e: any) => {
+        handleMouseOver(e);
       }}
       onMouseLeave={() => {
         handleMouseOut();
@@ -167,17 +177,31 @@ function CalendarInfo({
   );
 }
 
-function EventHover({ event }: { event: Event }) {
+function EventHover({ event, rect }: { event: Event, rect: DOMRect | undefined }) {
+  const pos = useMemo(() => {
+    if(!rect) return {x: 0, y: 0}
+    if(rect.right + 200 > globalThis.innerWidth) {
+      return {
+        x: rect.right - rect.left*0.65 - 10,
+        y: rect.top - rect.top/2,
+      }
+    }
+    return {
+      x: rect.right + 10,
+      y: rect.top - rect.top/2,
+    }
+  }, [rect])
   return (
     <div
       style={{
         position: "fixed",
-        right: "30vw",
+        left: `${pos.x}px`,
+        top: `${pos.y}px`,
         border: "1px solid black",
         borderRadius: "15px",
       }}
     >
-      <VenueEvent event={event} />
+      <VenueEvent event={event} updateSubState={(s,r) => {}} />
     </div>
   );
 }

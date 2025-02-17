@@ -1,6 +1,6 @@
 ﻿import {createSearchParams, useNavigate, useParams} from "react-router-dom";
 import Event from "../../../../api/Database/Model/Event.ts";
-import {getRequest} from "../../api/APITemplate.ts";
+import { getRequest, postRequest } from "../../api/APITemplate.ts";
 import paths from "../../../../Shared/paths.ts";
 import {Filter, ObjectEntries, paymentMethods} from "../../utilities/Types.tsx";
 import {resolveBitmask, ToCurrencySymbol,} from "../../utilities/Functions.tsx";
@@ -12,6 +12,8 @@ import {useEffect, useState} from "react";
 import {useRequest} from "../../Hooks.ts";
 import {Loading} from "../../utilities/Loading.tsx";
 import {ListFilter} from "../Misc/Filter.tsx";
+import {useAtom} from "jotai";
+import {user} from "../../store.ts";
 
 function EventPage() {
   const eventId = useParams<{ eventId?: string }>();
@@ -69,16 +71,16 @@ export function AllEvents() {
             setFilteredList((s) => s.filter((a) => !!a.age));
             return;
           } else {
-            setFilteredList(list);
+            setFilteredList(list ? list : []);
           }
           break;
         case "name":
           if (v.value !== "") {
             setTimeout(() => {
               setFilteredList((s) =>
-                s?.filter((a) => a.name.includes(v.value.trim())),
+                s?.filter((a) => a.name.includes(String(v.value).trim())),
               );
-            }, [200]);
+            }, 200);
             break;
           }
           break;
@@ -86,7 +88,7 @@ export function AllEvents() {
           break;
       }
     }
-    setFilteredList(list);
+    setFilteredList(list ? list : []);
   }, [filters]);
 
   return (
@@ -105,6 +107,7 @@ export function AllEvents() {
 }
 
 function RenderEvent({ event }: { event: Event }) {
+  const [u,] = useAtom(user);
   const navigate = useNavigate();
   return (
     <>
@@ -155,6 +158,31 @@ function RenderEvent({ event }: { event: Event }) {
       <br />
       <Strong>{event.Venue.address}</Strong>
       {/* Venue shit */}
+      {u ? (
+        <>
+          <button onClick={async () => {
+            await postRequest<Event>(`user/events/${event.id}/show-interest`, {
+              interest_level: 2,
+            })
+          }}>
+            Going
+          </button>
+          <button onClick={async () => {
+            await postRequest<Event>(`user/events/${event.id}/show-interest`, {
+              interest_level: 1,
+            })
+          }}>
+            interested
+          </button>
+          <button onClick={async () => {
+            await postRequest<Event>(`user/events/${event.id}/show-interest`, {
+              interest_level: 0,
+            })
+          }}>
+            not going
+          </button>
+        </>
+      ): null}
     </>
   );
 }

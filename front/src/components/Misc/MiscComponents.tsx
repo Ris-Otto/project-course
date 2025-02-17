@@ -8,8 +8,8 @@ type FollowHeartProps = {
   setRefetch: (s: any | ((s: any) => void)) => void;
   id: string;
   followed?: boolean;
-  follow: (id: string, callback: (s: any | ((s: any) => void)) => void) => Promise<void>;
-  unfollow: (id: string, callback: (s: any | ((s: any) => void)) => void) => Promise<void>;
+  follow: (id: string, callback: (s: any | ((s: any) => void)) => void) => Promise<boolean>;
+  unfollow: (id: string, callback: (s: any | ((s: any) => void)) => void) => Promise<boolean>;
 };
 
 export function FollowHeartSmall({
@@ -35,7 +35,17 @@ export function FollowHeartSmall({
         onMouseOver={() => handleMouseOver()}
         onMouseLeave={() => handleMouseLeave()}
         onClick={async () => {
-          followed ? await unfollow(id, setRefetch) : await follow(id, setRefetch);
+          if(!followed) {
+            const res = await follow(id, setRefetch);
+            if(res) {
+              setFState((s: boolean) => !s);
+            }
+          } else {
+            const res = await unfollow(id, setRefetch);
+            if(res) {
+              setFState((s: boolean) => !s);
+            }
+          }
         }}
       >
         {fState ? (

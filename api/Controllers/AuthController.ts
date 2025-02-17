@@ -28,9 +28,8 @@ auth.post("verify/venue/:id", verifyVenue);
 
 async function registerBand(c: Context) {
   const artist = await c.req.json<Artist>();
-  console.log(artist);
   const dbRes = await Artist.create({ ...artist, verified: 1 }).then((data) =>
-    data.get({ plain: true }),
+    data.get({ plain: true })
   );
   //TODO send confirm email email
   return c.json(Ok(dbRes));
@@ -65,7 +64,7 @@ async function registerUser(c: Context) {
     name: name,
     email: email,
     password: password,
-    verified: 0,
+    verified: 1,
   }).then((data) => data.get({ plain: true }));
   dl.info("User: {@a}", dbRes);
   //TODO send confirm email email

@@ -1,4 +1,4 @@
-﻿import "jsr:@std/dotenv/load";
+﻿import "@std/dotenv/load";
 
 const env = Deno.env.toObject();
 const MYSQL_HOST = env.MYSQL_HOST;
@@ -14,10 +14,10 @@ const JWT_EXP = env.JWT_EXP;
 export {
   JWT_EXP,
   JWT_SECRET,
+  MYSQL_DB,
   MYSQL_HOST,
   MYSQL_PASSWORD,
+  MYSQL_PORT,
   MYSQL_USER,
   ORIGIN,
-  MYSQL_DB,
-  MYSQL_PORT,
 };

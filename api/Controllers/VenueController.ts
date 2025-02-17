@@ -6,7 +6,6 @@ import {
   includeEvent,
   includeVenue,
 } from "../Database/framework.ts";
-import { getCookie, setCookie } from "npm:hono/cookie";
 import { NotFound, Ok, Unauthorized } from "../../Shared/Result.ts";
 import { Venue } from "../Database/Model/Venue.ts";
 import Event from "../Database/Model/Event.ts";
@@ -15,8 +14,6 @@ import Pricing from "../Database/Model/Pricing.ts";
 import { Media } from "../Database/Model/Media.ts";
 import { Link } from "../Database/Model/Link.ts";
 import { OpeningHour } from "../Database/Model/OpeningHour.ts";
-import { dl } from "../Utils/logger.ts";
-import sequelize from "../Database/database.ts";
 import { Artist } from "../Database/Model/Artist.ts";
 
 const venueController = new Hono();
@@ -58,6 +55,18 @@ venueController.post("/update", tokenMiddleware.verifyIsVenue, updateVenue);
 
 venueController.get("/", tokenMiddleware.verifyIsVenue, getVenue);
 venueController.get("/public/:venueId", getVenueProfile);
+
+venueController.get("/all", getVenues);
+
+async function getVenues(c: Context) {
+  const venues = (await Venue.findAll({
+    include: [includeBio()],
+    attributes: {
+      exclude: ["password", "createdAt", "updatedAt"],
+    },
+  })).map((e) => e.get({ plain: true }));
+  return c.json(Ok(venues));
+}
 
 async function requestArtist(c: Context) {}
 

@@ -77,6 +77,9 @@ export function Menu() {
         <Link to={`/artists`} tabIndex={tabIndex} onClick={hide}>
           Artists
         </Link>
+        <Link to={`/venues`} tabIndex={tabIndex} onClick={hide}>
+          Venues
+        </Link>
       </>
       {
         //Links to content specific for an admin

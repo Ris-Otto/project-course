@@ -23,7 +23,16 @@ EventInterest.init(
       allowNull: false,
     },
   },
-  { tableName: "event_interest", sequelize: sequelize },
+  {
+    tableName: "event_interest",
+    sequelize: sequelize,
+    indexes: [
+      {
+        unique: true,
+        fields: ["EventId", "UserId"],
+      },
+    ],
+  },
 );
 
 export { EventInterest };

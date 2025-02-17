@@ -21,6 +21,7 @@ class User extends Model {
   declare removeVenue: (venueId: string) => Promise<Venue | null>;
   declare getVenues: () => Promise<Venue[]>;
   declare getArtists: () => Promise<Artist[]>;
+  declare addEventInterest: (eventId: string) => Promise<Event | null>;
 }
 
 User.init(

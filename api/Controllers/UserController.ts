@@ -19,6 +19,7 @@ import {
 } from "../Database/framework.ts";
 import { deleteCookie } from "npm:hono/cookie";
 import { Task } from "../Utilities.ts";
+import { EventInterest } from "../Database/Model/EventInterest.ts";
 
 const userController = new Hono();
 
@@ -220,24 +221,27 @@ async function unfollowVenue(c: Context) {
   });
   if (!user) return c.json(NotFound());
   const add = await user.removeVenue(venueId);
-  if (!add) return c.json(InternalError() /*or not found*/);
   return c.json(Ok(add));
 }
 
 async function showInterest(c: Context) {
   const payload = c.get("tokenPayload");
   const eventId = c.req.param("eventId");
-  const { interest_level } = await c.req.json<{ interest_level: number }>();
+  const { interest_level } = await c.req.json();
   const event = await Event.findByPk(eventId);
-  const user_id = await User.findOne({
-    where: {
-      email: payload.email,
-      id: payload.id,
-    },
-    attributes: { include: ["id"] },
+  if (!event) {
+    return c.json(NotFound("event"));
+  }
+  const user = await User.findByPk(payload.id);
+  if (!user) {
+    return c.json(NotFound("user"));
+  }
+  const interest = await EventInterest.upsert({
+    EventId: eventId,
+    UserId: payload.id,
+    interest: interest_level,
   });
-  //TODO add table event_interest (or sim.) with event_id, user_id, interest[tinyint(1,2)]
-  //event.addInterest(user_id, interest_level);
+  return c.json(Ok(interest));
 }
 
 export default userController;

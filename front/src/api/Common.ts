@@ -8,8 +8,10 @@ async function followVenue(
 ) {
   const res = await postRequest<Venue>(`/user/venues/follow/${venueId}`);
   if (res.isSuccess()) {
-    updateCallback((s) => !s);
+    updateCallback((s: any) => !s);
+    return true;
   }
+  return false;
 }
 
 async function unfollowVenue(
@@ -18,8 +20,10 @@ async function unfollowVenue(
 ) {
   const res = await postRequest<Venue>(`/user/venues/unfollow/${venueId}`);
   if (res.isSuccess()) {
-    updateCallback((s) => !s);
+    updateCallback((s: any) => !s);
+    return true;
   }
+  return false;
 }
 
 async function followArtist(
@@ -28,8 +32,10 @@ async function followArtist(
 ) {
   const res = await postRequest<Artist>(`/user/artists/follow/${artistId}`);
   if (res.isSuccess()) {
-    updateCallback((s) => !s);
+    updateCallback((s: any) => !s);
+    return true;
   }
+  return false;
 }
 
 async function unfollowArtist(
@@ -38,8 +44,10 @@ async function unfollowArtist(
 ) {
   const res = await postRequest<Artist>(`/user/artists/unfollow/${artistId}`);
   if (res.isSuccess()) {
-    updateCallback((s) => !s);
+    updateCallback((s: any) => !s);
+    return true;
   }
+  return false;
 }
 
 export { followArtist, followVenue, unfollowArtist, unfollowVenue };

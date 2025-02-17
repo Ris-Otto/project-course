@@ -57,7 +57,7 @@ export function Home() {
               </h2>
             </Row>
             <Row>
-              <Col>Nothing to show</Col>
+              <Col>TBI</Col>
             </Row>
           </Col>
           <Col>
@@ -66,7 +66,7 @@ export function Home() {
                 <h2 style={{ padding: "5px" }}>Similar to artists you like</h2>
               </Row>
               <Row>
-                <Col>Nothing to show</Col>
+                <Col>TBI</Col>
               </Row>
             </Row>
 
@@ -79,7 +79,7 @@ export function Home() {
                   borderRadius: "15px",
                 }}
               >
-                <EventCalendar events={response} />
+                <EventCalendar events={response.filter(e => e.start > new Date())} />
               </Col>
             </Row>
           </Col>

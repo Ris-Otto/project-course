@@ -27,6 +27,7 @@ import VenueProfilePublic from "./components/Venue/VenuePublic.tsx";
 import {AllArtists} from "./components/Artist/AllArtists.tsx";
 import paths from "../../Shared/paths.ts";
 import {EditableProfileBase} from "./components/Misc/EditableProfileBase.tsx";
+import { AllVenues } from "./components/Venue/AllVenues.tsx";
 
 const theme = new Theme();
 
@@ -52,7 +53,7 @@ const router = createBrowserRouter(
         <Route path="profile" element={<EditableProfileBase Profile={ArtistProfile} requestPath={paths.artist.self} accessType={1} />} />
       </Route>
       <Route path="venues">
-        <Route path="" element={<div>venue list</div>} />
+        <Route path="" element={<AllVenues />} />
         <Route path="public" element={<VenueProfilePublic />} />
         <Route path="profile" element={<EditableProfileBase Profile={VenueProfile} requestPath={paths.venue.self} accessType={2} /> } />
       </Route>

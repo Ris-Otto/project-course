@@ -1,5 +1,5 @@
 ﻿import {ListFilter} from "../Misc/Filter.tsx";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {Filter, PictureProps} from "../../utilities/Types.tsx";
 import Grid from "../Misc/Grid.tsx";
 import {ListWrapper, StyledListBox} from "../Misc/CustomStyles.tsx";
@@ -12,10 +12,11 @@ import {useMemo} from "react";
 //@ts-ignore bah
 import cd from "../../resources/Images-Assets/cd+cover.png";
 import {FollowHeartSmall} from "../Misc/MiscComponents.tsx";
-import {postRequest} from "../../api/APITemplate.ts";
-import { artistFollowing, refetchFollowedArtists, refetchFollowing } from "../../store.ts";
+import { artistFollowing, refetchFollowedArtists } from "../../store.ts";
 import { useAtom } from "jotai";
 import {followArtist, unfollowArtist} from "../../api/Common.ts";
+import { ProfilePicture } from "../Misc/ProfilePicture.tsx";
+import { ObservableListItem } from "../Misc/ObservableListItem.tsx";
 
 
 function AllArtists() {
@@ -33,6 +34,8 @@ function AllArtists() {
         }
     });
 
+    const [, setRefetch] = useAtom(refetchFollowedArtists)
+
     const artists = useRequest<Artist[]>(paths.artist.all);
 
     if (!artists.response) return <div>Error</div>;
@@ -44,19 +47,24 @@ function AllArtists() {
 
 
     return (
-        <div>
-            <Grid narrowColumnIndex={0} header={"Artists"}>
-            <ListFilter filters={filters} setFilters={setFilters}/>
-            <ListWrapper>
-                <div className="row-wrap-start" >
-                    {artists.response.map((a, idx) =>
-                        <ArtistInList artist={a} key={idx}/>
-                    )}
-                </div>
-            </ListWrapper>
-            </Grid>
-
-        </div>
+      <Grid narrowColumnIndex={0} header={"Artists"}>
+        <ListFilter filters={filters} setFilters={setFilters}/>
+        <ListWrapper>
+          <div className="row-wrap-start" >
+            {artists.response.map((a, idx) =>
+              <ObservableListItem
+                item={a}
+                key={idx}
+                refetchAtom={artistFollowing}
+                setRefetch={setRefetch}
+                navigatePath={"/artists/public?artistId"}
+                follow={followArtist}
+                unfollow={unfollowArtist}
+              />
+            )}
+          </div>
+        </ListWrapper>
+      </Grid>
     )
 }
 
@@ -64,9 +72,8 @@ function ArtistInList({artist}: {artist: Artist}) {
     const { dimensions, handleImageLoad } = useImageDimensions(
         globalThis.innerHeight / 5,
     );
-    const [af, setAF] = useAtom(artistFollowing)
+    const [af,] = useAtom(artistFollowing)
     const isFollowing = useMemo(() => {
-        console.log(af);
         return 1 === af.filter((a) => a.id === artist.id).length;
     }, [af]);
     const [, setRefetch] = useAtom(refetchFollowedArtists)
@@ -74,27 +81,28 @@ function ArtistInList({artist}: {artist: Artist}) {
     const navigate = useNavigate();
 
     return (
-        <StyledListBox
-            minwidth={`${dimensions.width}px`}
-            padding={String(p)}
-            className="m-3"
-        >
-            <FollowHeartSmall setRefetch={setRefetch} id={artist.id} follow={followArtist} unfollow={unfollowArtist} followed={isFollowing} />
-            <div onClick={() => navigate(`/artists/public?artistId=${artist.id}`)}>
-            <ArtistPicture
-                artist={artist}
-                image={""}
-                dimensions={dimensions}
-                handleImageLoad={handleImageLoad}
+      <StyledListBox
+        minwidth={`${dimensions.width}px`}
+        padding={String(p)}
+        className="m-3"
+      >
+        <FollowHeartSmall setRefetch={setRefetch} id={artist.id} follow={followArtist} unfollow={unfollowArtist} followed={isFollowing} />
+          <div style={{cursor: "pointer"}} onClick={() => navigate(`/artists/public?artistId=${artist.id}`)}>
+            <ProfilePicture
+              item={artist}
+              image={artist.Bio?.Media?.find(a => a.poster) || {href: "", poster: true,}}
+              dimensions={dimensions}
+              handleImageLoad={handleImageLoad}
+              showName={true}
             />
             <div
-                className="description mt-3 mb-3"
-                style={{ maxWidth: `${dimensions.width}px` }}
+              className="description mt-3 mb-3"
+              style={{ maxWidth: `${dimensions.width}px` }}
             >
-                {artist.Bio?.description ? artist.Bio.description : "No description"}
+              {artist.Bio?.description ? artist.Bio.description : "No description"}
             </div>
-            </div>
-        </StyledListBox>
+          </div>
+      </StyledListBox>
     )
 }
 
@@ -118,7 +126,7 @@ function ArtistPicture({artist, image, dimensions, handleImageLoad}: ArtistPictu
                     currentTarget.onerror = null; // prevents looping
                     currentTarget.src = cd;
                 }}
-                src={image}
+                src={image.href}
                 alt={"Poster"}
             />
         </div>

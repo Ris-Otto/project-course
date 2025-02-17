@@ -1,6 +1,8 @@
 import {Result} from "../../../Shared/Result.ts";
 // @deno-types="npm:@types/react"
 import React, {createContext, SetStateAction} from "react";
+import { Media } from "../../../api/Database/Model/Media.ts";
+import { ObservableItem } from "../components/Misc/ObservableListItem.tsx";
 
 export type SuspenseConsumer<T> = {
   read(): Result<T>;
@@ -187,7 +189,9 @@ export type Filter = {
 };
 
 export type PictureProps = {
-  image?: string;
-  dimensions: { width: number, height: number};
-  handleImageLoad: (e: any) => void;
+  image: Partial<Media>;
+  dimensions: { width: number, height: number };
+  handleImageLoad : (e: any) => void;
+  item: ObservableItem;
+  showName?: boolean;
 }
