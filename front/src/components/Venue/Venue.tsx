@@ -404,7 +404,7 @@ export function VenueViewProfile({
     const urls = links.filter(a => a.url.length > 0)
     const bioUpdate = await postRequest<Bio>(paths.venue.bio.update, { media, urls, bio, poster: { href: poster[0].data_url, poster: true} });
 
-    const posterUpdate = await postFileRequest<any>("/venue/bio/update/poster", poster[0]);
+    const posterUpdate = await postFileRequest<any>("/venue/bio/update/poster", { poster: poster[0].file });
     if(venueUpdate.isSuccess()) {
       toast.success("Venue details successfully updated")
     } else {

@@ -59,11 +59,12 @@ venueController.get("/public/:venueId", getVenueProfile);
 
 venueController.get("/all", getVenues);
 
-venueController.post(
+/*venueController.post(
   "bio/update/poster",
   tokenMiddleware.verifyIsVenue,
+  storage.single("image"),
   updatePoster,
-);
+);*/
 
 async function getVenues(c: Context) {
   const venues = (await Venue.findAll({
@@ -245,7 +246,7 @@ async function cancelEvent(c: Context) {
 async function rateArtist(c: Context) {}
 
 async function updatePoster(c: Context) {
-  storage.single("image");
+  console.log(c.var.files);
   return c.json(Ok());
 }
 

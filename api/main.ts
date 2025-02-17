@@ -30,6 +30,7 @@ import {
 import { Link } from "./Database/Model/Link.ts";
 import { HonoDiskStorage } from "npm:@hono-storage/node-disk";
 import { dl } from "./Utils/logger.ts";
+import { Ok } from "../Shared/Result.ts";
 
 const app = new Hono<{ Variables: JwtVariables }>();
 
@@ -113,5 +114,14 @@ app.route("/", userController);
 app.route("/auth", authController);
 app.route("/artist", artistController);
 app.route("/venue", venueController);
+
+app.post(
+  "/venue/bio/update/poster",
+  storage.single("poster"),
+  (c) => {
+    console.log(c.var.files);
+    return c.json(Ok());
+  },
+);
 
 Deno.serve(app.fetch);
