@@ -15,6 +15,7 @@ export type ObservableItem = {
     description?: string;
     Media?: Partial<Media>[];
   };
+  poster?: string;
 };
 
 type ObservableListItemProps<T extends ObservableItem> = {
@@ -26,8 +27,6 @@ type ObservableListItemProps<T extends ObservableItem> = {
   unfollow: (id: string, callback: (s: boolean | ((s: boolean) => boolean)) => void) => Promise<boolean>;
 }
 
-const def = { href: "", poster: true, }
-
 function ObservableListItem<T extends ObservableItem>({ item, setRefetch, refetchAtom, navigatePath, follow, unfollow }: ObservableListItemProps<T> ) {
   const { dimensions, handleImageLoad } = useImageDimensions(
     globalThis.innerHeight / 5,
@@ -36,26 +35,29 @@ function ObservableListItem<T extends ObservableItem>({ item, setRefetch, refetc
   const isFollowing = useMemo(() => {
     return 1 === af.filter((a) => a.id === item.id).length;
   }, [af]);
-  const p = useMemo(() => dimensions.width * 0.12, [dimensions]);
+  const p = useMemo(() => dimensions.height * 0.12, [dimensions]);
   const navigate = useNavigate();
-
+  const img = useMemo(() => item.poster, [item])
   return (
     <StyledListBox
-      minwidth={`${dimensions.width}px`}
+      minwidth={`${dimensions.height}px`}
       padding={String(p)}
       className="m-3"
     >
+      <div className={"mb-3"}>
       <FollowHeartSmall setRefetch={setRefetch} id={item.id} follow={follow} unfollow={unfollow} followed={isFollowing} />
+      </div>
       <div style={{cursor: "pointer"}} onClick={() => navigate(`${navigatePath}=${item.id}`)}>
         <ProfilePicture
           item={item}
+          image={img}
           showName={true}
           dimensions={dimensions}
           handleImageLoad={handleImageLoad}
         />
         <div
           className="description mt-3 mb-3"
-          style={{ maxWidth: `${dimensions.width}px` }}
+          style={{ maxWidth: `${dimensions.height}px` }}
         >
           {item.Bio?.description ? item.Bio.description : "No description"}
         </div>

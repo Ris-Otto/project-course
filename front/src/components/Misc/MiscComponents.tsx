@@ -78,7 +78,19 @@ export function FollowHeartButton({
       hidden={!u}
       onMouseEnter={handleMouseOver}
       onMouseLeave={handleMouseLeave}
-      onClick={async () => followed ? await unfollow(id, setRefetch) : await follow(id, setRefetch)}
+      onClick={async () => {
+        if(!followed) {
+          const res = await follow(id, setRefetch);
+          if(res) {
+            setFState((s: boolean) => !s);
+          }
+        } else {
+          const res = await unfollow(id, setRefetch);
+          if(res) {
+            setFState((s: boolean) => !s);
+          }
+        }
+      }}
       className="follow-share-button mb-3"
     >
       {fState ? (

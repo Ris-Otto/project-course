@@ -17,6 +17,7 @@ class Artist extends Model {
   declare Members: Member[];
   declare Events: Event[];
   declare Bio: Bio;
+  declare poster?: string;
   declare createdAt: Date;
   declare updatedAt: Date;
   declare addEvent: (eventId: string) => Promise<Event | null>;

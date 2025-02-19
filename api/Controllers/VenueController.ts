@@ -1,11 +1,7 @@
-﻿import { Hono } from "npm:hono";
-import type { Context } from "npm:hono";
+﻿import type { Context, Next } from "npm:hono";
+import { Hono } from "npm:hono";
 import * as tokenMiddleware from "../Middleware/JWTMiddleware.ts";
-import {
-  includeBio,
-  includeEvent,
-  includeVenue,
-} from "../Database/framework.ts";
+import { includeBio, includeEvent } from "../Database/framework.ts";
 import { NotFound, Ok, Unauthorized } from "../../Shared/Result.ts";
 import { Venue } from "../Database/Model/Venue.ts";
 import Event from "../Database/Model/Event.ts";
@@ -15,7 +11,9 @@ import { Media } from "../Database/Model/Media.ts";
 import { Link } from "../Database/Model/Link.ts";
 import { OpeningHour } from "../Database/Model/OpeningHour.ts";
 import { Artist } from "../Database/Model/Artist.ts";
-import { storage } from "../main.ts";
+import { storage } from "../storage.ts";
+import readFileSync = Deno.readFileSync;
+import { getImage, getPoster } from "./Extensions/Extensions.ts";
 
 const venueController = new Hono();
 
@@ -59,12 +57,12 @@ venueController.get("/public/:venueId", getVenueProfile);
 
 venueController.get("/all", getVenues);
 
-/*venueController.post(
+venueController.post(
   "bio/update/poster",
   tokenMiddleware.verifyIsVenue,
-  storage.single("image"),
+  storage.single("poster"),
   updatePoster,
-);*/
+);
 
 async function getVenues(c: Context) {
   const venues = (await Venue.findAll({
@@ -73,6 +71,9 @@ async function getVenues(c: Context) {
       exclude: ["password", "createdAt", "updatedAt"],
     },
   })).map((e) => e.get({ plain: true }));
+  venues.forEach((venue) => {
+    venue.poster = getPoster(venue);
+  });
   return c.json(Ok(venues));
 }
 
@@ -246,7 +247,19 @@ async function cancelEvent(c: Context) {
 async function rateArtist(c: Context) {}
 
 async function updatePoster(c: Context) {
-  console.log(c.var.files);
+  const file = c.var.files["poster"];
+  const payload = c.get("tokenPayload");
+  const venue = await Venue.findByPk(payload.id, { include: [Bio] });
+  if (!venue) {
+    return c.json(NotFound());
+  }
+
+  await Media.upsert({
+    BioId: venue.BioId,
+    internal: true,
+    href: file.name,
+    poster: true,
+  });
   return c.json(Ok());
 }
 
@@ -308,23 +321,26 @@ async function getVenue(c: Context) {
     include: [includeBio(), includeEvent(), OpeningHour],
   });
   if (venue === null) return c.json(NotFound());
-
-  return c.json(Ok(venue.get({ plain: true })));
+  const ret = venue.get({ plain: true });
+  ret.poster = getPoster(venue);
+  return c.json(Ok(ret));
 }
 
 async function getVenueProfile(c: Context) {
   const pk = c.req.param("venueId");
   const venue = await Venue.findByPk(pk, {
-    include: includeEvent(),
+    include: [includeBio(), includeEvent(), OpeningHour],
     attributes: {
-      exclude: ["password", "createdAt", "updatedAt", "BioId"],
+      exclude: ["password", "createdAt", "updatedAt"],
     },
   });
   if (venue === null) {
     return c.json(NotFound());
   }
 
-  return c.json(Ok(venue.get({ plain: true })));
+  const ret = venue.get({ plain: true });
+  ret.poster = getPoster(venue);
+  return c.json(Ok(ret));
 }
 
 async function updateVenue(c: Context) {

@@ -80,7 +80,6 @@ async function updateArtist(c: Context) {
     bio,
     members,
     genre,
-    poster,
     images,
     links,
   } = data;
@@ -98,19 +97,11 @@ async function updateArtist(c: Context) {
   });
 
   const bioRes = await artistUpdateRes.getBio();
-  await bioRes.update({ description: bio });
-  const mediaRes = await bioRes.getMedia();
-
-  const mainPoster = mediaRes.find((m) => m.poster === true);
-  if (mainPoster) {
-    await mainPoster.update({ href: poster });
-  }
-
-  for (const image of images) {
-    await Media.upsert({
-      href: image.href,
-      media_id: image.media_id,
-    });
+  if (!bioRes) {
+    const newBio = await Bio.create({ description: bio });
+    await artistUpdateRes.update({ BioId: newBio.id });
+  } else {
+    await bioRes.update({ description: bio });
   }
 
   for (const member of members) {
@@ -124,13 +115,6 @@ async function updateArtist(c: Context) {
       MemberId: member.id,
       ArtistId: artist.id,
       role: member.role,
-    });
-  }
-
-  for (const link of links) {
-    await Link.upsert({
-      url: link.url,
-      BioId: bioRes.id,
     });
   }
 

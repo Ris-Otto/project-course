@@ -4,11 +4,13 @@ import { StyledProfile } from "./StyledProfile.tsx";
 import { useAuth, useRequest } from "../../Hooks.ts";
 import PageHeader from "../Misc/PageHeader.tsx";
 import { Loading } from "../../utilities/Loading.tsx";
-import { artistFollowing, venueFollowing } from "../../store.ts";
+import { artistFollowing, refetchFollowedArtists, refetchFollowedVenues, venueFollowing } from "../../store.ts";
 import { useAtom } from "jotai";
 import { ListWrapper } from "../Misc/CustomStyles.tsx";
 import { ArtistInList } from "../Artist/AllArtists.tsx";
 import { VenueInList } from "../Venue/VenuePublic.tsx";
+import { ObservableListItem } from "../Misc/ObservableListItem.tsx";
+import { followArtist, followVenue, unfollowArtist, unfollowVenue } from "../../api/Common.ts";
 
 export function UserProfile() {
   useAuth(0);
@@ -17,6 +19,8 @@ export function UserProfile() {
   );
   const [af] = useAtom(artistFollowing)
   const [vf] = useAtom(venueFollowing)
+  const [, setRefetchArtists] = useAtom(refetchFollowedArtists)
+  const [, setRefetchVenues] = useAtom(refetchFollowedVenues)
 
   if (isLoading) {
     return <Loading />;
@@ -33,7 +37,14 @@ export function UserProfile() {
       <ListWrapper>
         <div className="row-wrap-start" >
           {af ? af.map((a, idx) =>
-            <ArtistInList artist={a} key={idx}/>
+            <ObservableListItem
+              key={idx}
+              item={a}
+              setRefetch={setRefetchArtists}
+              refetchAtom={artistFollowing}
+              follow={followArtist}
+              unfollow={unfollowArtist}
+              navigatePath={"/artists/public?artistId"}/>
           ): null}
         </div>
       </ListWrapper>
@@ -41,7 +52,14 @@ export function UserProfile() {
       <ListWrapper>
         <div className="row-wrap-start" >
           {vf ? vf.map((a, idx) =>
-            <VenueInList venue={a} key={idx}/>
+            <ObservableListItem
+              key={idx}
+              item={a}
+              setRefetch={setRefetchVenues}
+              refetchAtom={venueFollowing}
+              follow={followVenue}
+              unfollow={unfollowVenue}
+              navigatePath={"/venues/public?venueId"}/>
           ): null}
         </div>
       </ListWrapper>

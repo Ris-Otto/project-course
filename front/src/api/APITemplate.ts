@@ -19,32 +19,24 @@ const fileInstance = axios.create({
 
 export async function postFileRequest<
   TResponse,
->(path: string, data?: Record<string, {}>): Promise<Result<TResponse>> {
-  try {
-    const response = await fileInstance.post<ResponseData<TResponse>>(
-      path,
-      data,
-      { withCredentials: true },
-    );
-    return new Result(response.data);
-  } catch {
-    return new Result(null);
-  }
+>(path: string, data?: any): Promise<Result<TResponse>> {
+  const response = await fileInstance.post<ResponseData<TResponse>>(
+    path,
+    data,
+    { withCredentials: true },
+  );
+  return new Result(response.data);
 }
 
 export async function postRequest<
   TResponse,
 >(path: string, data?: Record<string, {}>): Promise<Result<TResponse>> {
-  try {
-    const response = await instance.post<ResponseData<TResponse>>(
-      path,
-      data,
-      { withCredentials: true },
-    );
-    return new Result(response.data);
-  } catch {
-    return new Result(null);
-  }
+  const response = await instance.post<ResponseData<TResponse>>(
+    path,
+    data,
+    { withCredentials: true },
+  );
+  return new Result(response.data);
 }
 
 export async function getRequest<TResponse>(

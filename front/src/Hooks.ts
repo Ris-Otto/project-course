@@ -1,10 +1,17 @@
 ﻿// @deno-types="@types/react"
-import { MutableRefObject, useCallback, useEffect, useState } from "react";
+import {
+  MutableRefObject,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { useNavigate } from "react-router-dom";
 import { useAtom } from "jotai";
 import { getRequest } from "./api/APITemplate.ts";
-import { user } from "./store.ts";
+import { artistFollowing, refetchFollowedArtists, user } from "./store.ts";
 import { checkToken } from "./api/auth.ts";
+import { Artist } from "../../api/Database/Model/Artist.ts";
 
 /**
  * @param {*} ref the reffered component
@@ -36,9 +43,16 @@ export function useImageDimensions(maxHeight?: number) {
 
   const handleImageLoad = (e: any) => {
     const { naturalHeight, naturalWidth } = e.target;
-    const ratio = naturalWidth / naturalHeight;
-    const height = maxHeight ? maxHeight : globalThis.innerHeight / 8;
-    setDimensions({ height: height, width: height * ratio });
+
+    if (naturalWidth > naturalHeight) {
+      const ratio = naturalWidth / naturalHeight;
+      const height = maxHeight ? maxHeight : globalThis.innerHeight / 8;
+      setDimensions({ height: height, width: height * ratio });
+    } else {
+      const ratio = naturalHeight / naturalWidth;
+      const height = maxHeight ? maxHeight : globalThis.innerHeight / 8;
+      setDimensions({ height: height, width: height * ratio });
+    }
   };
 
   return { dimensions, handleImageLoad };
@@ -98,4 +112,19 @@ export function useAuth(accessType?: number) {
     };
     check();
   }, []);
+}
+
+export function useArtistRefetch() {
+  const [_, refetchArtists] = useAtom(refetchFollowedArtists);
+
+  return { refetchArtists, artistFollowing };
+}
+
+export function useIsFollowingArtist(artist: Artist) {
+  const [af] = useAtom(artistFollowing);
+  const isFollowing = useMemo(() => {
+    return 1 === af.filter((a) => a.id === artist.id).length;
+  }, [af]);
+
+  return isFollowing;
 }

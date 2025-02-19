@@ -38,6 +38,7 @@ import { PictureProps } from "../../utilities/Types.tsx";
 //@ts-ignore bah
 import cd from "../../resources/Images-Assets/cd+cover.png";
 import { followVenue, unfollowVenue } from "../../api/Common.ts";
+import { ProfilePicture } from "../Misc/ProfilePicture.tsx";
 
 export default function VenueProfilePublic() {
   useAuth(-1);
@@ -55,26 +56,16 @@ export default function VenueProfilePublic() {
     }
 
     return (
-        <StyledArtistProfile
-            className="top-level-component"
-            style={{ textAlign: "left" }}
-        >
-            {/*@ts-ignore bah*/}
-            <GoArrowLeft
-                onClick={() => navigate(-1)}
-                className="back-arrow-3"
-            />
-            <Container>
-                {venue.response
-                    ? (
-                        <Grid header={venue.response.name}>
-                            <VenueLeft venue={venue.response} />
-                            <VenueMiddle venue={venue.response} />
-                            <VenueRight venue={venue.response} />
-                        </Grid>
-                    )
-                    : null}
-            </Container>
+        <StyledArtistProfile className="top-level-component">
+          {venue.response
+            ? (
+                <Grid header={venue.response.name}>
+                    <VenueLeft venue={venue.response} />
+                    <VenueMiddle venue={venue.response} />
+                    <VenueRight venue={venue.response} />
+                </Grid>
+            )
+            : null}
         </StyledArtistProfile>
     );
 }
@@ -145,10 +136,20 @@ function VenueLeft({ venue }: VenueProps) {
     const [vf] = useAtom(venueFollowing);
     const isFollowing = useMemo(() => 1 === vf.filter((a) => a.id === venue.id).length, [vf]);
     const [, setRefetch] = useAtom(refetchFollowedVenues);
+  const { dimensions, handleImageLoad } = useImageDimensions(
+    globalThis.innerHeight / 2,
+  );
+  const img = useMemo(() => venue.poster, [venue])
 
     return (
         <Col>
-            <IoImageOutline size={350} />
+          <ProfilePicture
+            item={venue}
+            image={img}
+            dimensions={dimensions}
+            handleImageLoad={handleImageLoad}
+          />
+            {/*<IoImageOutline size={350} />*/}
             <br />
             <div style={{ textAlign: "left", marginLeft: 30 }}>
                 <Button

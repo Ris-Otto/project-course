@@ -1,6 +1,6 @@
 ﻿// @deno-types="npm:@types/react"
 import { useEffect, useState, useMemo } from "react";
-import { getRequest, postRequest } from "../../api/APITemplate.ts";
+import { getRequest, postFileRequest, postRequest } from "../../api/APITemplate.ts";
 import {
   createSearchParams,
   useNavigate,
@@ -10,9 +10,9 @@ import { Col, Button, Tab, Tabs } from "react-bootstrap";
 import { IoImageOutline, IoNewspaperSharp } from "react-icons/io5";
 import {
   LiaEnvelope,
-  LiaHeart,
-  LiaHeartSolid,
-  LiaShareAltSquareSolid,
+  LiaPencilAltSolid,
+  LiaTrashAltSolid,
+  LiaShareAltSquareSolid
 } from "react-icons/lia";
 import type { Artist } from "../../../../api/Database/Model/Artist.ts";
 import { Strong } from "../Event/Event.styled.ts";
@@ -27,7 +27,7 @@ import {Control, DynamicListForm, TextArea, UnderwaveHeader} from "../../utiliti
 import {EditableProfileHeaders, EditableProfileMenu} from "../Misc/EditableProfileBase.tsx";
 //@ts-ignore bah
 import cd from "../../resources/Images-Assets/cd+cover.png";
-import { useImageDimensions} from "../../Hooks.ts";
+import { useArtistRefetch, useImageDimensions, useIsFollowingArtist } from "../../Hooks.ts";
 import { Theme } from "../../theme.ts"
 import { Row, FlexCol } from "../Misc/CustomStyles.tsx";
 import {Link} from "../../../../api/Database/Model/Link.ts";
@@ -37,8 +37,14 @@ import { ProfilePicture } from "../Misc/ProfilePicture.tsx";
 import paths from "../../../../Shared/paths.ts";
 import { toast } from "react-toastify";
 import Event from "../../../../api/Database/Model/Event.ts";
+import ReactImageUploading from "react-images-uploading"
+import { ImageListType } from "react-images-uploading";
+import { ExportInterface} from "react-images-uploading/dist/typings.d.ts";
+import { useAuth} from "../../Hooks.ts";
+import { followArtist, unfollowArtist } from "../../api/Common.ts";
 
 export default function ArtistProfilePublic() {
+  useAuth(-1);
   const [sp] = useSearchParams();
   const [a, setA] = useState<Artist>();
   const [followed, setFollowed] = useState(false);
@@ -135,7 +141,7 @@ function ArtistViewProfile({ artist, subState, updateSubState }: { artist: Artis
   const [bio, setBio] = useState(artist.Bio ? artist.Bio.description : "");
   const [members, setMembers] = useState(artist.Members);
   const [genre, setGenre] = useState(artist.genre);
-  const [poster, setPoster] = useState("")
+  const [poster, setPoster] = useState<ImageListType>([{ data_url: artist.poster }])
   const [images, setImages] = useState<Media[]>(artist.Bio?.Media ? artist.Bio.Media :[]);
   const [links, setLinks] = useState<Link[]>(artist.Bio?.Links ? artist.Bio.Links : []);
 
@@ -146,12 +152,13 @@ function ArtistViewProfile({ artist, subState, updateSubState }: { artist: Artis
       bio: bio,
       members: members,
       genre: genre,
-      poster: poster,
       images: images,
       links: links
     }
 
     const res = await postRequest<Artist>(paths.artist.update, data);
+
+    const posterRes = await postFileRequest("/artist/bio/update/poster", { poster: poster[0].file });
 
     if(res.isSuccess()) {
       toast.success("Profile updated");
@@ -165,12 +172,18 @@ function ArtistViewProfile({ artist, subState, updateSubState }: { artist: Artis
     setBio(artist.Bio ? artist.Bio.description : "");
     setMembers(artist.Members);
     setGenre(artist.genre);
-    setPoster("");
+    setPoster([{ data_url: artist.poster }]);
     setImages(artist.Bio?.Media ? artist.Bio.Media :[]);
     setLinks(artist.Bio?.Links ? artist.Bio.Links : []);
   }
 
   const edit = useMemo(() => subState === "edit", [subState]);
+
+  const onChange = (imageList: ImageListType, addUpdateIndex: number) => {
+    // data for submit
+    console.log(imageList, addUpdateIndex);
+    setPoster(imageList);
+  };
 
   return (
     <>
@@ -179,7 +192,49 @@ function ArtistViewProfile({ artist, subState, updateSubState }: { artist: Artis
         <Grid>
           <FlexCol>
             <div className="silly-row-start">
-              <ProfilePicture image={cd} dimensions={dimensions} handleImageLoad={handleImageLoad} />
+              {/*@ts-ignore bah*/}
+              <ReactImageUploading
+                value={poster}
+                onChange={onChange}
+                maxNumber={1}
+                dataURLKey="data_url"
+              >
+                {({
+                    imageList,
+                    onImageUpload,
+                    onImageUpdate,
+                    onImageRemove,
+                    isDragging,
+                    dragProps,
+                  }: ExportInterface) => (
+                  // write your building UI
+                  <div className="upload__image-wrapper">
+                    {(edit && poster.length === 0) ? (
+                      <>
+                        <Button
+                          style={isDragging ? { color: 'red' } : undefined}
+                          onClick={onImageUpload}
+                          {...dragProps}
+                        >
+                          Click or Drop here
+                        </Button>
+                        &nbsp;
+                      </>
+                    ): null}
+                    {imageList.map((image, index) => (
+                      <div key={index} className="image-item">
+                        <ProfilePicture item={artist} image={image.data_url} dimensions={dimensions} handleImageLoad={handleImageLoad} />
+                        {edit ? (
+                          <div style={{textAlign: "center"}}>
+                            <Button onClick={() => onImageUpdate(index)}><LiaPencilAltSolid /></Button>
+                            <Button onClick={() => onImageRemove(index)}><LiaTrashAltSolid/></Button>
+                          </div>
+                        ): null}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </ReactImageUploading>
               <Control
                 as={"h3"}
                 header={"Artist name"}
@@ -284,55 +339,6 @@ function ArtistEvents({ artist, subState, updateSubState }: { artist: Artist, su
   </div>);
 }
 
-export function ArtistBox({ artist }: ArtistBoxProps) {
-  const navigate = useNavigate();
-  const [u, _] = useAtom(user);
-  const [af, setAF] = useAtom(artistFollowing);
-  const followedArtist = useMemo(() => 1 === af.filter((a) => a.id === artist.id).length, [af]);
-  async function followArtist() {
-    const res = await postRequest<Artist>(`/user/artists/follow/${artist.id}`);
-    if(res.isSuccess()) {
-      setAF((af) => [...af, res.response]);
-    }
-  }
-
-  async function unfollowArtist() {
-    const res = await postRequest<Artist>(`/user/artists/unfollow/${artist.id}`);
-    if(res.isSuccess()) {
-      setAF((prev) => [prev.filter((a) => a.ArtistId !== artist.id)]);
-    }
-  }
-  return (
-    <StyledListBox>
-      <FollowHeartSmall follow={followArtist} unfollow={unfollowArtist} followed={followedArtist} />
-      <Row
-        onClick={() =>
-          navigate({
-            pathname: `/artists/public`,
-            search: createSearchParams({
-              artistId: artist.id,
-            }).toString(),
-          })
-        }
-      >
-        <IoImageOutline size={200} />
-        <br />
-        <Strong>{artist.name}</Strong>
-      </Row>
-    </StyledListBox>
-  );
-}
-
-export function ArtistList({ artists }: ListProps) {
-  return (
-    <div className="artist-list">
-      {artists.map((a, i) => {
-        return <ArtistBox artist={a} key={i} />;
-      })}
-    </div>
-  );
-}
-
 type ListProps = {
   artists: Artist[];
   followed?: boolean;
@@ -348,25 +354,23 @@ type ArtistBoxProps = {
 };
 
 function ArtistLeft(props: ArtistProps) {
-  const [fState, setFState] = useState<"empty" | "filled">(() =>
-    props.followed ? "filled" : "empty",
+
+  const { refetchArtists } = useArtistRefetch();
+  const isFollowing = useIsFollowingArtist(props.artist);
+  const { dimensions, handleImageLoad } = useImageDimensions(
+    globalThis.innerHeight / 2,
   );
+  const img = useMemo(() => props.artist.poster, [props.artist])
 
-  async function followUnfollowArtist() {
-    const a = props.followed
-      ? await postRequest(`/user/artists/unfollow/${props.artist.id}`)
-      : await postRequest(`/user/artists/follow/${props.artist.id}`);
-    if (a.isSuccess()) {
-      props.setFollowed((a) => !a);
-    }
-  }
-
-  useEffect(() => {
-    setFState(() => (props.followed ? "filled" : "empty"));
-  }, [props.followed]);
   return (
     <Col>
-      <IoImageOutline size={350} />
+      <ProfilePicture
+        item={props.artist}
+        image={img}
+        dimensions={dimensions}
+        handleImageLoad={handleImageLoad}
+      />
+      {/*<IoImageOutline size={350} />*/}
       <br />
       <div style={{ textAlign: "left", marginLeft: 30 }}>
         <Button
@@ -376,10 +380,11 @@ function ArtistLeft(props: ArtistProps) {
           <LiaShareAltSquareSolid size={30} />
         </Button>
         <FollowHeartButton
-          fState={fState}
-          setFState={setFState}
-          followArtist={followUnfollowArtist}
-          followed={props.followed}
+          setRefetch={refetchArtists}
+          id={props.artist.id}
+          follow={followArtist}
+          unfollow={unfollowArtist}
+          followed={isFollowing}
         />
       </div>
       <a style={{ marginLeft: 30 }} href={`mailto:${props.artist.email}`}>
@@ -398,9 +403,6 @@ function ArtistMiddle(props: ArtistProps) {
         return (
           <Row key={idx}>
             <Col>{m.name}</Col>
-            <Col>
-              {m.Role.role}
-            </Col>
           </Row>
         );
       })}
@@ -417,12 +419,11 @@ function ArtistMiddle(props: ArtistProps) {
 
 function ArtistRight(props: ArtistProps) {
   return (
-    <Col>
+    <FlexCol>
       <Row className="mb-3">
         <h1>Posts</h1>
         <IoNewspaperSharp size={300} />
       </Row>
-      <Row>
         <Tabs fill>
           <Tab
             eventKey="upcoming"
@@ -447,7 +448,7 @@ function ArtistRight(props: ArtistProps) {
             />
           </Tab>
         </Tabs>
-      </Row>
-    </Col>
+
+    </FlexCol>
   );
 }

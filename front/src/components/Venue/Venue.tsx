@@ -43,7 +43,6 @@ import {Link} from "../../../../api/Database/Model/Link.ts";
 import {EditableProfileHeaders, EditableProfileMenu} from "../Misc/EditableProfileBase.tsx";
 import { ProfilePicture } from "../Misc/ProfilePicture.tsx";
 import { urlPattern } from "../../utilities/Regex.ts";
-import ImageUploading from "react-images-uploading";
 import ReactImageUploading from "react-images-uploading";
 import { ExportInterface } from "react-images-uploading/dist/typings";
 import { ImageListType } from "npm:react-images-uploading@3.1.7";
@@ -342,13 +341,7 @@ export function VenueViewProfile({
 
   const [images, setImages] = useState<ImageListType>([]);
 
-  const [poster, setPoster] = useState<ImageListType>(() => {
-    const media = venue.Bio?.Media;
-    if(!media || media.length === 0) {
-      return [];
-    }
-    return media.map((a) => { return { data_url: a.href }})
-  });
+  const [poster, setPoster] = useState<ImageListType>(() => [{ data_url: venue.poster }]);
 
   const edit = useMemo(() => subState === "edit", [subState]);
 
@@ -379,21 +372,11 @@ export function VenueViewProfile({
     sbio((venue.Bio?.description ? venue.Bio.description : ""));
     slinks(venue.Bio?.Links ? venue.Bio.Links : []);
     setImages([]);
-    setPoster(() => {
-      const media = venue.Bio?.Media;
-      if(!media || media.length === 0) {
-        return [];
-      }
-      const ret = media.find((a) => a.poster);
-      if(ret) {
-        return [{data_url: ret.href}]
-      } else return []
-      //return media.map((a) => { return { data_url: a.href }})
-    });
+    setPoster([{ data_url: venue.poster }]);
   }
 
   const { dimensions, handleImageLoad } = useImageDimensions();
-
+  console.log(dimensions);
   async function submit() {
     //Submit venue-specific details
     // name, addr, zip, city, hrs, phone
@@ -404,7 +387,10 @@ export function VenueViewProfile({
     const urls = links.filter(a => a.url.length > 0)
     const bioUpdate = await postRequest<Bio>(paths.venue.bio.update, { media, urls, bio, poster: { href: poster[0].data_url, poster: true} });
 
-    const posterUpdate = await postFileRequest<any>("/venue/bio/update/poster", { poster: poster[0].file });
+    //check if poster file has been updated
+    if(poster[0].file) {
+      const posterUpdate = await postFileRequest("/venue/bio/update/poster", { poster: poster[0].file });
+    }
     if(venueUpdate.isSuccess()) {
       toast.success("Venue details successfully updated")
     } else {
