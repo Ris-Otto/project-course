@@ -15,7 +15,7 @@ import VenueRegistration from "./components/Register/VenueRegistration.tsx";
 import { Theme } from "./theme.ts";
 import { GlobalStyles } from "./global.ts";
 import { UserProfile } from "./components/User/UserProfile.tsx";
-import ArtistProfilePublic, {
+import {
   ArtistProfile,
 } from "./components/Artist/Artist.tsx";
 import { AllEvents, EventPage } from "./components/Event/Event.tsx";
@@ -28,6 +28,8 @@ import {AllArtists} from "./components/Artist/AllArtists.tsx";
 import paths from "../../Shared/paths.ts";
 import {EditableProfileBase} from "./components/Misc/EditableProfileBase.tsx";
 import { AllVenues } from "./components/Venue/AllVenues.tsx";
+import ArtistProfilePublic from "./components/Artist/ArtistPublic.tsx";
+import { ReviewForm } from "./components/Event/ReviewForm.tsx";
 
 const theme = new Theme();
 
@@ -75,6 +77,9 @@ const router = createBrowserRouter(
             </Suspended>
           }
         />
+        <Route path="review/:eventId" element={<ReviewForm />} />
+
+
         <Route path="create" element={<CreateEvent />} />
       </Route>
     </Route>,

@@ -9,9 +9,16 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useAtom } from "jotai";
 import { getRequest } from "./api/APITemplate.ts";
-import { artistFollowing, refetchFollowedArtists, user } from "./store.ts";
+import {
+  artistFollowing,
+  refetchFollowedArtists,
+  refetchFollowedVenues,
+  user,
+  venueFollowing,
+} from "./store.ts";
 import { checkToken } from "./api/auth.ts";
 import { Artist } from "../../api/Database/Model/Artist.ts";
+import { Venue } from "../../api/Database/Model/Venue.ts";
 
 /**
  * @param {*} ref the reffered component
@@ -106,6 +113,9 @@ export function useAuth(accessType?: number) {
         }
       } else {
         setU(null);
+        if (Number(accessType) < 0) {
+          return;
+        }
         //If the authentication failed, redirect to the login page with a state containing the path
         navigate("/");
       }
@@ -118,6 +128,21 @@ export function useArtistRefetch() {
   const [_, refetchArtists] = useAtom(refetchFollowedArtists);
 
   return { refetchArtists, artistFollowing };
+}
+
+export function useVenueRefetch() {
+  const [_, refetchVenues] = useAtom(refetchFollowedVenues);
+
+  return { refetchArtists, venueFollowing };
+}
+
+export function useIsFollowingVenue(venue: Venue) {
+  const [af] = useAtom(venueFollowing);
+  const isFollowing = useMemo(() => {
+    return 1 === af.filter((a) => a.id === venue.id).length;
+  }, [af]);
+
+  return isFollowing;
 }
 
 export function useIsFollowingArtist(artist: Artist) {

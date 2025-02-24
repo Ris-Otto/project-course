@@ -9,24 +9,26 @@ import {
 } from "../../utilities/Functions.tsx";
 import {locsEnum, paymentMethods, SearchArtist} from "../../utilities/Types.tsx";
 import {EditButton} from "../User/StyledProfile.tsx";
-
-import cd from "../../resources/Images-Assets/cd+cover.png";
 import {Theme} from "../../theme.ts";
 import {Col} from "react-bootstrap";
 import Select from "react-select";
 import {FormCheck} from "react-bootstrap";
 import {Button} from "react-bootstrap";
-import {LiaTrashAltSolid} from "react-icons/lia";
+import {LiaTrashAltSolid, LiaPencilAltSolid} from "react-icons/lia";
 import { StateHandler } from "../../utilities/Types.tsx";
 import AsyncSelect from "react-select/async";
+import { ProfilePicture } from "../Misc/ProfilePicture.tsx";
+import ReactImageUploading from "react-images-uploading";
+import { ExportInterface} from "npm:react-images-uploading@3.1.7/dist/typings.d.ts";
+import { ImageListType } from "npm:react-images-uploading@3.1.7";
 
 type EventSpecificsProps = {
     dimensions,
     handleImageLoad: (e: any) => void,
     name: string,
     t: typeof Theme,
-    image: string,
-    setImage: StateHandler<string>,
+    image: ImageListType,
+    setImage: StateHandler<ImageListType>,
     sname: StateHandler<string>,
     start: Date,
     setStart,
@@ -93,29 +95,13 @@ export function EventSpecifics({
     addedArtists,
     setAddedArtists,
     setShow,
-    artists,
-    setArtists,
-    removedArtists,
-    setRemovedArtists,
-    edit,
 }: EventSpecificsProps
 ) {
-    function handleRemoveArtist(a: SearchArtist, index: number) {
-        if(edit) {
-            setArtists(s => s.filter(item => s.indexOf(item) !== index));
-            setRemovedArtists(s => [...s, a]);
-        } else {
-            setArtists(s => s.filter(item => s.indexOf(item) !== index));
-            setAddedArtists(s => s.filter(item => s.indexOf(item) !== index));
-        }
-    }
-    function handleAddArtist(a: SearchArtist) {
-        if(edit) {
-            return;
-        } else {
-
-        }
-    }
+    const onChange = (imageList: ImageListType, addUpdateIndex: number) => {
+        // data for submit
+        console.log(imageList, addUpdateIndex);
+        setImage(imageList);
+    };
 
     return <div className="profile mt-3">
         <Grid>
@@ -127,16 +113,49 @@ export function EventSpecifics({
                     gap="0px"
                 >
                     <div className="silly-row-start">
-                        <img
-                            src={cd}
-                            alt={"Event picture"}
-                            style={{
-                                width: `${dimensions.width}px`,
-                                height: `${dimensions.height}px`,
-                                marginRight: "10%",
-                            }}
-                            onLoad={handleImageLoad}
-                        />
+                        {/*@ts-ignore bah*/}
+                        <ReactImageUploading
+                          value={image}
+                          onChange={onChange}
+                          maxNumber={1}
+                          dataURLKey="data_url"
+                        >
+                            {({
+                                  imageList,
+                                  onImageUpload,
+                                  onImageUpdate,
+                                  onImageRemove,
+                                  isDragging,
+                                  dragProps,
+                              }: ExportInterface) => (
+                              // write your building UI
+                              <div className="upload__image-wrapper">
+                                  {image.length === 0 ? (
+                                    <>
+                                        <Button
+                                          style={isDragging ? { color: 'red' } : undefined}
+                                          onClick={onImageUpload}
+                                          {...dragProps}
+                                        >
+                                            Click or Drop here
+                                        </Button>
+                                        &nbsp;
+                                    </>
+                                  ): null}
+                                  {imageList.map((image, index) => (
+                                    <div key={index} className="image-item">
+                                        <ProfilePicture image={image.data_url} dimensions={dimensions} handleImageLoad={handleImageLoad} />
+
+                                          <div style={{textAlign: "center"}}>
+                                              <Button onClick={() => onImageUpdate(index)}><LiaPencilAltSolid /></Button>
+                                              <Button onClick={() => onImageRemove(index)}><LiaTrashAltSolid/></Button>
+                                          </div>
+
+                                    </div>
+                                  ))}
+                              </div>
+                            )}
+                        </ReactImageUploading>
                     </div>
                     <div>
                         <div className="silly-row-start">

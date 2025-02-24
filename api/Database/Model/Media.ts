@@ -43,7 +43,8 @@ Media.init(
     indexes: [
       {
         unique: true,
-        fields: ["BioId", "poster"],
+        name: "poster_index",
+        fields: ["BioId", "poster", "href"],
       },
       {
         unique: true,

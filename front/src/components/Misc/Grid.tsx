@@ -30,7 +30,7 @@ const GridWrapper = styled.div<{
   grid-template-areas:
     "arrow header" /* Back arrow in the first column, content in the second column */
     "arrow content"; /* Ensure that the header will span the content column */
-  grid-template-columns: auto 1fr; /* First column is auto-sized for the arrow, rest is the grid */
+  grid-template-columns: ${(props) => (props.header ? "auto 1fr" : "1fr")}; /* First column is auto-sized for the arrow, rest is the grid */
   gap: ${(props) => (props.gap ? props.gap : "1rem")};
   width: 100%;
   margin: ${(props) => (props.margin ? props.margin : "1rem 0")};

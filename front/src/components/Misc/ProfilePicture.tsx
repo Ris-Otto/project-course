@@ -7,7 +7,7 @@ export declare type PictureProps = {
 
   dimensions: { width: number, height: number };
   handleImageLoad : (e: any) => void;
-  item: ObservableItem;
+  item?: ObservableItem;
   showName?: boolean;
   image?: string;
 }
@@ -20,7 +20,7 @@ function ProfilePicture({
   showName
 }: PictureProps) {
 
-  const img = useMemo(() => image ? image : item.Bio?.Media?.find(a => a.poster)?.href || "", [item, image]);
+  const img = useMemo(() => image ? image : item?.Bio?.Media?.find(a => a.poster)?.href || "", [item, image]);
   return (
     <div className="picture">
       {showName? (<h4 className="picture-name">{item.name}</h4>): null}

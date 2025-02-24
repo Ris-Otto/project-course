@@ -3,7 +3,7 @@ import { StyledListBox } from "./CustomStyles.tsx";
 import { FollowHeartSmall } from "./MiscComponents.tsx";
 import { ProfilePicture } from "./ProfilePicture.tsx";
 import { useAtom } from "jotai";
-import { useMemo } from "react";
+import React, { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { PrimitiveAtom } from "jotai/vanilla/atom"
 import { Media } from "../../../../api/Database/Model/Media.ts";
@@ -18,16 +18,20 @@ export type ObservableItem = {
   poster?: string;
 };
 
-type ObservableListItemProps<T extends ObservableItem> = {
+type SimpleObservableListItemProps<T extends ObservableItem> = {
   item: T;
-  setRefetch: (s: boolean | ((s: boolean) => boolean)) => void;
-  refetchAtom: PrimitiveAtom<T[]>;
+  children?: React.ReactNode;
   navigatePath?: string;
-  follow: (id: string, callback: (s: boolean | ((s: boolean) => boolean)) => void) => Promise<boolean>;
-  unfollow: (id: string, callback: (s: boolean | ((s: boolean) => boolean)) => void) => Promise<boolean>;
 }
 
-function ObservableListItem<T extends ObservableItem>({ item, setRefetch, refetchAtom, navigatePath, follow, unfollow }: ObservableListItemProps<T> ) {
+type ObservableListItemProps<T extends ObservableItem> = {
+  setRefetch?: (s: boolean | ((s: boolean) => boolean)) => void;
+  refetchAtom?: PrimitiveAtom<T[]>;
+  follow?: (id: string, callback: (s: boolean | ((s: boolean) => boolean)) => void) => Promise<boolean>;
+  unfollow?: (id: string, callback: (s: boolean | ((s: boolean) => boolean)) => void) => Promise<boolean>;
+} & SimpleObservableListItemProps<T>
+
+function ObservableListItem<T extends ObservableItem>({ item, setRefetch, refetchAtom, navigatePath, follow, unfollow, children }: ObservableListItemProps<T> ) {
   const { dimensions, handleImageLoad } = useImageDimensions(
     globalThis.innerHeight / 5,
   );
@@ -45,7 +49,7 @@ function ObservableListItem<T extends ObservableItem>({ item, setRefetch, refetc
       className="m-3"
     >
       <div className={"mb-3"}>
-      <FollowHeartSmall setRefetch={setRefetch} id={item.id} follow={follow} unfollow={unfollow} followed={isFollowing} />
+        <FollowHeartSmall setRefetch={setRefetch} id={item.id} follow={follow} unfollow={unfollow} followed={isFollowing} />
       </div>
       <div style={{cursor: "pointer"}} onClick={() => navigate(`${navigatePath}=${item.id}`)}>
         <ProfilePicture
@@ -55,15 +59,52 @@ function ObservableListItem<T extends ObservableItem>({ item, setRefetch, refetc
           dimensions={dimensions}
           handleImageLoad={handleImageLoad}
         />
+      </div>
         <div
           className="description mt-3 mb-3"
           style={{ maxWidth: `${dimensions.height}px` }}
         >
           {item.Bio?.description ? item.Bio.description : "No description"}
         </div>
-      </div>
+        {children}
     </StyledListBox>
   )
 }
 
-export { ObservableListItem };
+function SimpleObservableListItem<T extends ObservableItem>({item, navigatePath, children}: SimpleObservableListItemProps<T>) {
+
+  const { dimensions, handleImageLoad } = useImageDimensions(
+    globalThis.innerHeight / 5,
+  );
+  const p = useMemo(() => dimensions.height * 0.12, [dimensions]);
+  const navigate = useNavigate();
+  const img = useMemo(() => item.poster, [item])
+  return (
+    <StyledListBox
+      minwidth={`${dimensions.height}px`}
+      padding={String(p)}
+      className="m-3"
+    >
+      <>
+      <div style={{cursor: "pointer"}} onClick={() => navigate(`${navigatePath}=${item.id}`)}>
+        <ProfilePicture
+          item={item}
+          image={img}
+          showName={true}
+          dimensions={dimensions}
+          handleImageLoad={handleImageLoad}
+        />
+      </div>
+        <div
+          className="description mt-3 mb-3"
+          style={{ maxWidth: `${dimensions.height}px` }}
+        >
+          {item.Bio?.description ? item.Bio.description : "No description"}
+        </div>
+        {children}
+      </>
+    </StyledListBox>
+  )
+}
+
+export { ObservableListItem, SimpleObservableListItem };

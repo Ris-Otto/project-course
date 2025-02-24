@@ -203,10 +203,9 @@ export function VenueEvent({
         <div style={{ textAlign: "right" }}>
           {!event.published ? (
               <Button onClick={() => publishEvent()}>
-                Publish
                 <GoUpload size={20}/>
               </Button>
-          ): null}
+          ): null }
           <Button
             onClick={() => {
               setCurrentEvent(event);
@@ -376,7 +375,6 @@ export function VenueViewProfile({
   }
 
   const { dimensions, handleImageLoad } = useImageDimensions();
-  console.log(dimensions);
   async function submit() {
     //Submit venue-specific details
     // name, addr, zip, city, hrs, phone

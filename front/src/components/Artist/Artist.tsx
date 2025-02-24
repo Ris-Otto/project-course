@@ -1,98 +1,27 @@
 ﻿// @deno-types="npm:@types/react"
-import { useEffect, useState, useMemo } from "react";
-import { getRequest, postFileRequest, postRequest } from "../../api/APITemplate.ts";
-import {
-  createSearchParams,
-  useNavigate,
-  useSearchParams,
-} from "react-router-dom";
-import { Col, Button, Tab, Tabs } from "react-bootstrap";
-import { IoImageOutline, IoNewspaperSharp } from "react-icons/io5";
-import {
-  LiaEnvelope,
-  LiaPencilAltSolid,
-  LiaTrashAltSolid,
-  LiaShareAltSquareSolid
-} from "react-icons/lia";
+import { useMemo, useState } from "react";
+import { postFileRequest, postRequest } from "../../api/APITemplate.ts";
+import { Button } from "react-bootstrap";
+import { LiaEnvelope, LiaPencilAltSolid, LiaTrashAltSolid } from "react-icons/lia";
 import type { Artist } from "../../../../api/Database/Model/Artist.ts";
-import { Strong } from "../Event/Event.styled.ts";
-import { EventCalendar } from "../Event/EventCalendar.tsx";
-import {StyledArtistProfile, StyledListBox} from "../User/StyledProfile.tsx";
-import { useAtom } from "jotai";
-import { artistFollowing, user } from "../../store.ts";
-import {PageState, StateHandler, SubState} from "../../utilities/Types.tsx";
-import { FollowHeartButton, FollowHeartSmall } from "../Misc/MiscComponents.tsx";
+import { PageState, StateHandler, SubState } from "../../utilities/Types.tsx";
 import Grid from "../Misc/Grid.tsx";
-import {Control, DynamicListForm, TextArea, UnderwaveHeader} from "../../utilities/Functions.tsx";
-import {EditableProfileHeaders, EditableProfileMenu} from "../Misc/EditableProfileBase.tsx";
+import { Control, DynamicListForm, TextArea, UnderwaveHeader } from "../../utilities/Functions.tsx";
+import { EditableProfileHeaders, EditableProfileMenu } from "../Misc/EditableProfileBase.tsx";
 //@ts-ignore bah
 import cd from "../../resources/Images-Assets/cd+cover.png";
-import { useArtistRefetch, useImageDimensions, useIsFollowingArtist } from "../../Hooks.ts";
-import { Theme } from "../../theme.ts"
-import { Row, FlexCol } from "../Misc/CustomStyles.tsx";
-import {Link} from "../../../../api/Database/Model/Link.ts";
-import {urlPattern} from "../../utilities/Regex.ts";
-import {Media} from "../../../../api/Database/Model/Media.ts";
+import { useImageDimensions } from "../../Hooks.ts";
+import { Theme } from "../../theme.ts";
+import { FlexCol, Row } from "../Misc/CustomStyles.tsx";
+import { Link } from "../../../../api/Database/Model/Link.ts";
+import { urlPattern } from "../../utilities/Regex.ts";
+import { Media } from "../../../../api/Database/Model/Media.ts";
 import { ProfilePicture } from "../Misc/ProfilePicture.tsx";
 import paths from "../../../../Shared/paths.ts";
 import { toast } from "react-toastify";
 import Event from "../../../../api/Database/Model/Event.ts";
-import ReactImageUploading from "react-images-uploading"
-import { ImageListType } from "react-images-uploading";
-import { ExportInterface} from "react-images-uploading/dist/typings.d.ts";
-import { useAuth} from "../../Hooks.ts";
-import { followArtist, unfollowArtist } from "../../api/Common.ts";
-
-export default function ArtistProfilePublic() {
-  useAuth(-1);
-  const [sp] = useSearchParams();
-  const [a, setA] = useState<Artist>();
-  const [followed, setFollowed] = useState(false);
-  useEffect(() => {
-    async function getData() {
-      const data = await getRequest<Artist>(
-        `artist/public/${sp.get("artistId")}`,
-      );
-      if (data.isSuccess()) {
-        setA(data.response);
-      }
-      const following = await getRequest<Artist[]>(`user/artists/following`);
-      if (following.isSuccess()) {
-        const filtered = following.response.filter(
-          (a) => a.id === data.response.id,
-        );
-        if (filtered.length === 1) {
-          setFollowed(true);
-        }
-      }
-    }
-    getData();
-  }, []);
-
-  return (
-    <StyledArtistProfile className="top-level-component">
-      {a ? (
-        <Grid header={a.name}>
-          <ArtistLeft
-            artist={a}
-            followed={followed}
-            setFollowed={setFollowed}
-          />
-          <ArtistMiddle
-            artist={a}
-            followed={followed}
-            setFollowed={setFollowed}
-          />
-          <ArtistRight
-            artist={a}
-            followed={followed}
-            setFollowed={setFollowed}
-          />
-        </Grid>
-      ) : null}
-    </StyledArtistProfile>
-  );
-}
+import ReactImageUploading, { ImageListType } from "react-images-uploading";
+import { ExportInterface } from "react-images-uploading/dist/typings.d.ts";
 
 declare type ArtistProfileProps = {
   value: Artist;
@@ -100,7 +29,6 @@ declare type ArtistProfileProps = {
   updateSubState: (subState: SubState, refetch?: boolean) => void;
   pageState: PageState;
   setPageState: StateHandler<PageState>;
-
 }
 
 export function ArtistProfile({value, subState, updateSubState, setPageState, pageState}: ArtistProfileProps) {
@@ -339,116 +267,3 @@ function ArtistEvents({ artist, subState, updateSubState }: { artist: Artist, su
   </div>);
 }
 
-type ListProps = {
-  artists: Artist[];
-  followed?: boolean;
-};
-
-type ArtistProps = ArtistBoxProps & {
-  setFollowed: StateHandler<boolean>;
-};
-
-type ArtistBoxProps = {
-  artist: Artist;
-  followed?: boolean;
-};
-
-function ArtistLeft(props: ArtistProps) {
-
-  const { refetchArtists } = useArtistRefetch();
-  const isFollowing = useIsFollowingArtist(props.artist);
-  const { dimensions, handleImageLoad } = useImageDimensions(
-    globalThis.innerHeight / 2,
-  );
-  const img = useMemo(() => props.artist.poster, [props.artist])
-
-  return (
-    <Col>
-      <ProfilePicture
-        item={props.artist}
-        image={img}
-        dimensions={dimensions}
-        handleImageLoad={handleImageLoad}
-      />
-      {/*<IoImageOutline size={350} />*/}
-      <br />
-      <div style={{ textAlign: "left", marginLeft: 30 }}>
-        <Button
-          style={{ marginRight: "10px" }}
-          className="follow-share-button mb-3"
-        >
-          <LiaShareAltSquareSolid size={30} />
-        </Button>
-        <FollowHeartButton
-          setRefetch={refetchArtists}
-          id={props.artist.id}
-          follow={followArtist}
-          unfollow={unfollowArtist}
-          followed={isFollowing}
-        />
-      </div>
-      <a style={{ marginLeft: 30 }} href={`mailto:${props.artist.email}`}>
-        <LiaEnvelope size={60} />
-        {props.artist.email}
-      </a>
-    </Col>
-  );
-}
-
-function ArtistMiddle(props: ArtistProps) {
-  return (
-    <Col>
-      <h3>Members</h3>
-      {props.artist.Members.map((m, idx) => {
-        return (
-          <Row key={idx}>
-            <Col>{m.name}</Col>
-          </Row>
-        );
-      })}
-      <br />
-      <h3 className="mb-3">About</h3>
-      {props.artist.Bio ? (
-        <div>{props.artist.Bio.description}</div>
-      ) : (
-        "Nothing to show"
-      )}
-    </Col>
-  );
-}
-
-function ArtistRight(props: ArtistProps) {
-  return (
-    <FlexCol>
-      <Row className="mb-3">
-        <h1>Posts</h1>
-        <IoNewspaperSharp size={300} />
-      </Row>
-        <Tabs fill>
-          <Tab
-            eventKey="upcoming"
-            title="Upcoming performances"
-            style={{ margin: "5px" }}
-          >
-            <EventCalendar
-              events={props.artist.Events.filter(
-                (a) => new Date(a.start) > new Date(),
-              )}
-            />
-          </Tab>
-          <Tab
-            eventKey="past"
-            title="Past performances"
-            style={{ margin: "5px" }}
-          >
-            <EventCalendar
-              events={props.artist.Events.filter(
-                (a) => new Date(a.start) <= new Date(),
-              )}
-            />
-          </Tab>
-        </Tabs>
-
-    </FlexCol>
-  );
-}

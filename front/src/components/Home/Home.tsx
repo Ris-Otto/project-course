@@ -79,7 +79,7 @@ export function Home() {
                   borderRadius: "15px",
                 }}
               >
-                <EventCalendar events={response.filter(e => e.start > new Date())} />
+                <EventCalendar events={response.filter(e => new Date(e.start) > new Date() && e.published)} />
               </Col>
             </Row>
           </Col>
@@ -97,7 +97,7 @@ export function Home() {
                 borderRadius: "15px",
               }}
             >
-              <EventCalendar events={response} />
+              <EventCalendar events={response.filter(e => new Date(e.start) > new Date() && e.published)} />
             </Col>
           </Row>
         </Grid>

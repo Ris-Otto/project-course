@@ -3,20 +3,27 @@ import Event from "../../../../api/Database/Model/Event.ts";
 import { getRequest, postRequest } from "../../api/APITemplate.ts";
 import paths from "../../../../Shared/paths.ts";
 import {Filter, ObjectEntries, paymentMethods} from "../../utilities/Types.tsx";
-import {resolveBitmask, ToCurrencySymbol,} from "../../utilities/Functions.tsx";
+import { ExtractHoursMinutes, resolveBitmask, ToCurrencySymbol, UnderwaveHeader } from "../../utilities/Functions.tsx";
 import {Strong} from "./Event.styled.ts";
 import Grid from "../Misc/Grid.tsx";
 import {EventCalendar} from "./EventCalendar.tsx";
 // @deno-types="@types/react"
-import {useEffect, useState} from "react";
-import {useRequest} from "../../Hooks.ts";
+import {useEffect, useState, useMemo} from "react";
+import { useAuth, useRequest } from "../../Hooks.ts";
 import {Loading} from "../../utilities/Loading.tsx";
 import {ListFilter} from "../Misc/Filter.tsx";
 import {useAtom} from "jotai";
-import {user} from "../../store.ts";
+import { refetchFollowedArtists, user } from "../../store.ts";
 import Fuse from "fuse.js";
+import {Button} from "react-bootstrap"
+import { SimpleObservableListItem } from "../Misc/ObservableListItem.tsx";
+import { Row } from "../Misc/CustomStyles.tsx"
+import { IoLocationSharp } from "react-icons/io5"
+import { Theme } from "../../theme.ts";
+
 
 function EventPage() {
+  useAuth(-1);
   const eventId = useParams<{ eventId?: string }>();
 
   const { response, isLoading, isError } = useRequest<Event>(
@@ -124,82 +131,136 @@ export function AllEvents() {
 function RenderEvent({ event }: { event: Event }) {
   const [u,] = useAtom(user);
   const navigate = useNavigate();
+
+  const start = useMemo(
+    () => ExtractHoursMinutes(new Date(event.start)),
+    [event],
+  );
+  const end = useMemo(() => ExtractHoursMinutes(new Date(event.end)), [event]);
+  const t = useMemo(() => new Theme(), [])
   return (
     <>
-      <h3>
-        Price:{" "}
-        {`${event.Pricing.amount}${ToCurrencySymbol(
-          event.Pricing.currency,
-        )}, ${resolveBitmask(event.Pricing.type, paymentMethods)}`}
-      </h3>
-      {/* Event shit */}
+      <UnderwaveHeader header={`Price:
+          ${event.Pricing.amount}
+          ${ToCurrencySymbol(
+            event.Pricing.currency,
+          )}, ${resolveBitmask(event.Pricing.type, paymentMethods)}
+        `}
+         as={"h3"}
+      />
+      <UnderwaveHeader header={`@${event.Venue.name}, ${event.Venue.address}, ${event.Venue.zip} ${event.Venue.city}`} as={"h3"} />
+      <UnderwaveHeader header={`${new Date(event.start).toDateString()} ${start} - ${end}`} as={"h3"}/>
+      <hr />
+      {/*
+        POSTER POSTER POSTER POSTER POSTER POSTER
+        POSTER POSTER POSTER POSTER POSTER POSTER
+        POSTER POSTER POSTER POSTER POSTER POSTER
+        POSTER POSTER POSTER POSTER POSTER POSTER
+        POSTER POSTER POSTER POSTER POSTER POSTER
+       */}
+      <UnderwaveHeader header={"Artists"} as={"h3"} color={t.orange} />
+      <Row justifycontent={"start"} flexwrap={"wrap"} >
       {event.Artists?.map((a, idx) => {
         return (
-          <div key={idx}>
-            <p>
-              <Strong
-                style={{ cursor: "pointer" }}
-                onClick={() =>
-                  navigate({
-                    pathname: `/artists/public`,
+
+            <SimpleObservableListItem key={idx} item={a} navigatePath={"/artists/public?artistId"}>
+              <>
+              {u && u.type === 2 && event.Venue.id === u.id ? (
+                <Button onClick={() => navigate(
+                  {
+                    pathname: `/events/review/${event.id}`,
                     search: createSearchParams({
                       artistId: a.id,
-                    }).toString(),
-                  })
-                }
-              >
-                {a.name}
-              </Strong>
-              <br />
-              {a.genre}
-            </p>
-          </div>
+                    }).toString()
+                  },
+                  {
+                    state: {
+                      name: a.name,
+                      eventName: event.name
+                    },
+                  }
+                )}
+                >
+                  Review
+                </Button>
+              ): null}
+              </>
+            </SimpleObservableListItem>
+
         );
       })}
-      <h4>Venue</h4>
-      <Strong
-        style={{ cursor: "pointer" }}
-        onClick={() =>
-          navigate({
-            pathname: `/venues/public`,
-            search: createSearchParams({
-              venueId: event.Venue.id,
-            }).toString(),
-          })
-        }
-      >
-        {event.Venue.name}
-      </Strong>
-      <br />
-      <Strong>{event.Venue.address}</Strong>
-      {/* Venue shit */}
+      </Row>
+      <UnderwaveHeader header={"Venue"} as={"h3"} color={t.orange}/>
+      <Row justifycontent={"start"} flexwrap={"wrap"}>
+      <SimpleObservableListItem item={event.Venue} navigatePath={"/venues/public?venueId"} >
+        <>
+          <IoLocationSharp />
+          {event.Venue.address}
+          {u && u.type === 1 && event.Artists.find(a => a.id === u.id) ? (
+            <>
+              <Button onClick={() => navigate(
+                {
+                  pathname: `/events/review/${event.id}`,
+                  search: createSearchParams(
+                    {
+                      venueId: event.Venue.id,
+                    }).toString()
+                },
+                {
+                  state: {
+                    name: event.Venue.name,
+                    eventName: event.name
+                  },
+                })
+              }>
+                Review
+              </Button>
+              <br/>
+            </>
+          ): null}
+        </>
+      </SimpleObservableListItem>
+      </Row>
       {u ? (
         <>
-          <button onClick={async () => {
-            await postRequest<Event>(`user/events/${event.id}/show-interest`, {
-              interest_level: 2,
-            })
-          }}>
-            Going
-          </button>
-          <button onClick={async () => {
-            await postRequest<Event>(`user/events/${event.id}/show-interest`, {
-              interest_level: 1,
-            })
-          }}>
-            interested
-          </button>
-          <button onClick={async () => {
-            await postRequest<Event>(`user/events/${event.id}/show-interest`, {
-              interest_level: 0,
-            })
-          }}>
-            not going
-          </button>
+          {u.type === 0 ? (
+            <EventInterest event={event} />
+          ): u.type === 1 ? (
+            <></>
+          ): u.type === 2 ? (
+            <></>
+          ) : null}
         </>
       ): null}
     </>
   );
+}
+
+function EventInterest({ event }: { event: Event }) {
+  return <>
+    <button onClick={async () => {
+      await postRequest<Event>(`user/events/${event.id}/show-interest`, {
+        interest_level: 2,
+      })
+    }}>
+      Going
+    </button>
+    <button onClick={async () => {
+      await postRequest<Event>(`user/events/${event.id}/show-interest`, {
+        interest_level: 1,
+      })
+    }}>
+      interested
+    </button>
+    <button onClick={async () => {
+      await postRequest<Event>(`user/events/${event.id}/show-interest`, {
+        interest_level: 0,
+      })
+    }}>
+      not going
+    </button>
+  </>
+
 }
 
 export { EventPage, RenderEvent };

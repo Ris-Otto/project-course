@@ -28,6 +28,7 @@ import {
   forceSyncDatabaseAndSetupTestData,
 } from "./Utilities.ts";
 import { Link } from "./Database/Model/Link.ts";
+import { PlayRequest } from "./Database/Model/PlayRequest.ts";
 
 const app = new Hono<{ Variables: JwtVariables }>();
 
@@ -40,6 +41,7 @@ Event.belongsToMany(Artist, {
 });
 Event.belongsTo(Bio);
 Event.hasMany(Review);
+Event.hasMany(PlayRequest);
 
 Event.hasMany(EventInterest);
 
@@ -61,6 +63,7 @@ Artist.hasMany(Review);
 
 Post.belongsTo(Artist);
 Artist.hasMany(Post);
+Artist.hasMany(PlayRequest);
 
 Venue.belongsToMany(User, {
   through: { model: VenueFollowing, unique: false },
@@ -70,6 +73,11 @@ Venue.hasMany(Review);
 Venue.hasMany(Event);
 Venue.hasOne(OpeningHour);
 Venue.hasMany(Post);
+Venue.hasMany(PlayRequest);
+
+PlayRequest.belongsTo(Venue);
+PlayRequest.belongsTo(Artist);
+PlayRequest.belongsTo(Event);
 
 User.belongsToMany(Artist, {
   through: { model: ArtistFollowing, unique: false },

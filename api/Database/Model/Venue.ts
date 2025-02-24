@@ -6,6 +6,7 @@ import * as bcrypt from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
 import { Bio, type BioRead } from "./Bio.ts";
 import type EventMapping from "./EventMapping.ts";
 import { OpeningHour } from "./OpeningHour.ts";
+import { getPoster } from "../../Controllers/Extensions/Extensions.ts";
 
 class Venue extends Model {
   declare verified: 0 | 1;

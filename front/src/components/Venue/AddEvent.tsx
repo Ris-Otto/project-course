@@ -13,6 +13,7 @@ import {Button} from "react-bootstrap";
 import Modal from 'react-bootstrap/Modal';
 import Event from "../../../../api/Database/Model/Event.ts";
 import {EventSpecifics} from "./EventSpecifics.tsx";
+import { ImageListType } from "npm:react-images-uploading@3.1.7";
 
 export function AddEvent({
   venue,
@@ -37,7 +38,7 @@ export function AddEvent({
   const [start, setStart] = useState(new Date());
   const [end, setEnd] = useState(new Date());
   const [bio, sbio] = useState("");
-  const [image, setImage] = useState("");
+  const [image, setImage] = useState<ImageListType>([{ data_url: ""}]);
   const [addr, saddr] = useState(venue.address);
   const [city, scity] = useState(venue.city);
   const [zip, szip] = useState(venue.zip);

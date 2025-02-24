@@ -6,6 +6,7 @@ import { Venue } from "./Model/Venue.ts";
 import Pricing from "./Model/Pricing.ts";
 import { Bio } from "./Model/Bio.ts";
 import { Media } from "./Model/Media.ts";
+import { OpeningHour } from "./Model/OpeningHour.ts";
 
 /**
  * `excludeMapping` can only be true if the association between the parent model and the included model
@@ -97,8 +98,6 @@ export function includeEvent() {
   });
 }
 
-export function includeMedia() {}
-
 export function includeBio() {
   return includeModel({
     model: Bio,
@@ -111,5 +110,12 @@ export function includeBio() {
       //Or at least internal media
       //Could store all 'internal' media on a file server and then fetch client-side
     },
+  });
+}
+
+export function includeOpeningHours() {
+  return includeModel({
+    model: OpeningHour,
+    exclude: ["createdAt", "updatedAt"],
   });
 }

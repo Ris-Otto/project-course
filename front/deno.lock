@@ -1,6 +1,7 @@
 {
   "version": "4",
   "specifiers": {
+    "npm:@smastrom/react-rating@^1.5.0": "1.5.0_react@18.3.1_react-dom@18.3.1__react@18.3.1",
     "npm:@types/axios@*": "0.14.0",
     "npm:@types/axios@0.14": "0.14.0",
     "npm:@types/node@*": "18.16.19",
@@ -560,6 +561,13 @@
     },
     "@rollup/rollup-win32-x64-msvc@4.22.4": {
       "integrity": "sha512-j8pPKp53/lq9lMXN57S8cFz0MynJk8OWNuUnXct/9KCpKU7DgU3bYMJhwWmcqC0UU29p8Lr0/7KEVcaM6bf47Q=="
+    },
+    "@smastrom/react-rating@1.5.0_react@18.3.1_react-dom@18.3.1__react@18.3.1": {
+      "integrity": "sha512-7vg3NRgO0tpvEunq8BEWA8qckNSd7x3dVGqaNEfLs3Ow4ibU2EEXJtnd7Yl44xOujWIzXM5Bk2VZm2DVm065Qw==",
+      "dependencies": [
+        "react",
+        "react-dom"
+      ]
     },
     "@swc/helpers@0.5.15": {
       "integrity": "sha512-JQ5TuMi45Owi4/BIMAJBoSQoOJu12oOk/gADqlcUL9JEdHB8vyjUSsxqeNXnmXHjYKMi2WcYtezGEEhqUI/E2g==",
@@ -1901,6 +1909,7 @@
   },
   "workspace": {
     "dependencies": [
+      "npm:@smastrom/react-rating@^1.5.0",
       "npm:@types/axios@0.14",
       "npm:@types/react-bootstrap@^1.0.1",
       "npm:@types/react-dom@^18.3.0",

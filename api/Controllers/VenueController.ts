@@ -1,7 +1,11 @@
-﻿import type { Context, Next } from "npm:hono";
+﻿import type { Context } from "npm:hono";
 import { Hono } from "npm:hono";
 import * as tokenMiddleware from "../Middleware/JWTMiddleware.ts";
-import { includeBio, includeEvent } from "../Database/framework.ts";
+import {
+  includeBio,
+  includeEvent,
+  includeOpeningHours,
+} from "../Database/framework.ts";
 import { NotFound, Ok, Unauthorized } from "../../Shared/Result.ts";
 import { Venue } from "../Database/Model/Venue.ts";
 import Event from "../Database/Model/Event.ts";
@@ -12,8 +16,9 @@ import { Link } from "../Database/Model/Link.ts";
 import { OpeningHour } from "../Database/Model/OpeningHour.ts";
 import { Artist } from "../Database/Model/Artist.ts";
 import { storage } from "../storage.ts";
-import readFileSync = Deno.readFileSync;
-import { getImage, getPoster } from "./Extensions/Extensions.ts";
+import { getPoster } from "./Extensions/Extensions.ts";
+import { PlayRequest } from "../Database/Model/PlayRequest.ts";
+import { Review } from "../Database/Model/Review.ts";
 
 const venueController = new Hono();
 
@@ -40,7 +45,7 @@ venueController.post(
 );
 
 venueController.post(
-  "/rate/:artistId",
+  "/rate/:eventId/:artistId",
   tokenMiddleware.verifyIsVenue,
   rateArtist,
 );
@@ -77,7 +82,13 @@ async function getVenues(c: Context) {
   return c.json(Ok(venues));
 }
 
-async function requestArtist(c: Context) {}
+async function requestArtist(c: Context) {
+  const payload = c.get("tokenPayload");
+  const venue = await Venue.findOne({
+    where: { id: payload.id },
+  });
+  if (!venue) return c.json(NotFound());
+}
 
 async function publishEvent(c: Context) {
   const eventId = c.req.param("eventId");
@@ -102,13 +113,13 @@ async function addEvent(c: Context) {
     end,
     bio,
     poster,
-    address,
-    city,
-    zip,
-    capacity,
+    //address,
+    //city,
+    //zip,
+    //capacity,
     artists,
-    type,
-    tags,
+    //type,
+    //tags,
     published,
     amount,
     paymentMethod,
@@ -159,14 +170,14 @@ async function updateEvent(c: Context) {
     start,
     end,
     bio,
-    poster,
-    address,
-    city,
-    zip,
-    capacity,
+    //poster,
+    //address,
+    //city,
+    //zip,
+    //capacity,
     artists,
-    type,
-    tags,
+    //type,
+    //tags,
     published,
     amount,
     paymentMethod,
@@ -244,7 +255,16 @@ async function cancelEvent(c: Context) {
   return c.json(Ok(updatedEvent));
 }
 
-async function rateArtist(c: Context) {}
+async function rateArtist(c: Context) {
+  const payload = c.get("tokenPayload");
+  const artistId = c.req.param("artistId");
+  const eventId = c.req.param("eventId");
+  const data = await c.req.json();
+  const venue = await Venue.findOne({
+    where: { id: payload.id },
+  });
+  if (!venue) return c.json(NotFound());
+}
 
 async function updatePoster(c: Context) {
   const file = c.var.files["poster"];
@@ -289,7 +309,9 @@ async function updateBio(c: Context) {
   }
 }
 
-async function updateMediaAndLinks(data: any, bioId: number) {
+async function updateMediaAndLinks<
+  TData extends { media: { data_url: string }[]; urls: { url: string }[] },
+>(data: TData, bioId: number) {
   if (data.media) {
     for (const media of data.media) {
       await Media.upsert({
@@ -318,7 +340,16 @@ async function getVenue(c: Context) {
       email: payload.email,
       id: payload.id,
     },
-    include: [includeBio(), includeEvent(), OpeningHour],
+    include: [
+      includeBio(),
+      includeEvent(),
+      includeOpeningHours(),
+      PlayRequest,
+      Review,
+    ],
+    attributes: {
+      exclude: ["createdAt", "updatedAt", "password"],
+    },
   });
   if (venue === null) return c.json(NotFound());
   const ret = venue.get({ plain: true });

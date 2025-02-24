@@ -102,12 +102,3 @@ export function FollowHeartButton({
     </Button>
   );
 }
-
-export function EmailPlaceholder() {
-  return (
-    <span>
-      <LiaEnvelope />
-      mail@example.com
-    </span>
-  );
-}

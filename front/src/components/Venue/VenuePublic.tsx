@@ -19,9 +19,6 @@ import {
     IoNewspaperSharp,
 } from "react-icons/io5";
 import {
-    GoArrowLeft,
-} from "react-icons/go";
-import {
     Button,
     Col,
     Container,
@@ -39,6 +36,7 @@ import { PictureProps } from "../../utilities/Types.tsx";
 import cd from "../../resources/Images-Assets/cd+cover.png";
 import { followVenue, unfollowVenue } from "../../api/Common.ts";
 import { ProfilePicture } from "../Misc/ProfilePicture.tsx";
+import { FlexCol} from "../Misc/CustomStyles.tsx";
 
 export default function VenueProfilePublic() {
   useAuth(-1);
@@ -137,7 +135,7 @@ function VenueLeft({ venue }: VenueProps) {
     const isFollowing = useMemo(() => 1 === vf.filter((a) => a.id === venue.id).length, [vf]);
     const [, setRefetch] = useAtom(refetchFollowedVenues);
   const { dimensions, handleImageLoad } = useImageDimensions(
-    globalThis.innerHeight / 2,
+    globalThis.innerHeight / 3,
   );
   const img = useMemo(() => venue.poster, [venue])
 
@@ -173,19 +171,19 @@ function VenueLeft({ venue }: VenueProps) {
 
 function VenueMiddle(props: VenueProps) {
     return (
-        <Col>
+        <FlexCol>
             <br />
             <h3 className="mb-3">About</h3>
-            {props.venue.Bio ? <div>{props.venue.Bio.description}</div> : (
+            {props.venue.Bio ? <div style={{whiteSpace: "break-word"}}>{props.venue.Bio.description}</div> : (
                 "Nothing to show"
             )}
-        </Col>
+        </FlexCol>
     );
 }
 
 function VenueRight(props: VenueProps) {
     return (
-      <Col>
+      <FlexCol>
           <Row className="mb-3">
               <h1>Posts</h1>
               <IoNewspaperSharp size={300} />
@@ -216,7 +214,7 @@ function VenueRight(props: VenueProps) {
                   </Tab>
               </Tabs>
           </Row>
-      </Col>
+      </FlexCol>
     );
 }
 
@@ -229,6 +227,7 @@ function VenueInList({venue}: {venue: Venue}) {
   const isFollowing = useMemo(() => 1 === vf.filter((a) => a.id === venue.id).length, [vf]);
   const p = useMemo(() => dimensions.width * 0.12, [dimensions]);
   const navigate = useNavigate();
+  const img = useMemo(() => venue.poster, [venue])
 
   return (
     <StyledListBox
@@ -238,9 +237,9 @@ function VenueInList({venue}: {venue: Venue}) {
     >
       <FollowHeartSmall setRefetch={setRefetch} id={venue.id} follow={followVenue} unfollow={unfollowVenue} followed={isFollowing} />
       <div onClick={() => navigate(`/venues/public?venueId=${venue.id}`)}>
-        <VenuePicture
-          venue={venue}
-          image={""}
+        <ProfilePicture
+          item={venue}
+          image={img}
           dimensions={dimensions}
           handleImageLoad={handleImageLoad}
         />
@@ -255,31 +254,4 @@ function VenueInList({venue}: {venue: Venue}) {
   )
 }
 
-type VenuePictureProps = {
-  venue: Venue
-} & PictureProps
-
-function VenuePicture({venue, image, dimensions, handleImageLoad}: VenuePictureProps) {
-
-  return (
-    <div className="picture">
-      <h4 className="picture-name">{venue.name}</h4>
-      <img
-        onLoad={handleImageLoad}
-        style={{
-          borderRadius: "10px",
-          width: `${dimensions.width}px`,
-          height: `${dimensions.height}px`,
-        }}
-        onError={({ currentTarget }) => {
-          currentTarget.onerror = null; // prevents looping
-          currentTarget.src = cd;
-        }}
-        src={image}
-        alt={"Poster"}
-      />
-    </div>
-  )
-}
-
-export { VenuePicture, VenueInList }
+export { VenueInList }
