@@ -15,8 +15,8 @@ export const GlobalStyles = createGlobalStyle<{
         src: url("https://use.typekit.net/exs7viz.css");
         font-style: normal;
     }
-    
-  
+
+
     html {
         margin: 0;
         padding: 0;
@@ -34,23 +34,27 @@ export const GlobalStyles = createGlobalStyle<{
         box-sizing: border-box;
         font-size: 1.25rem;
     }
-    
+
     h1, h2, h4, h5, h6 {
         font-family: chorine-large, sans-serif;
         font-weight: 500;
         font-style: normal;
         font-size: 2rem;
     }
-    
+
     h3 {
         font-family: futura-pt-bold, sans-serif;
     }
-    
+
     div, span, p, a, button, input, label, select, textarea {
         font-family: futura-pt, sans-serif;
         font-weight: bold;
         font-style: normal;
         font-size: 1rem;
+    }
+
+    #override form-control:valid {
+        color: black !important;
     }
 
     body {
@@ -64,7 +68,7 @@ export const GlobalStyles = createGlobalStyle<{
         text-rendering: optimizeLegibility;
         transition: all 0.50s linear;
         overflow-x: hidden;
-        
+
 
         @media (max-width: ${({ theme }) => theme.mobile}) {
             font-size: 1.5rem;
@@ -92,31 +96,32 @@ export const GlobalStyles = createGlobalStyle<{
     }
 
     .picture {
-    position: relative;
-  }
-  .picture-name {
-    position: absolute;
-    color: white;
-    background-color: rgba(0, 0, 0, 0.7);
-    border-radius: 10px;
-    padding: 1%;
-  }
+        position: relative;
+    }
 
-  .picture-age {
-    position: absolute;
-    right: -5%;
-    top: -10%;
-  }
+    .picture-name {
+        position: absolute;
+        color: white;
+        background-color: rgba(0, 0, 0, 0.7);
+        border-radius: 10px;
+        padding: 1%;
+    }
 
-  .description {
-    color: ${({ theme }) => theme.brownText};
-    overflow: hidden;
-    height: calc(3 * var(--bs-body-font-size));
-    text-overflow: ellipsis;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-  }
+    .picture-age {
+        position: absolute;
+        right: -5%;
+        top: -10%;
+    }
+
+    .description {
+        color: ${({ theme }) => theme.brownText};
+        overflow: hidden;
+        height: calc(3 * var(--bs-body-font-size));
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+    }
 
     .top-level-component {
         min-height: 100vh !important;
@@ -171,19 +176,19 @@ export const GlobalStyles = createGlobalStyle<{
     }
 
     .form-check-input {
-      background-color: ${({ theme }) => theme.darkCream} !important;
-      border-color: ${({ theme }) => theme.redBrown} !important;
-      border-width: 2px;
+        background-color: ${({ theme }) => theme.darkCream} !important;
+        border-color: ${({ theme }) => theme.redBrown} !important;
+        border-width: 2px;
 
-      &:checked {
-        background-color: ${({ theme }) => theme.redBrown} !important;
-        color: ${({ theme }) => theme.redBrown} !important;
-      }
+        &:checked {
+            background-color: ${({ theme }) => theme.redBrown} !important;
+            color: ${({ theme }) => theme.redBrown} !important;
+        }
     }
 
     .underwave-modal, .modal-content {
-      background-color: ${({ theme }) => theme.darkCream} !important;
-      color: ${({ theme }) => theme.redBrown} !important;
+        background-color: ${({ theme }) => theme.darkCream} !important;
+        color: ${({ theme }) => theme.redBrown} !important;
     }
 
     .btn-outline-primary, .btn-outline-success, .btn-outline-primary:disabled, .btn-outline-success:disabled {
@@ -265,9 +270,9 @@ export const GlobalStyles = createGlobalStyle<{
         background: ${({ theme }) => theme.orange};
         top: 0;
     }
-    
+
     .h1, .h2, .h3, .h4, .h5 {
-        
+
     }
 
     .sign-up-vinyl {
@@ -288,5 +293,5 @@ export const GlobalStyles = createGlobalStyle<{
         }
     }
 
-    
+
 `;

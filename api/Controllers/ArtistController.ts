@@ -2,7 +2,7 @@ import { Hono } from "npm:hono";
 import type { Context } from "npm:hono";
 import * as tokenMiddleware from "../Middleware/JWTMiddleware.ts";
 import Event from "../Database/Model/Event.ts";
-import { NotFound, Ok, Unauthorized } from "../../Shared/Result.ts";
+import { Aborted, NotFound, Ok, Unauthorized } from "../../Shared/Result.ts";
 import { Artist, Role } from "../Database/Model/Artist.ts";
 import { Bio } from "../Database/Model/Bio.ts";
 import { Link } from "../Database/Model/Link.ts";
@@ -17,6 +17,9 @@ import {
 } from "../Database/framework.ts";
 import sequelize from "../Database/database.ts";
 import { Media } from "../Database/Model/Media.ts";
+import Pricing from "../Database/Model/Pricing.ts";
+import { PlayRequest } from "../Database/Model/PlayRequest.ts";
+import { Review } from "../Database/Model/Review.ts";
 
 const artistController = new Hono();
 artistController.get("/all", getArtists);
@@ -32,7 +35,7 @@ artistController.post(
 );
 artistController.post("/update", tokenMiddleware.verifyIsBand, updateArtist);
 artistController.post(
-  "/rate/:venueId",
+  "/rate/:eventId/:venueId",
   tokenMiddleware.verifyIsBand,
   rateVenue,
 );
@@ -123,7 +126,30 @@ async function updateArtist(c: Context) {
   );
 }
 
-async function rateVenue(c: Context) {}
+async function rateVenue(c: Context) {
+  const payload = c.get("tokenPayload");
+  const venueId = c.req.param("venueId");
+  const eventId = c.req.param("eventId");
+  const { description, score } = await c.req.json();
+
+  try {
+    const response = await Review.create({
+      VenueId: venueId,
+      ArtistId: payload.id,
+      EventId: eventId,
+      score: score,
+      description: description,
+      reviewer_type: 0,
+    });
+    return c.json(Ok(response, "Review submitted"));
+  } catch (e: any) {
+    if (e.name === "SequelizeUniqueConstraintError") {
+      return c.json(
+        Aborted(null, "You have already reviewed this venue/event combination"),
+      );
+    }
+  }
+}
 
 async function getEventAndStatistics(c: Context) {}
 
@@ -152,7 +178,7 @@ async function self(c: Context) {
       email: payload.email,
       id: payload.id,
     },
-    include: [Member, Event],
+    include: [Member, includeBio(), includeEvent(), PlayRequest, Review],
     attributes: { exclude: ["password", "verified"] },
   }).then((a) => (a === null ? null : a.get({ plain: true })));
   if (!user) {

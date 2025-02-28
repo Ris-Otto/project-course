@@ -6,13 +6,14 @@ import { useAuth } from "../../Hooks.ts";
 import { useAtom } from "jotai";
 import { user } from "../../store.ts";
 import { useParams, useSearchParams } from "react-router-dom";
-import { postRequest } from "../../api/APITemplate.ts";
+import { postRequest, requestAndToast } from "../../api/APITemplate.ts";
 import { Review } from "../../../../api/Database/Model/Review.ts";
 import { toast } from "react-toastify";
 import { Rating } from "@smastrom/react-rating";
 import '@smastrom/react-rating/style.css'
 import { Button } from "react-bootstrap";
 import { useLocation } from "react-router-dom"
+import { Method} from "../../utilities/Types.tsx";
 
 function ReviewForm() {
   useAuth(1);
@@ -25,14 +26,8 @@ function ReviewForm() {
 
 
   async function postReview() {
-    const path = u.type === 2 ? `/venue/rateArtist/${params.eventId}/${sp.get("artistId")}` : `/artist/rateVenue/${params.eventId}/${sp.get("venueId")}`;
-    const res = await postRequest<Review>(path, { description: reviewText, score: rating });
-
-    if(res.isSuccess()) {
-      toast("Review published");
-    } else {
-      toast.error("Something went wrong");
-    }
+    const path = u.type === 2 ? `/venue/rate/${params.eventId}/${sp.get("artistId")}` : `/artist/rate/${params.eventId}/${sp.get("venueId")}`;
+    await requestAndToast<Review>(Method.POST, path, { description: reviewText, score: rating });
   }
 
 

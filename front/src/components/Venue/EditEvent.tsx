@@ -13,6 +13,7 @@ import { EventSpecifics } from "./EventSpecifics.tsx";
 import {EditButton} from "../User/StyledProfile.tsx";
 import { toast } from "react-toastify";
 import {SearchArtist, SubState} from "../../utilities/Types.tsx";
+import { ImageListType } from "npm:react-images-uploading@3.1.7";
 
 function EditEvent({ event, updateSubState }: {
   event: Event,
@@ -42,8 +43,8 @@ function EditEvent({ event, updateSubState }: {
   const [type, stype] = useState("");
   const [tags, stags] = useState("");
 
-  const [image, setImage] = useState(
-    event.Bio?.Media[0]?.href ? event.Bio?.Media[0].href : "",
+  const [image, setImage] = useState<ImageListType>(
+    [{ data_url: event.poster }]
   );
   const [loc, setLoc] = useState(0);
 

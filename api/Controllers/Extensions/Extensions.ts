@@ -9,7 +9,9 @@ async function addPoster<T extends Venue | Artist | Event>(
 ) {
 }
 
-export function getPoster<T extends { Bio?: { Media?: Media[] } }>(model: T) {
+export function getPoster<
+  T extends { Bio?: { Media?: Media[] }; [index: string]: any },
+>(model: T) {
   const poster = model.Bio?.Media?.find((m) => m.poster === true);
   if (poster) {
     return getImage(poster.href);

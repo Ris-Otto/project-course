@@ -5,6 +5,7 @@ import { user } from "../../store.ts";
 import { useAtom } from "jotai";
 // @deno-types="npm:@types/react"
 import { useMemo } from "react";
+import { ButtonGroup } from "react-bootstrap";
 
 export function NavMenuProfile() {
   const navigate = useNavigate();
@@ -42,13 +43,23 @@ export function NavMenuProfile() {
           </NavDropdown>
         </div>
       ) : (
-        <Button
-          className="m-3"
-          hidden={hideSignIn}
-          onClick={() => navigate("/login")}
-        >
-          Sign in
-        </Button>
+        <ButtonGroup className={"m-3"}>
+          <Button
+
+            hidden={hideSignIn}
+            onClick={() => navigate("/register")}
+          >
+            Sign up
+          </Button>
+          <Button
+
+            hidden={hideSignIn}
+            onClick={() => navigate("/login")}
+          >
+            Sign in
+          </Button>
+        </ButtonGroup>
+
       )}
     </>
   );

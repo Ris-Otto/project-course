@@ -7,10 +7,9 @@ import {useImageDimensions} from "../../Hooks.ts";
 import {Theme} from "../../theme.ts";
 import {toast} from "react-toastify";
 import {EditButton} from "../User/StyledProfile.tsx";
-import {postRequest} from "../../api/APITemplate.ts";
+import { postFileRequest, postRequest } from "../../api/APITemplate.ts";
 import paths from "../../../../Shared/paths.ts";
-import {Button} from "react-bootstrap";
-import Modal from 'react-bootstrap/Modal';
+import {Button, Modal} from "react-bootstrap";
 import Event from "../../../../api/Database/Model/Event.ts";
 import {EventSpecifics} from "./EventSpecifics.tsx";
 import { ImageListType } from "npm:react-images-uploading@3.1.7";
@@ -74,7 +73,6 @@ export function AddEvent({
       start: start,
       end: end,
       bio: bio,
-      poster: image,
       address: addr,
       city: city,
       zip: zip,
@@ -96,12 +94,23 @@ export function AddEvent({
     } else {
       toast("Event created");
     }
+
+    if(image[0].file) {
+      const posterRes = await postFileRequest(`venue/event/update/${res.response.id}/poster`, { poster: image[0].file });
+      if(posterRes.isSuccess()) {
+        toast("Poster added")
+      } else {
+        toast.error("Something went wrong when adding event poster")
+      }
+    }
+
     return ret;
   }
 
   return (
 
       <div style={{textAlign: "right"}} className={"mb-3"}>
+        {/*@ts-ignore bah*/}
         <Modal contentClassName="underwave-modal" show={show}>
           <Modal.Header closeButton>
             <Modal.Title>Add artist</Modal.Title>
@@ -183,26 +192,5 @@ export function AddEvent({
       </div>
   );
 }
-
-{/*<Control
-                  header="Poster"
-                  state={image}
-                  setState={setImage}
-                  pattern={
-                    //URL regex-pattern
-                    urlPattern.source
-                  }
-                  color={t.redBrown}
-              />
-              {image && urlPattern.test(image) ? (
-                  <img
-                      src={image}
-                      style={{
-                        width: `${dimensions.width}px`,
-                        height: `${dimensions.height}px`,
-                        marginLeft: "2px",
-                      }}
-                  />
-              ) : null}*/}
 
 

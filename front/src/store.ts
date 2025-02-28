@@ -16,7 +16,7 @@ declare interface UserRegister {
   email: string;
   password: string;
   name: string;
-  [index: string]: number | string;
+  [index: string]: string;
 }
 
 declare interface VenueRegister {
@@ -27,14 +27,14 @@ declare interface VenueRegister {
   address: string;
   zip: string;
   city: string;
-  [index: string]: number | string;
+  [index: string]: string;
 }
 
 declare interface ArtistRegister {
   email: string;
   password: string;
   name: string;
-  [index: string]: number | string;
+  [index: string]: string;
 }
 
 const initialUser: UserRegister = {

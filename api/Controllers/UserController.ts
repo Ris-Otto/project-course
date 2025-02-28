@@ -20,6 +20,7 @@ import {
 import { deleteCookie } from "npm:hono/cookie";
 import { Task } from "../Utilities.ts";
 import { EventInterest } from "../Database/Model/EventInterest.ts";
+import { getPoster } from "./Extensions/Extensions.ts";
 
 const userController = new Hono();
 
@@ -66,31 +67,29 @@ userController.post(
 
 async function getEvents(c: Context) {
   //TODO pagination, sequelize probably has some functionality for this
-  const events = (
-    await Event.findAll({
-      include: [
-        includeModel({
-          model: Pricing,
-          exclude: ["createdAt", "updatedAt"],
-        }),
-        includeModel({
-          model: Venue,
-          exclude: [
-            "password",
-            "verified",
-            "contactEmail",
-            "contactName",
-            "createdAt",
-            "updatedAt",
-          ],
-        }),
-        includeBio(),
-      ],
-      attributes: {
-        exclude: ["VenueId", "PricingId", "createdAt", "updatedAt"],
-      },
-    })
-  ).map((e) => e.get({ plain: true }));
+  const events = await Event.findAll({
+    include: [
+      includeModel({
+        model: Pricing,
+        exclude: ["createdAt", "updatedAt"],
+      }),
+      includeModel({
+        model: Venue,
+        exclude: [
+          "password",
+          "verified",
+          "contactEmail",
+          "contactName",
+          "createdAt",
+          "updatedAt",
+        ],
+      }),
+      includeBio(),
+    ],
+    attributes: {
+      exclude: ["VenueId", "PricingId", "createdAt", "updatedAt"],
+    },
+  });
   return c.json(Ok(events));
 }
 
@@ -106,6 +105,7 @@ async function getEvent(c: Context) {
         exclude: ["password", "verified", "contactEmail", "contactName"],
       }),
       includeArtist(),
+      includeBio(),
     ],
     attributes: {
       exclude: ["VenueId", "PricingId", "Artists"],
@@ -116,7 +116,7 @@ async function getEvent(c: Context) {
     return c.json(NotFound());
   }
   const ret = event.get({ plain: true });
-  return c.json(Ok(ret));
+  return c.json(Ok({ ...ret, poster: getPoster(event) }));
 }
 
 async function getUser(c: Context) {

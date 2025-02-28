@@ -6,7 +6,7 @@ import {
   includeEvent,
   includeOpeningHours,
 } from "../Database/framework.ts";
-import { NotFound, Ok, Unauthorized } from "../../Shared/Result.ts";
+import { Aborted, NotFound, Ok, Unauthorized } from "../../Shared/Result.ts";
 import { Venue } from "../Database/Model/Venue.ts";
 import Event from "../Database/Model/Event.ts";
 import { Bio } from "../Database/Model/Bio.ts";
@@ -28,6 +28,14 @@ venueController.post(
   requestArtist,
 );
 venueController.post("/event/add", tokenMiddleware.verifyIsVenue, addEvent);
+
+venueController.post(
+  "event/update/:eventId/poster",
+  tokenMiddleware.verifyIsVenue,
+  storage.single("poster"),
+  addEventPoster,
+);
+
 venueController.post(
   "/event/update/:eventId",
   tokenMiddleware.verifyIsVenue,
@@ -113,13 +121,13 @@ async function addEvent(c: Context) {
     end,
     bio,
     poster,
-    //address,
-    //city,
-    //zip,
-    //capacity,
+    address,
+    city,
+    zip,
+    capacity,
     artists,
-    //type,
-    //tags,
+    type,
+    tags,
     published,
     amount,
     paymentMethod,
@@ -129,10 +137,6 @@ async function addEvent(c: Context) {
   const bioRes = await Bio.create({ description: bio }).then(
     (data) => data.get({ plain: true }),
   );
-
-  if (poster.length > 0) {
-    await Media.create({ internal: false, href: poster, BioId: bioRes.id });
-  }
 
   const pricingRes = await Pricing.create({
     amount: amount,
@@ -159,6 +163,23 @@ async function addEvent(c: Context) {
   }
 
   return c.json(Ok(eventRes));
+}
+
+async function addEventPoster(c: Context) {
+  const file = c.var.files["poster"];
+  const eventId = c.req.param("eventId");
+  const event = await Event.findByPk(eventId, { include: [Bio] });
+  if (!event) {
+    return c.json(NotFound());
+  }
+
+  await Media.upsert({
+    BioId: event.BioId,
+    internal: true,
+    href: file.name,
+    poster: true,
+  });
+  return c.json(Ok());
 }
 
 async function updateEvent(c: Context) {
@@ -259,11 +280,25 @@ async function rateArtist(c: Context) {
   const payload = c.get("tokenPayload");
   const artistId = c.req.param("artistId");
   const eventId = c.req.param("eventId");
-  const data = await c.req.json();
-  const venue = await Venue.findOne({
-    where: { id: payload.id },
-  });
-  if (!venue) return c.json(NotFound());
+  const { description, score } = await c.req.json();
+  try {
+    const response = await Review.create({
+      VenueId: payload.id,
+      ArtistId: artistId,
+      EventId: eventId,
+      score: score,
+      description: description,
+      reviewer_type: 0,
+    });
+    return c.json(Ok(response, "Review submitted"));
+  } catch (e: any) {
+    console.log(e.name);
+    if (e.name === "SequelizeUniqueConstraintError") {
+      return c.json(
+        Aborted(null, "You have already reviewed this band/event combination"),
+      );
+    }
+  }
 }
 
 async function updatePoster(c: Context) {
@@ -342,7 +377,6 @@ async function getVenue(c: Context) {
     },
     include: [
       includeBio(),
-      includeEvent(),
       includeOpeningHours(),
       PlayRequest,
       Review,
@@ -352,9 +386,32 @@ async function getVenue(c: Context) {
     },
   });
   if (venue === null) return c.json(NotFound());
-  const ret = venue.get({ plain: true });
-  ret.poster = getPoster(venue);
-  return c.json(Ok(ret));
+
+  const events = await Event.findAll({
+    where: {
+      VenueId: payload.id,
+    },
+    include: [
+      includeBio(),
+      Pricing,
+      Artist,
+      Venue,
+    ],
+  });
+
+  const eret: Event[] = [];
+  for (const event of events) {
+    eret.push({
+      ...event.get({ plain: true }),
+      poster: getPoster(event),
+    });
+  }
+
+  //ret.poster = getPoster(venue);
+
+  return c.json(
+    Ok({ ...venue.get({ plain: true }), poster: venue.poster, Events: eret }),
+  );
 }
 
 async function getVenueProfile(c: Context) {

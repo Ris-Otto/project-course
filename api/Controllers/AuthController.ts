@@ -28,11 +28,12 @@ auth.post("verify/venue/:id", verifyVenue);
 
 async function registerBand(c: Context) {
   const artist = await c.req.json<Artist>();
-  const dbRes = await Artist.create({ ...artist, verified: 1 }).then((data) =>
-    data.get({ plain: true })
-  );
+  const dbRes = await Artist.create({ ...artist, verified: 1 });
   //TODO send confirm email email
-  return c.json(Ok(dbRes));
+  const payload = await generateJWTAccessToken(dbRes);
+
+  setCookie(c, "access_token", payload);
+  return c.json(Ok());
 }
 
 async function registerVenue(c: Context) {
@@ -41,9 +42,12 @@ async function registerVenue(c: Context) {
     ...venue,
     verified: 1,
     country: "FI",
-  }).then((data) => data.get({ plain: true }));
+  });
   //TODO send confirm email email
-  return c.json(Ok(dbRes));
+  const payload = await generateJWTAccessToken(dbRes);
+
+  setCookie(c, "access_token", payload);
+  return c.json(Ok());
 }
 
 async function authenticate(c: Context) {
@@ -65,10 +69,13 @@ async function registerUser(c: Context) {
     email: email,
     password: password,
     verified: 1,
-  }).then((data) => data.get({ plain: true }));
+  });
   dl.info("User: {@a}", dbRes);
   //TODO send confirm email email
-  return c.json(Ok(dbRes));
+  const payload = await generateJWTAccessToken(dbRes);
+
+  setCookie(c, "access_token", payload);
+  return c.json(Ok());
 }
 
 //TODO Split

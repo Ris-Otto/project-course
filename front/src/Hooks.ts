@@ -99,6 +99,40 @@ export function useRequest<T>(
   return { response, isLoading, isError, refetch };
 }
 
+export function useDeferRequest<T>(
+  path: string,
+): {
+  response: T | null;
+  isLoading: boolean;
+  isError: string | null;
+  refetch: () => void;
+} {
+  const [isLoading, setIsLoading] = useState(true);
+  const [isError, setIsError] = useState<string | null>(null);
+  const [response, setResponse] = useState<T | null>(null);
+  const [fetch, setFetch] = useState(false);
+  function refetch() {
+    setFetch((s) => !s);
+  }
+
+  const fetchData = useCallback(async () => {
+    setIsLoading(true);
+    const res = await getRequest<T>(path);
+    if (res.isSuccess()) {
+      setResponse(res.response);
+    } else {
+      setIsError(res.message);
+    }
+    setIsLoading(false);
+  }, [fetch]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  return { response, isLoading, isError, refetch };
+}
+
 export function useAuth(accessType?: number) {
   const [_, setU] = useAtom(user);
   const navigate = useNavigate();

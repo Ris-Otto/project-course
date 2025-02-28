@@ -134,6 +134,8 @@ export function VenueEvents({
                     event={a}
                     setCurrentEvent={setCurrentEvent}
                     updateSubState={updateSubState}
+                    editable
+                    viewable
                 />
               </div>
             )}
@@ -146,6 +148,7 @@ export function VenueEvents({
                       event={a}
                       setCurrentEvent={setCurrentEvent}
                       updateSubState={updateSubState}
+                      viewable
                   />
                 </div>
             ))}
@@ -164,10 +167,13 @@ export function VenueEvent({
   event,
   updateSubState,
   setCurrentEvent,
+  editable
 }: {
   event: Event;
   updateSubState: (subState: SubState, refetch?: boolean) => void;
   setCurrentEvent?: React.Dispatch<React.SetStateAction<Event | undefined>>;
+  editable?: boolean;
+  viewable?: boolean;
 }): React.ReactNode {
   const startTime = useMemo(() => {
     const time = new Date(event.start).toTimeString().split(" ")[0];
@@ -199,7 +205,7 @@ export function VenueEvent({
       minwidth={`${dimensions.width}px`}
       padding={String(p)}
     >
-      {setCurrentEvent ? (
+      {editable && setCurrentEvent ? (
         <div style={{ textAlign: "right" }}>
           {!event.published ? (
               <Button onClick={() => publishEvent()}>
@@ -225,6 +231,7 @@ export function VenueEvent({
           dimensions={dimensions}
           name={event.name}
           age={!!event.age}
+          image={event.poster}
         />
         <div
           className="description mt-3 mb-3"
@@ -258,6 +265,7 @@ function EventPicture({
   dimensions,
   name,
   age,
+  image,
 }: {
   onImageLoad: (e: SyntheticEvent<HTMLImageElement>) => void;
   dimensions: {
@@ -266,7 +274,9 @@ function EventPicture({
   };
   name: string;
   age?: boolean;
+  image?: string;
 }) {
+  const picture = image ? image : cd;
   return (
     <div className="picture">
       <h4 className="picture-name">{name}</h4>
@@ -282,7 +292,7 @@ function EventPicture({
           currentTarget.onerror = null; // prevents looping
           currentTarget.src = cd;
         }}
-        src={cd}
+        src={picture}
         alt="event-picture"
       />
     </div>

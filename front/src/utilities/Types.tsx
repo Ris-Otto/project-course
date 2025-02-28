@@ -195,3 +195,8 @@ export type PictureProps = {
   item: ObservableItem;
   showName?: boolean;
 }
+
+export enum Method {
+  GET,
+  POST,
+}

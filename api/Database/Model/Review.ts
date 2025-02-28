@@ -21,12 +21,9 @@ Review.init(
       autoIncrement: true,
     },
     description: {
-      type: DataTypes.STRING,
+      type: DataTypes.TEXT,
       allowNull: false,
-      validate: {
-        len: [0, 255],
-        isAlphanumeric: true,
-      },
+      validate: {},
     },
     score: {
       type: DataTypes.INTEGER,
@@ -37,13 +34,17 @@ Review.init(
       },
     },
     reviewer_type: {
-      type: DataTypes.BOOLEAN,
+      type: DataTypes.TINYINT,
       allowNull: false,
     },
   },
   {
     tableName: "reviews",
     sequelize: sequelize,
+    indexes: [{
+      fields: ["EventId", "VenueId", "ArtistId", "reviewer_type"],
+      unique: true,
+    }],
   },
 );
 

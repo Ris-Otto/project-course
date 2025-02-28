@@ -1,10 +1,11 @@
-﻿import { DataTypes, Model } from "npm:sequelize";
+﻿import { DataTypes, FindOptions, Model } from "npm:sequelize";
 import sequelize from "../database.ts";
 import Pricing from "./Pricing.ts";
 import type { Artist } from "./Artist.ts";
 import type { Venue } from "./Venue.ts";
 import { Bio } from "./Bio.ts";
 import EventMapping from "./EventMapping.ts";
+import { getPoster } from "../../Controllers/Extensions/Extensions.ts";
 
 type EventRead = {
   id: number;
@@ -34,6 +35,7 @@ class Event extends Model {
   declare address: string;
   declare zip: string;
   declare city: string;
+  declare poster?: string;
   declare getArtists: () => Promise<Artist[]>;
   declare getVenue: () => Promise<Venue>;
   declare getBio: () => Promise<Bio>;
@@ -83,6 +85,27 @@ Event.init(
   {
     tableName: "events",
     sequelize: sequelize,
+  },
+);
+
+Event.addHook("afterFind", "addPoster", (event: Event) => {
+  console.log(event.name);
+  event.poster = getPoster(event);
+});
+
+Event.afterFind(
+  "addPoster",
+  (event: Event | readonly Event[] | null) => {
+    console.log("addPoster");
+    if (!event) return;
+
+    if (event instanceof Event) {
+      event.poster = getPoster(event);
+    } else {
+      for (const e of event) {
+        e.poster = getPoster(event);
+      }
+    }
   },
 );
 

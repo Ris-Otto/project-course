@@ -1,6 +1,8 @@
 ﻿// @deno-types="npm:@types/axios"
 import axios from "axios";
-import { ResponseData, Result } from "../../../Shared/Result.ts";
+import { ResponseData, Result, ResultCode } from "../../../Shared/Result.ts";
+import { toast } from "react-toastify";
+import { Method } from "../utilities/Types.tsx";
 
 const instance = axios.create({
   baseURL: "http://localhost:8000",
@@ -46,4 +48,51 @@ export async function getRequest<TResponse>(
     withCredentials: true,
   });
   return new Result(response.data);
+}
+
+export async function requestAndToast<TResponse>(
+  method: Method,
+  path: string,
+  data?: Record<string, {}>,
+): Promise<Result<TResponse>> {
+  switch (method) {
+    case Method.GET:
+      const getresponse = await getRequest<TResponse>(path);
+      toastResponse(getresponse);
+      return getresponse;
+    case Method.POST:
+      const postresponse = await postRequest<TResponse>(path, data);
+      toastResponse(postresponse);
+      return postresponse;
+  }
+}
+
+function toastResponse<T>(result: Result<T>) {
+  const { code, message } = result;
+  switch (code) {
+    case ResultCode.Ok:
+      toast.success(message ? message : "Success");
+      break;
+    case ResultCode.Error:
+      toast.error(message ? message : "Something went wrong");
+      break;
+    case ResultCode.NotFound:
+      toast.error(message ? message : "Not found");
+      break;
+    case ResultCode.PartialOk:
+      toast.success(message ? message : "Success");
+      break;
+    case ResultCode.PermissionDenied:
+      toast.error(message ? message : "Denied");
+      break;
+    case ResultCode.RequestAborted:
+      toast.warning(message ? message : "Aborted");
+      break;
+    case ResultCode.ThirdPartyRequestAborted:
+      toast.warning(message ? message : "Aborted");
+      break;
+    case ResultCode.Unauthorized:
+      toast.warning(message ? message : "Denied");
+      break;
+  }
 }

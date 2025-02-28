@@ -8,33 +8,56 @@ import { postRequest } from "../../api/APITemplate.ts";
 import { User } from "../../../../api/Database/Model/User.ts";
 import { BaseRegisterForm } from "./Register.tsx";
 import { Form, InputGroup } from "react-bootstrap";
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 export default function VenueRegistration() {
   const [venue, dispatch] = useReducerAtom(venueRegisterAtom, DefaultReducer);
   const [confirm, setConfirm] = useState("");
-  async function handleRegister(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
+  const [validated, setValidated] = useState(false);
+  const navigate = useNavigate();
+  async function handleRegister() {
     const register = await postRequest<User>("/auth/register/venue", venue);
     if (register.isSuccess()) {
       dispatch({ payload: "", type: "all" });
-      return;
+      navigate("/");
+    } else {
+      setConfirm("");
+      dispatch({ payload: "", type: "password" });
+      toast.warning("Something went wrong");
     }
   }
 
-  useEffect(() => {
-    console.log(venue);
-  }, [venue]);
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    setValidated(false);
+    event.preventDefault();
+    event.stopPropagation();
+    const form = event.currentTarget;
+    if (form.checkValidity()) {
+      await handleRegister()
+    }
+
+    setValidated(true);
+  };
+
+  useEffect(() => { return () => {
+    dispatch({ payload: "", type: "all" });
+    setConfirm("");
+    setValidated(false);
+  } }, [])
 
   return (
     <StyledRegister className="top-level-component">
       <div className="container" style={{ marginTop: "10vh" }}>
         <BaseRegisterForm
-          onSubmit={handleRegister}
+          onSubmit={handleSubmit}
           title={"Register a venue"}
-          atom={venueRegisterAtom}
+          user={venue}
+          dispatch={dispatch}
           confirmPassword={confirm}
           setConfirmPassword={setConfirm}
+          validated={validated}
         >
           <InputGroup className="mb-3">
             <InputGroup.Text>Business ID</InputGroup.Text>

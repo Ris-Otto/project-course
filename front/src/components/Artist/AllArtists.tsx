@@ -22,16 +22,16 @@ import { ObservableListItem } from "../Misc/ObservableListItem.tsx";
 function AllArtists() {
     useAuth(-1);
     const [filters, setFilters] = useState<Filter>({
-        genre: {
-            value: "",
-            label: "Genre",
-            type: "text"
-        },
-        name: {
-            value: "",
-            label: "Name",
-            type: "text"
-        }
+      genre: {
+        value: "",
+        label: "Genre",
+        type: "text"
+      },
+      name: {
+        value: "",
+        label: "Name",
+        type: "text"
+      }
     });
 
     const [, setRefetch] = useAtom(refetchFollowedArtists)

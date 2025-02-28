@@ -6,9 +6,8 @@ import {
   open,
   artistFollowing,
   venueFollowing,
-  refetchFollowing,
   refetchFollowedArtists,
-  refetchFollowedVenues,
+  refetchFollowedVenues, user,
 } from "../store.ts";
 import NavMenu from "../Navigation/NavMenu.tsx";
 import { Menu } from "./Misc/Menu.tsx";
@@ -20,6 +19,7 @@ import { Venue } from "../../../api/Database/Model/Venue.ts";
 export function UserSession() {
   const [, setOpen] = useAtom(open);
   const node = React.createRef<HTMLDivElement>();
+  const [u,] = useAtom(user);
   const [, setAF] = useAtom(artistFollowing);
   const [, setVF] = useAtom(venueFollowing);
   const [rfvenues] = useAtom(refetchFollowedVenues);
@@ -27,6 +27,8 @@ export function UserSession() {
   useOnClickOutside(node, () => {
     setOpen(false);
   });
+
+  /*if(!u || u.type !== 0) return <UserSessionOutlet ref={node} />*/
   const artists = useRequest<Artist[]>(paths.user.artists)
   const venues = useRequest<Venue[]>(paths.user.venues);
 
@@ -48,10 +50,14 @@ export function UserSession() {
     venues.refetch();
   }, [rfvenues])
 
+  return <UserSessionOutlet ref={node} />;
+}
+
+function UserSessionOutlet({ref}: {ref: React.RefObject<HTMLDivElement>}){
   return (
     <>
       <NavMenu />
-      <div ref={node}>
+      <div ref={ref}>
         <Menu />
       </div>
       <Outlet />

@@ -5,26 +5,42 @@ import { postRequest } from "../../api/APITemplate.ts";
 import { Link } from "react-router-dom";
 import { StyledRegister } from "./Register.styled.ts";
 import {
+  DefaultAction,
   DefaultReducer,
   useReducerAtom,
   userRegisterAtom,
 } from "../../store.ts";
 import Paths from "../../../../Shared/paths.ts";
 import { UserType } from "../../../../Shared/Types.ts";
-import type { PrimitiveAtom } from "jotai";
 import type { StateHandler } from "../../utilities/Types.tsx";
 //@ts-ignore import shit idk
 import vinyl_turquoise from "../../resources/Images-Assets/vinyyli_turkoosi_dripping.svg";
 import { toast } from "react-toastify";
+import { emailPattern } from "../../utilities/Regex.ts";
+import { useNavigate } from "react-router-dom";
 
 export function Register() {
   const [user, dispatch] = useReducerAtom(userRegisterAtom, DefaultReducer);
   const [cPw, setCPw] = useState("");
+  const [validated, setValidated] = useState(false);
   const path = useMemo(
     () => globalThis.location.pathname,
     [globalThis.location.pathname],
   );
-  const [regPath, setRegPath] = useState(Paths.user.register);
+  const navigate = useNavigate()
+  const [regPath, setRegPath] = useState<string>(Paths.user.register);
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    setValidated(false);
+    event.preventDefault();
+    event.stopPropagation();
+    const form = event.currentTarget;
+    if (form.checkValidity()) {
+      await handleRegister()
+    }
+
+    setValidated(true);
+  };
 
   useEffect(() => {
     if (path.includes("venue")) {
@@ -35,23 +51,23 @@ export function Register() {
       setRegPath(Paths.artist.register);
       return;
     }
-    setRegPath(Paths.user.regiser);
-  }, [path]);
-  async function handleRegister(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    if (user.password !== cPw) {
+    setRegPath(Paths.user.register);
+
+    return () => {
+      dispatch({ type: "all", payload: "" });
       setCPw("");
-      dispatch({ payload: "", type: "password" });
-      toast.warning("Password don't match");
-      return;
+      setValidated(false);
     }
+  }, [path]);
+  async function handleRegister() {
     const register = await postRequest<UserType>(regPath, user);
     if (register.isSuccess()) {
       dispatch({ payload: "", type: "all" });
+      navigate("/");
     } else {
       setCPw("");
       dispatch({ payload: "", type: "password" });
-      toast.warning("Invalid email or password");
+      toast.warning("Something went wrong");
     }
   }
 
@@ -75,11 +91,13 @@ export function Register() {
               </Col>
             </Row>
             <BaseRegisterForm
-              onSubmit={handleRegister}
+              onSubmit={handleSubmit}
               title={"Create an account"}
-              atom={userRegisterAtom}
+              user={user}
+              dispatch={dispatch}
               confirmPassword={cPw}
               setConfirmPassword={setCPw}
+              validated={validated}
             />
           </Col>
         </Row>
@@ -95,21 +113,23 @@ declare interface BaseRegisterProps<T extends Record<string, string | number>> {
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => Promise<void>;
   title: string;
   children?: ReactNode;
-  atom: PrimitiveAtom<T>;
+  user: T;
+  dispatch: (action: DefaultAction<T>) => void
   confirmPassword: string;
   setConfirmPassword: StateHandler<string>;
+  validated: boolean;
 }
 
-export function BaseRegisterForm<T extends Record<string, string | number>>(
+export function BaseRegisterForm<T extends Record<string, string>>(
   props: BaseRegisterProps<T>,
 ) {
-  const [user, dispatch] = useReducerAtom(props.atom, DefaultReducer);
+  const { user, dispatch } = props;
 
   return (
-    <Form className="mt-3" onSubmit={props.onSubmit}>
+    <Form className="mt-3" onSubmit={props.onSubmit} noValidate validated={props.validated}>
       <h2 style={{ textAlign: "left" }}>{props.title}</h2>
       <InputGroup className="mb-3">
-        <InputGroup.Text>Email</InputGroup.Text>
+        <InputGroup.Text id={"email"}>Email</InputGroup.Text>
         <Form.Control
           type="email"
           placeholder="finland@hefe.fi"
@@ -117,10 +137,16 @@ export function BaseRegisterForm<T extends Record<string, string | number>>(
           onChange={(e: { target: { value: string } }) =>
             dispatch({ payload: e.target.value, type: "email" })
           }
+          pattern={emailPattern.source}
+          required
+          aria-describedby={"email"}
         />
+        <Form.Control.Feedback type="invalid" style={{color: "#B44819"}}>
+          An email is required.
+        </Form.Control.Feedback>
       </InputGroup>
       <InputGroup className="mb-3">
-        <InputGroup.Text>Display name</InputGroup.Text>
+        <InputGroup.Text id={"display-name"}>Display name</InputGroup.Text>
         <Form.Control
           type="text"
           placeholder="Finland hefe"
@@ -128,27 +154,50 @@ export function BaseRegisterForm<T extends Record<string, string | number>>(
           onChange={(e: { target: { value: string } }) =>
             dispatch({ payload: e.target.value, type: "name" })
           }
+          aria-describedby={"display-name"}
+          required
+          pattern={/[A-Za-z0-9_\s\-]+/.source}
+          isValid={false}
         />
+        <Form.Control.Feedback type="invalid" style={{color: "#B44819"}}>
+          A display name is required.
+        </Form.Control.Feedback>
       </InputGroup>
       <InputGroup className="mb-3">
-        <InputGroup.Text>Password</InputGroup.Text>
+        <InputGroup.Text id={"password"}>Password</InputGroup.Text>
         <Form.Control
           type="password"
           value={user.password}
           onChange={(e: { target: { value: string } }) =>
             dispatch({ payload: e.target.value, type: "password" })
           }
+          pattern={"(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"}
+          aria-describedby={"password"}
+          required
+          isValid={false}
+          isInvalid={false}
         />
+        <Form.Control.Feedback type="invalid" style={{color: "#B44819"}}>
+          Your password should contain at least 8 characters, a capital (uppercase) letter and a number
+        </Form.Control.Feedback>
       </InputGroup>
       <InputGroup className="mb-3">
-        <InputGroup.Text>Confirm password</InputGroup.Text>
+        <InputGroup.Text id={"confirm-password"}>Confirm password</InputGroup.Text>
         <Form.Control
           type="password"
+          required
           value={props.confirmPassword}
           onChange={(e: { target: { value: string } }) =>
             props.setConfirmPassword(e.target.value)
           }
+          pattern={user.password}
+          aria-describedby={"confirm-password"}
+          isInvalid={false}
+          isValid={false}
         />
+        <Form.Control.Feedback type="invalid" style={{color: "#B44819"}}>
+          Your passwords should match
+        </Form.Control.Feedback>
       </InputGroup>
       {props.children}
       <Button className="mt-3 register-btn" type="submit">

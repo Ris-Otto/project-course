@@ -23,27 +23,27 @@ import { ExportInterface} from "npm:react-images-uploading@3.1.7/dist/typings.d.
 import { ImageListType } from "npm:react-images-uploading@3.1.7";
 
 type EventSpecificsProps = {
-    dimensions,
+    dimensions: { width: number, height: number },
     handleImageLoad: (e: any) => void,
     name: string,
-    t: typeof Theme,
+    t: Theme,
     image: ImageListType,
     setImage: StateHandler<ImageListType>,
     sname: StateHandler<string>,
     start: Date,
-    setStart,
+    setStart: StateHandler<Date>,
     end: Date,
-    setEnd,
-    loc,
-    setLoc,
-    addr,
+    setEnd: StateHandler<Date>,
+    loc: any,
+    setLoc: StateHandler<any>,
+    addr: string
     saddr: StateHandler<string>,
-    city,
+    city: string,
     scity: StateHandler<string>,
-    zip,
+    zip: string,
     szip: StateHandler<string>,
-    sage: StateHandler<number>,
-    age: number,
+    sage: StateHandler<boolean>,
+    age: boolean,
     bio: string,
     sbio: StateHandler<string>,
     cost: number,
@@ -99,7 +99,6 @@ export function EventSpecifics({
 ) {
     const onChange = (imageList: ImageListType, addUpdateIndex: number) => {
         // data for submit
-        console.log(imageList, addUpdateIndex);
         setImage(imageList);
     };
 
@@ -254,7 +253,7 @@ export function EventSpecifics({
                                     className="mt-3"
                                     loadOptions={debounceApiCall(searchArtists, 200)}
                                     onChange={(e) => {
-                                        const a = e as SearchArtist;
+                                        const a = e as unknown as SearchArtist;
                                         setSelectedArtist(a);
                                         if (addedArtists.includes(a) || a === null) {
                                             return;

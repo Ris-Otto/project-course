@@ -20,6 +20,7 @@ import { SimpleObservableListItem } from "../Misc/ObservableListItem.tsx";
 import { Row } from "../Misc/CustomStyles.tsx"
 import { IoLocationSharp } from "react-icons/io5"
 import { Theme } from "../../theme.ts";
+import { useImageDimensions} from "../../Hooks.ts";
 
 
 function EventPage() {
@@ -131,6 +132,7 @@ export function AllEvents() {
 function RenderEvent({ event }: { event: Event }) {
   const [u,] = useAtom(user);
   const navigate = useNavigate();
+  const { dimensions, handleImageLoad } = useImageDimensions(globalThis.innerHeight/ 2);
 
   const start = useMemo(
     () => ExtractHoursMinutes(new Date(event.start)),
@@ -158,6 +160,7 @@ function RenderEvent({ event }: { event: Event }) {
         POSTER POSTER POSTER POSTER POSTER POSTER
         POSTER POSTER POSTER POSTER POSTER POSTER
        */}
+      <img src={event.poster} alt={"Poster"} onLoad={handleImageLoad} style={{width: `${dimensions.width}px`, height: `${dimensions.height}px`}}/>
       <UnderwaveHeader header={"Artists"} as={"h3"} color={t.orange} />
       <Row justifycontent={"start"} flexwrap={"wrap"} >
       {event.Artists?.map((a, idx) => {

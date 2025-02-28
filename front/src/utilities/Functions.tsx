@@ -466,7 +466,7 @@ declare interface StateDropdownFieldProps<
   placeholder?: boolean;
 }
 
-function DefaultStandaloneField<TState extends string | number>({
+function DefaultStandaloneField<TState extends {}>({
   header,
   state,
   setState,

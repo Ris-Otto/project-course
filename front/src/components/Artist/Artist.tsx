@@ -12,7 +12,7 @@ import { EditableProfileHeaders, EditableProfileMenu } from "../Misc/EditablePro
 import cd from "../../resources/Images-Assets/cd+cover.png";
 import { useImageDimensions } from "../../Hooks.ts";
 import { Theme } from "../../theme.ts";
-import { FlexCol, Row } from "../Misc/CustomStyles.tsx";
+import { FlexCol, ListWrapper, Row } from "../Misc/CustomStyles.tsx";
 import { Link } from "../../../../api/Database/Model/Link.ts";
 import { urlPattern } from "../../utilities/Regex.ts";
 import { Media } from "../../../../api/Database/Model/Media.ts";
@@ -22,6 +22,10 @@ import { toast } from "react-toastify";
 import Event from "../../../../api/Database/Model/Event.ts";
 import ReactImageUploading, { ImageListType } from "react-images-uploading";
 import { ExportInterface } from "react-images-uploading/dist/typings.d.ts";
+import { ObservableListItem } from "../Misc/ObservableListItem.tsx";
+import { artistFollowing } from "../../store.ts";
+import { followArtist, unfollowArtist } from "../../api/Common.ts";
+import { VenueEvent } from "../Venue/Venue.tsx";
 
 declare type ArtistProfileProps = {
   value: Artist;
@@ -32,31 +36,29 @@ declare type ArtistProfileProps = {
 }
 
 export function ArtistProfile({value, subState, updateSubState, setPageState, pageState}: ArtistProfileProps) {
-
   return (
-
-        <Grid
-            header={value.name}
-            narrowColumnIndex={0}
-            wideColumnIndex={1}
-        >
-          <EditableProfileMenu pageState={pageState} setPageState={setPageState} updateSubState={updateSubState} />
-          <div style={{ borderLeft: "1px solid black", paddingLeft: "50px" }}>
-            {pageState === "profile" ? (
-                <ArtistViewProfile
-                    artist={value}
-                    subState={subState}
-                    updateSubState={updateSubState}
-                />
-            ) : pageState === "events" ? (
-                <ArtistEvents
-                    subState={subState}
-                    artist={value}
-                    updateSubState={updateSubState}
-                />
-            ) : null}
-          </div>
-        </Grid>
+    <Grid
+      header={value.name}
+      narrowColumnIndex={0}
+      wideColumnIndex={1}
+    >
+      <EditableProfileMenu pageState={pageState} setPageState={setPageState} updateSubState={updateSubState} />
+      <div style={{ borderLeft: "1px solid black", paddingLeft: "50px" }}>
+        {pageState === "profile" ? (
+          <ArtistViewProfile
+              artist={value}
+              subState={subState}
+              updateSubState={updateSubState}
+          />
+        ) : pageState === "events" ? (
+          <ArtistEvents
+              subState={subState}
+              artist={value}
+              updateSubState={updateSubState}
+          />
+        ) : null}
+      </div>
+    </Grid>
 
   );
 }
@@ -128,12 +130,12 @@ function ArtistViewProfile({ artist, subState, updateSubState }: { artist: Artis
                 dataURLKey="data_url"
               >
                 {({
-                    imageList,
-                    onImageUpload,
-                    onImageUpdate,
-                    onImageRemove,
-                    isDragging,
-                    dragProps,
+                  imageList,
+                  onImageUpload,
+                  onImageUpdate,
+                  onImageRemove,
+                  isDragging,
+                  dragProps,
                   }: ExportInterface) => (
                   // write your building UI
                   <div className="upload__image-wrapper">
@@ -262,8 +264,19 @@ function ArtistEvents({ artist, subState, updateSubState }: { artist: Artist, su
   const [currentEvent, setCurrentEvent] = useState<Event>();
   const t = useMemo(() => new Theme(), []);
 
-  return (<div>
-
-  </div>);
+  return (
+    <ListWrapper>
+    <div className="row-wrap-start" >
+      <h3>Past events</h3>
+      {pastEvents.map((a, idx) =>
+        <VenueEvent key={idx} event={a} updateSubState={updateSubState} setCurrentEvent={setCurrentEvent} />
+      )}
+      <h3>Upcoming events</h3>
+      {upcomingEvents.map((a, idx) =>
+        <VenueEvent key={idx} event={a} updateSubState={updateSubState} setCurrentEvent={setCurrentEvent} />
+      )}
+    </div>
+  </ListWrapper>
+  );
 }
 
