@@ -96,7 +96,6 @@ Event.addHook("afterFind", "addPoster", (event: Event) => {
 Event.afterFind(
   "addPoster",
   (event: Event | readonly Event[] | null) => {
-    console.log("addPoster");
     if (!event) return;
 
     if (event instanceof Event) {
