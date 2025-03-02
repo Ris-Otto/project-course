@@ -21,6 +21,7 @@ import { Row } from "../Misc/CustomStyles.tsx"
 import { IoLocationSharp } from "react-icons/io5"
 import { Theme } from "../../theme.ts";
 import { useImageDimensions} from "../../Hooks.ts";
+import { EventPicture } from "../Venue/Venue.tsx";
 
 
 function EventPage() {
@@ -65,8 +66,9 @@ export function AllEvents() {
     async function getData() {
       const a = await getRequest<Event[]>(`${paths.event.all}`);
       if (a.isSuccess()) {
-        setList(a.response);
-        setFilteredList(a.response);
+        const upcoming = a.response.filter(b => new Date(b.start) > new Date() && b.published);
+        setList(upcoming);
+        setFilteredList(upcoming);
       }
     }
     getData();
@@ -160,7 +162,8 @@ function RenderEvent({ event }: { event: Event }) {
         POSTER POSTER POSTER POSTER POSTER POSTER
         POSTER POSTER POSTER POSTER POSTER POSTER
        */}
-      <img src={event.poster} alt={"Poster"} onLoad={handleImageLoad} style={{width: `${dimensions.width}px`, height: `${dimensions.height}px`}}/>
+      <EventPicture image={event.poster} onImageLoad={handleImageLoad} dimensions={dimensions} name={""} />
+
       <UnderwaveHeader header={"Artists"} as={"h3"} color={t.orange} />
       <Row justifycontent={"start"} flexwrap={"wrap"} >
       {event.Artists?.map((a, idx) => {

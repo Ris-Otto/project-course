@@ -6,7 +6,7 @@ import { Theme } from "../../theme.ts";
 import Event from "../../../../api/Database/Model/Event.ts";
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
-import {postRequest} from "../../api/APITemplate.ts";
+import { postFileRequest, postRequest } from "../../api/APITemplate.ts";
 import paths from "../../../../Shared/paths.ts";
 import { convertToDateTimeLocalString } from "../../utilities/Functions.tsx";
 import { EventSpecifics } from "./EventSpecifics.tsx";
@@ -37,8 +37,8 @@ function EditEvent({ event, updateSubState }: {
   const [end, setEnd] = useState(() => convertToDateTimeLocalString(new Date(event.end)));
   const [published, setPublished] = useState(() => event.published);
   const [age, sage] = useState(() => event.age);
-  const [cost, scost] = useState(() => event.Pricing?.amount || 0);
-  const [pm, spm] = useState(() => event.Pricing?.type || 0);
+  const [cost, scost] = useState(() => event.Pricing?.amount ? event.Pricing.amount : 0);
+  const [pm, spm] = useState(() => event.Pricing?.type ? event.Pricing.type : 0);
   const [capacity, scapacity] = useState(0);
   const [type, stype] = useState("");
   const [tags, stags] = useState("");
@@ -92,6 +92,15 @@ function EditEvent({ event, updateSubState }: {
       toast("Something went wrong, please try again later");
     } else {
       toast("Event updated");
+    }
+
+    if(image[0].file) {
+      const posterRes = await postFileRequest(`venue/event/update/${res.response.id}/poster`, { poster: image[0].file });
+      if(posterRes.isSuccess()) {
+        toast("Poster added")
+      } else {
+        toast.error("Something went wrong when adding event poster")
+      }
     }
     return ret;
   }
@@ -167,6 +176,7 @@ function EditEvent({ event, updateSubState }: {
           cost={cost}
           scost={scost}
           spm={spm}
+          pm={pm}
           selectedArtist={selectedArtist}
           searchArtists={searchArtists}
           setSelectedArtist={setSelectedArtist}

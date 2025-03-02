@@ -172,10 +172,11 @@ export const paymentMethods = [
 export declare type SearchArtist = {
     value: string; label: string;
 }
-export type PageState = "profile" | "events" | "account" | "settings";
+export type PageState = "profile" | "events" | "account" | "settings" | "posts";
 export const PageStates: PageState[] = [
   "profile",
   "events",
+  "posts"
   /* "account",
   "settings", */
 ] as const;

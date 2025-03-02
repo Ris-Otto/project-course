@@ -1,15 +1,15 @@
-import { LiaHeart, LiaHeartSolid, LiaEnvelope } from "react-icons/lia";
+import { LiaHeart, LiaHeartSolid } from "react-icons/lia";
 import { useState } from "react";
 import { useAtom } from "jotai";
 import { user } from "../../store.ts";
 import { Row, Button, Col } from "react-bootstrap";
 
 type FollowHeartProps = {
-  setRefetch: (s: any | ((s: any) => void)) => void;
+  setRefetch: (s: boolean | ((s: boolean) => void)) => void;
   id: string;
   followed?: boolean;
-  follow: (id: string, callback: (s: any | ((s: any) => void)) => void) => Promise<boolean>;
-  unfollow: (id: string, callback: (s: any | ((s: any) => void)) => void) => Promise<boolean>;
+  follow: (id: string, callback: (s: boolean | ((s: boolean) => void)) => void) => Promise<boolean>;
+  unfollow: (id: string, callback: (s: boolean | ((s: boolean) => void)) => void) => Promise<boolean>;
 };
 
 export function FollowHeartSmall({
@@ -28,7 +28,7 @@ export function FollowHeartSmall({
     setFState(followed);
   }
   return (
-    <Row hidden={!u} className="follow-heart-right">
+    <Row hidden={!u || u && u.type !== 0} className="follow-heart-right">
       <Col
         xs={2}
         md={{ span: 2, offset: 10 }}
@@ -75,7 +75,7 @@ export function FollowHeartButton({
   }
   return (
     <Button
-      hidden={!u}
+      hidden={!u || u && u.type !== 0}
       onMouseEnter={handleMouseOver}
       onMouseLeave={handleMouseLeave}
       onClick={async () => {

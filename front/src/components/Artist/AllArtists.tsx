@@ -1,6 +1,7 @@
 ﻿import {ListFilter} from "../Misc/Filter.tsx";
-import { useState } from "react";
-import {Filter, PictureProps} from "../../utilities/Types.tsx";
+//@deno-types="npm:@types/react"
+import { useState, useEffect } from "react";
+import { Filter, ObjectEntries, PictureProps } from "../../utilities/Types.tsx";
 import Grid from "../Misc/Grid.tsx";
 import {ListWrapper, StyledListBox} from "../Misc/CustomStyles.tsx";
 import { useAuth, useImageDimensions, useRequest } from "../../Hooks.ts";
@@ -17,55 +18,96 @@ import { useAtom } from "jotai";
 import {followArtist, unfollowArtist} from "../../api/Common.ts";
 import { ProfilePicture } from "../Misc/ProfilePicture.tsx";
 import { ObservableListItem } from "../Misc/ObservableListItem.tsx";
+import Fuse from "fuse.js";
 
 
 function AllArtists() {
-    useAuth(-1);
-    const [filters, setFilters] = useState<Filter>({
-      genre: {
-        value: "",
-        label: "Genre",
-        type: "text"
-      },
-      name: {
-        value: "",
-        label: "Name",
-        type: "text"
-      }
+  useAuth(-1);
+  const [filters, setFilters] = useState<Filter>({
+    name: {
+      value: "",
+      label: "Name",
+      type: "text"
+    },
+    genre: {
+      value: "",
+      label: "Genre",
+      type: "text"
+    },
+  });
+
+  const [, setRefetch] = useAtom(refetchFollowedArtists)
+  const [filteredList, setFilteredList] = useState<Artist[]>([]);
+
+  const artists = useRequest<Artist[]>(paths.artist.all);
+
+  useEffect(() => {
+    setFilteredList(artists.response ? artists.response : []);
+  }, [artists.response]);
+
+  if (!artists.response) return <div>Error</div>;
+
+  if (artists.isLoading) return <Loading />;
+
+  if (artists.isError)
+      return <div style={{ marginTop: "60px" }}>{artists.isError}</div>;
+
+
+  function fuseText<T extends object>(list: T[], key: keyof Filter) {
+    const fuse = new Fuse(list, {
+      keys: [String(key)],
     });
+    return fuse.search(String(filters[key].value))
+  }
 
-    const [, setRefetch] = useAtom(refetchFollowedArtists)
+  function onFilter() {
+    for (const [k, v] of ObjectEntries(filters)) {
+      switch (k) {
+        case "name":
+          if (v.value !== "") {
+            setTimeout(() => {
+              setFilteredList(fuseText(filteredList, "name").map((a) => a.item)
+              );
+            }, 200);
+            return;
+          }
+          break;
+        case "genre":
+          if (v.value !== "") {
+            setTimeout(() => {
+              setFilteredList(fuseText(filteredList, "genre").map((a) => a.item));
+            }, 0);
+            return;
+          }
+          break;
+        default:
+          break;
+      }
+    }
+    setFilteredList(artists.response ? artists.response : []);
+  }
 
-    const artists = useRequest<Artist[]>(paths.artist.all);
 
-    if (!artists.response) return <div>Error</div>;
-
-    if (artists.isLoading) return <Loading />;
-
-    if (artists.isError)
-        return <div style={{ marginTop: "60px" }}>{artists.isError}</div>;
-
-
-    return (
-      <Grid narrowColumnIndex={0} header={"Artists"}>
-        <ListFilter filters={filters} setFilters={setFilters}/>
-        <ListWrapper>
-          <div className="row-wrap-start" >
-            {artists.response.map((a, idx) =>
-              <ObservableListItem
-                item={a}
-                key={idx}
-                refetchAtom={artistFollowing}
-                setRefetch={setRefetch}
-                navigatePath={"/artists/public?artistId"}
-                follow={followArtist}
-                unfollow={unfollowArtist}
-              />
-            )}
-          </div>
-        </ListWrapper>
-      </Grid>
-    )
+  return (
+    <Grid narrowColumnIndex={0} header={"Artists"}>
+      <ListFilter filters={filters} setFilters={setFilters} onFilter={onFilter}/>
+      <ListWrapper>
+        <div className="row-wrap-start" >
+          {filteredList.map((a, idx) =>
+            <ObservableListItem
+              item={a}
+              key={idx}
+              refetchAtom={artistFollowing}
+              setRefetch={setRefetch}
+              navigatePath={"/artists/public?artistId"}
+              follow={followArtist}
+              unfollow={unfollowArtist}
+            />
+          )}
+        </div>
+      </ListWrapper>
+    </Grid>
+  )
 }
 
 function ArtistInList({artist}: {artist: Artist}) {

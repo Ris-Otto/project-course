@@ -1,6 +1,6 @@
 // @deno-types="npm:@types/react"
 import React, {SyntheticEvent, useEffect, useMemo, useState} from "react";
-import { postFileRequest, postRequest } from "../../api/APITemplate.ts";
+import { getImage, postFileRequest, postRequest } from "../../api/APITemplate.ts";
 import paths from "../../../../Shared/paths.ts";
 import {Button, Col} from "react-bootstrap";
 import {IoLocationSharp} from "react-icons/io5";
@@ -46,6 +46,7 @@ import { urlPattern } from "../../utilities/Regex.ts";
 import ReactImageUploading from "react-images-uploading";
 import { ExportInterface } from "react-images-uploading/dist/typings";
 import { ImageListType } from "npm:react-images-uploading@3.1.7";
+import { useNavigate } from "react-router-dom";
 
 declare type VenueProfileProps = {
   value: Venue;
@@ -167,13 +168,16 @@ export function VenueEvent({
   event,
   updateSubState,
   setCurrentEvent,
-  editable
+  editable,
+  viewable,
+  showName,
 }: {
   event: Event;
   updateSubState: (subState: SubState, refetch?: boolean) => void;
   setCurrentEvent?: React.Dispatch<React.SetStateAction<Event | undefined>>;
   editable?: boolean;
   viewable?: boolean;
+  showName?: boolean;
 }): React.ReactNode {
   const startTime = useMemo(() => {
     const time = new Date(event.start).toTimeString().split(" ")[0];
@@ -189,6 +193,9 @@ export function VenueEvent({
     globalThis.innerHeight / 5,
   );
   const p = useMemo(() => dimensions.width * 0.12, [dimensions]);
+  const poster = useMemo(() => event.Bio?.Media?.find(a => a.poster)?.href, [event])
+
+  const navigate = useNavigate();
 
   async function publishEvent() {
     const ret = await postRequest(`${paths.venue.event.publish}/${event.id}`);
@@ -225,14 +232,17 @@ export function VenueEvent({
           </Button>
         </div>
       ) : null}
-      <div className="silly-column-sb" style={{ marginTop: "5%" }}>
+      <div className="silly-column-sb" style={{ marginTop: "5%" }} >
+        <div onClick={() => viewable ? navigate(`/events/${event.id}`) : {}} style={{cursor: viewable ? "pointer" : "auto"}}>
         <EventPicture
           onImageLoad={handleImageLoad}
           dimensions={dimensions}
           name={event.name}
+          showName={showName}
           age={!!event.age}
-          image={event.poster}
+          image={poster}
         />
+        </div>
         <div
           className="description mt-3 mb-3"
           style={{ maxWidth: `${dimensions.width}px` }}
@@ -266,6 +276,7 @@ function EventPicture({
   name,
   age,
   image,
+  showName
 }: {
   onImageLoad: (e: SyntheticEvent<HTMLImageElement>) => void;
   dimensions: {
@@ -275,11 +286,13 @@ function EventPicture({
   name: string;
   age?: boolean;
   image?: string;
+  showName?: boolean;
 }) {
-  const picture = image ? image : cd;
+  const picture = image ? getImage(image) : cd;
+
   return (
     <div className="picture">
-      <h4 className="picture-name">{name}</h4>
+      {showName? (<h4 className="picture-name">{name}</h4>): null}
       {age ? <Circle className="picture-age">18+</Circle> : null}
       <img
         onLoad={onImageLoad}
@@ -620,3 +633,5 @@ export function VenueViewProfile({
     </>
   );
 }
+
+export { EventPicture }

@@ -12,6 +12,7 @@ import {EditButton} from "../User/StyledProfile.tsx";
 import {Theme} from "../../theme.ts";
 import {Col} from "react-bootstrap";
 import Select from "react-select";
+import { useEffect } from "react";
 import {FormCheck} from "react-bootstrap";
 import {Button} from "react-bootstrap";
 import {LiaTrashAltSolid, LiaPencilAltSolid} from "react-icons/lia";
@@ -49,6 +50,7 @@ type EventSpecificsProps = {
     cost: number,
     scost: StateHandler<number>,
     spm: StateHandler<number>,
+    pm: number;
     selectedArtist: SearchArtist,
     searchArtists: (inputValue: string, callback: (options: SearchArtist[]) => void) => Promise<void>,
     setSelectedArtist: StateHandler<SearchArtist>,
@@ -89,6 +91,7 @@ export function EventSpecifics({
     cost,
     scost,
     spm,
+    pm,
     selectedArtist,
     searchArtists,
     setSelectedArtist,
@@ -101,6 +104,12 @@ export function EventSpecifics({
         // data for submit
         setImage(imageList);
     };
+
+    useEffect(() => {
+        const a = paymentMethods
+          .filter((method) => (pm & method.value) !== 0)
+        console.log(a, pm);
+    })
 
     return <div className="profile mt-3">
         <Grid>
@@ -239,7 +248,8 @@ export function EventSpecifics({
                             className="mt-3 mb-3"
                             options={paymentMethods}
                             isMulti
-                            defaultValue={{value: 0b000, label: "Free"}}
+                            defaultValue={paymentMethods
+                              .filter((method) => (pm & method.value) !== 0)}
                             onChange={(e) => {
                                 handleSetPricingType(e, spm);
                             }}

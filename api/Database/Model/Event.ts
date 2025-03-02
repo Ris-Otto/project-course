@@ -23,6 +23,7 @@ class Event extends Model {
   declare Pricing: Pricing;
   declare PricingId: number;
   declare VenueId: string;
+  declare ArtistId: string;
   declare age: number;
   declare createdAt: Date;
   declare updatedAt: Date;

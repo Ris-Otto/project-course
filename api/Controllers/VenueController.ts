@@ -16,7 +16,11 @@ import { Link } from "../Database/Model/Link.ts";
 import { OpeningHour } from "../Database/Model/OpeningHour.ts";
 import { Artist } from "../Database/Model/Artist.ts";
 import { storage } from "../storage.ts";
-import { getPoster } from "./Extensions/Extensions.ts";
+import {
+  getModelWithPoster,
+  getPoster,
+  upsertMedia,
+} from "./Extensions/Extensions.ts";
 import { PlayRequest } from "../Database/Model/PlayRequest.ts";
 import { Review } from "../Database/Model/Review.ts";
 
@@ -84,9 +88,7 @@ async function getVenues(c: Context) {
       exclude: ["password", "createdAt", "updatedAt"],
     },
   })).map((e) => e.get({ plain: true }));
-  venues.forEach((venue) => {
-    venue.poster = getPoster(venue);
-  });
+
   return c.json(Ok(venues));
 }
 
@@ -167,18 +169,15 @@ async function addEvent(c: Context) {
 
 async function addEventPoster(c: Context) {
   const file = c.var.files["poster"];
+  const payload = c.get("tokenPayload");
   const eventId = c.req.param("eventId");
   const event = await Event.findByPk(eventId, { include: [Bio] });
   if (!event) {
     return c.json(NotFound());
   }
 
-  await Media.upsert({
-    BioId: event.BioId,
-    internal: true,
-    href: file.name,
-    poster: true,
-  });
+  await upsertMedia(payload.id, event.BioId, file, true);
+
   return c.json(Ok());
 }
 
@@ -309,12 +308,8 @@ async function updatePoster(c: Context) {
     return c.json(NotFound());
   }
 
-  await Media.upsert({
-    BioId: venue.BioId,
-    internal: true,
-    href: file.name,
-    poster: true,
-  });
+  await upsertMedia(payload.id, venue.BioId, file, true);
+
   return c.json(Ok());
 }
 
@@ -378,6 +373,7 @@ async function getVenue(c: Context) {
     include: [
       includeBio(),
       includeOpeningHours(),
+      includeEvent(),
       PlayRequest,
       Review,
     ],
@@ -387,30 +383,8 @@ async function getVenue(c: Context) {
   });
   if (venue === null) return c.json(NotFound());
 
-  const events = await Event.findAll({
-    where: {
-      VenueId: payload.id,
-    },
-    include: [
-      includeBio(),
-      Pricing,
-      Artist,
-      Venue,
-    ],
-  });
-
-  const eret: Event[] = [];
-  for (const event of events) {
-    eret.push({
-      ...event.get({ plain: true }),
-      poster: getPoster(event),
-    });
-  }
-
-  //ret.poster = getPoster(venue);
-
   return c.json(
-    Ok({ ...venue.get({ plain: true }), poster: venue.poster, Events: eret }),
+    Ok(venue.get({ plain: true })),
   );
 }
 
@@ -427,7 +401,6 @@ async function getVenueProfile(c: Context) {
   }
 
   const ret = venue.get({ plain: true });
-  ret.poster = getPoster(venue);
   return c.json(Ok(ret));
 }
 

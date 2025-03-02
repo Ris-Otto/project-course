@@ -16,6 +16,7 @@ export function ListFilter({filters, setFilters, onFilter}: {filters: Filter, se
         justifyContent: "flex-start",
         textAlign: "left",
         verticalAlign: "center", }}>
+        <h3>Filter</h3>
         {keys.map((k, i) => {
           const v = filters[k];
           switch (v.type) {

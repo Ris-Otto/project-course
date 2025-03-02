@@ -34,7 +34,6 @@ Media.init(
     },
     poster: {
       type: DataTypes.BOOLEAN,
-      allowNull: false,
     },
   },
   {
@@ -44,7 +43,7 @@ Media.init(
       {
         unique: true,
         name: "poster_index",
-        fields: ["BioId", "poster", "href"],
+        fields: ["BioId", "poster"],
       },
       {
         unique: true,

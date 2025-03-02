@@ -12,7 +12,7 @@ import { toast } from "react-toastify";
 import { Rating } from "@smastrom/react-rating";
 import '@smastrom/react-rating/style.css'
 import { Button } from "react-bootstrap";
-import { useLocation } from "react-router-dom"
+import { useLocation, useNavigate } from "react-router-dom"
 import { Method} from "../../utilities/Types.tsx";
 
 function ReviewForm() {
@@ -23,11 +23,15 @@ function ReviewForm() {
   const [rating, setRating] = useState(0.5);
   const [sp] = useSearchParams();
   const loc = useLocation();
+  const navigate = useNavigate();
 
 
   async function postReview() {
     const path = u.type === 2 ? `/venue/rate/${params.eventId}/${sp.get("artistId")}` : `/artist/rate/${params.eventId}/${sp.get("venueId")}`;
-    await requestAndToast<Review>(Method.POST, path, { description: reviewText, score: rating });
+    const a = await requestAndToast<Review>(Method.POST, path, { description: reviewText, score: rating });
+    if(a.isSuccess()) {
+      navigate(-1);
+    }
   }
 
 

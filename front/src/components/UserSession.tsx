@@ -28,9 +28,8 @@ export function UserSession() {
     setOpen(false);
   });
 
-  /*if(!u || u.type !== 0) return <UserSessionOutlet ref={node} />*/
-  const artists = useRequest<Artist[]>(paths.user.artists)
-  const venues = useRequest<Venue[]>(paths.user.venues);
+  const artists = useRequest<Artist[]>(paths.user.artists, !u)
+  const venues = useRequest<Venue[]>(paths.user.venues, !u);
 
   useEffect(() => {
     if(!artists.isLoading &&  !artists.isError && artists.response) {
@@ -50,14 +49,10 @@ export function UserSession() {
     venues.refetch();
   }, [rfvenues])
 
-  return <UserSessionOutlet ref={node} />;
-}
-
-function UserSessionOutlet({ref}: {ref: React.RefObject<HTMLDivElement>}){
   return (
     <>
       <NavMenu />
-      <div ref={ref}>
+      <div ref={node}>
         <Menu />
       </div>
       <Outlet />

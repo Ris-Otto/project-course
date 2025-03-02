@@ -23,3 +23,24 @@ export function getImage(imagePath: string) {
   const b = btoa(String.fromCharCode.apply(null, a as unknown as number[]));
   return "data:image/png;base64," + b;
 }
+
+export function getModelWithPoster<
+  T extends { Bio?: { Media?: Media[] }; [index: string]: any },
+>(model: T) {
+  return { ...model, poster: getPoster(model) };
+}
+
+export async function upsertMedia(
+  id: string | number,
+  bioId: number,
+  file: any,
+  poster?: boolean,
+) {
+  const [name, extension] = file.name.split(".");
+  await Media.upsert({
+    BioId: bioId,
+    internal: true,
+    href: `${name}-${id}.${extension}`,
+    poster: poster ? poster : null,
+  });
+}

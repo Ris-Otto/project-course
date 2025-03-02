@@ -2,6 +2,7 @@
 import cd from "../../resources/Images-Assets/cd+cover.png";
 import { ObservableItem } from "./ObservableListItem.tsx";
 import { useMemo } from "react";
+import { getImage } from "../../api/APITemplate.ts";
 
 export declare type PictureProps = {
 
@@ -20,7 +21,8 @@ function ProfilePicture({
   showName
 }: PictureProps) {
 
-  const img = useMemo(() => image ? image : item?.Bio?.Media?.find(a => a.poster)?.href || "", [item, image]);
+  const img = useMemo(() => image ? image : getImage(item?.Bio?.Media?.find(a => a.poster)?.href) || "", [item, image]);
+
   return (
     <div className="picture">
       {showName? (<h4 className="picture-name">{item.name}</h4>): null}

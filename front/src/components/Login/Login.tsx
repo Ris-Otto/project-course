@@ -86,10 +86,11 @@ function Login() {
 
   return (
     <div className="top-level-component" style={{ marginTop: "10vh" }}>
+
       {type < 0 ? (
         <Col xs={1} md={8}>
           <Button
-            className="mb-3"
+            className={"m-3"}
             onClick={() => {
               setType(0);
               setLoginPath(paths.user.login);
@@ -98,8 +99,8 @@ function Login() {
             User login
           </Button>
           <br />
-          {/*Apply distinct style*/}
           <Button
+            className={"m-3"}
             onClick={() => {
               setType(1);
               setLoginPath(paths.artist.login);
@@ -107,8 +108,9 @@ function Login() {
           >
             I am/represent an artist
           </Button>
-          {/*Apply distinct style*/}
+          <br/>
           <Button
+            className={"m-3"}
             onClick={() => {
               setType(2);
               setLoginPath(paths.venue.login);

@@ -30,6 +30,7 @@ import {EditableProfileBase} from "./components/Misc/EditableProfileBase.tsx";
 import { AllVenues } from "./components/Venue/AllVenues.tsx";
 import ArtistProfilePublic from "./components/Artist/ArtistPublic.tsx";
 import { ReviewForm } from "./components/Event/ReviewForm.tsx";
+import { PostPage} from "./components/Misc/Posts.tsx";
 
 const theme = new Theme();
 
@@ -52,6 +53,7 @@ const router = createBrowserRouter(
       <Route path="artists">
         <Route path="" element={<AllArtists />} />
         <Route path="public" element={<ArtistProfilePublic />} />
+        <Route path="public/posts" element={<PostPage />} />
         <Route path="profile" element={<EditableProfileBase Profile={ArtistProfile} requestPath={paths.artist.self} accessType={1} />} />
       </Route>
       <Route path="venues">

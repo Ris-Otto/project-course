@@ -13,12 +13,12 @@ export const StyledMenu = styled.nav<{ open: boolean }>`
   text-align: left;
   padding: 6rem 2rem 2rem 2rem;
   position: fixed;
-  top: 0%;
-  left: 0%;
+  top: 0;
+  left: 0;
   transition: transform 0.3s ease-in-out;
   transform: ${({ open }) => (open ? "translateY(0)" : "translateY(-100%)")};
   z-index: 9;
-  border-radius: 0px 0px 15px 0px;
+  border-radius: 0 0 15px 0;
 
   @media (max-width: ${({ theme }) => theme.mobile}) {
     width: 100%;
@@ -60,7 +60,7 @@ export const StyledMenu = styled.nav<{ open: boolean }>`
 `;
 
 export function Menu() {
-  const [u, _] = useAtom(user);
+  const [_u, _] = useAtom(user);
   const [o, setO] = useAtom(open);
 
   const tabIndex = o ? 0 : -1;
@@ -82,14 +82,14 @@ export function Menu() {
         </Link>
       </>
       {
-        //Links to content specific for an admin
+        /*//Links to content specific for an admin
         u?.type === 2 ? (
           <>
             <Link to="/events/create" tabIndex={tabIndex} onClick={hide}>
               Create event
             </Link>
           </>
-        ) : null
+        ) : null*/
       }
     </StyledMenu>
   );

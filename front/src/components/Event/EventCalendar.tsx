@@ -3,7 +3,7 @@ import {styled} from "styled-components";
 import {Col, Row} from "react-bootstrap";
 import {IoLocationSharp, IoTimeSharp} from "react-icons/io5";
 // @deno-types="@types/react"
-import React, {useMemo, useState} from "react";
+import {useMemo, useState} from "react";
 import {ExtractHoursMinutes, resolveBitmask, ToCurrencySymbol,} from "../../utilities/Functions.tsx";
 import {createSearchParams, useNavigate} from "react-router-dom";
 import type {Theme} from "../../theme.ts";
@@ -17,8 +17,8 @@ const StyledEventCalendar = styled.div<{ theme: Theme }>`
   flex-direction: column;
   justify-content: center;
   background-color: ${({ theme }) => theme.darkCream};
-  padding: 20px;
-  max-height: 80vh;
+  padding: 30px;
+  max-height: 60vh;
   overflow-x: visible;
   overflow-y: auto;
   border-radius: 10px 10px 10px 10px;
@@ -28,7 +28,7 @@ const StyledEventCalendar = styled.div<{ theme: Theme }>`
     color: #432;
     background-color: ${({ theme }) => theme.teal};
     font-size: 24px;
-    border-radius: 10px 0px 0px 10px;
+    border-radius: 10px 0 0 10px;
     cursor: pointer;
     padding: 10%;
     border-left: 1px solid black;
@@ -141,7 +141,7 @@ function CalendarInfo({
   setRect: StateHandler<DOMRect|undefined>;
 }) {
 
-  const handleMouseOver = (e: any) => {
+  const handleMouseOver = (e) => {
     const rect = e.target.getBoundingClientRect();
     setRect(rect);
     setIsHovering(true);
@@ -159,7 +159,7 @@ function CalendarInfo({
           pathname: `/events/${String(event.id)}`,
         })
       }
-      onMouseEnter={(e: any) => {
+      onMouseEnter={(e) => {
         handleMouseOver(e);
       }}
       onMouseLeave={() => {

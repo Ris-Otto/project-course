@@ -1,4 +1,6 @@
 import { Hono } from "npm:hono";
+import type { Context } from "npm:hono";
+import { serveStatic } from "hono/deno";
 import { requestId } from "npm:hono/request-id";
 import { prettyJSON } from "npm:hono/pretty-json";
 import type { JwtVariables } from "npm:hono/jwt";
@@ -23,10 +25,7 @@ import { logRequestInfo } from "./Middleware/LoggerMiddleware.ts";
 import { Post } from "./Database/Model/Post.ts";
 import { EventInterest } from "./Database/Model/EventInterest.ts";
 import { OpeningHour } from "./Database/Model/OpeningHour.ts";
-import {
-  alterSyncDatabase,
-  forceSyncDatabaseAndSetupTestData,
-} from "./Utilities.ts";
+import { alterSyncDatabase } from "./Utilities.ts";
 import { Link } from "./Database/Model/Link.ts";
 import { PlayRequest } from "./Database/Model/PlayRequest.ts";
 
@@ -90,11 +89,12 @@ User.hasMany(EventInterest);
 
 Bio.hasMany(Media);
 
+Post.belongsTo(Bio);
+
 Link.belongsTo(Bio, { foreignKey: "BioId", onDelete: "CASCADE" }); // A Link belongs to a Bio
 Bio.hasMany(Link, { foreignKey: "BioId", onDelete: "CASCADE" }); // A Bio has many Links
 
-//await alterSyncDatabase();
-//await forceSyncDatabaseAndSetupTestData();
+await alterSyncDatabase();
 
 app.use("*", (c, next) => {
   const corsMiddlewareHandler = cors({
@@ -113,5 +113,6 @@ app.route("/", userController);
 app.route("/auth", authController);
 app.route("/artist", artistController);
 app.route("/venue", venueController);
+app.get("/uploads/*", serveStatic({ root: "./" }));
 
 Deno.serve(app.fetch);

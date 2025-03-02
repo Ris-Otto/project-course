@@ -4,7 +4,6 @@ import { logout } from "../../api/auth.ts";
 import { user } from "../../store.ts";
 import { useAtom } from "jotai";
 // @deno-types="npm:@types/react"
-import { useMemo } from "react";
 import { ButtonGroup } from "react-bootstrap";
 
 export function NavMenuProfile() {
@@ -12,11 +11,6 @@ export function NavMenuProfile() {
   const [u, setU] = useAtom(user);
 
   const userTypes = ["users", "artists", "venues"];
-
-  const hideSignIn = useMemo(
-    () => globalThis.location.pathname === "/login",
-    [globalThis.location.pathname],
-  );
 
   async function Logout() {
     const res = await logout();
@@ -45,15 +39,11 @@ export function NavMenuProfile() {
       ) : (
         <ButtonGroup className={"m-3"}>
           <Button
-
-            hidden={hideSignIn}
             onClick={() => navigate("/register")}
           >
             Sign up
           </Button>
           <Button
-
-            hidden={hideSignIn}
             onClick={() => navigate("/login")}
           >
             Sign in

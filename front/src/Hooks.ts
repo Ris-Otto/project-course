@@ -1,6 +1,7 @@
 ﻿// @deno-types="@types/react"
 import {
   MutableRefObject,
+  RefObject,
   useCallback,
   useEffect,
   useMemo,
@@ -25,7 +26,7 @@ import { Venue } from "../../api/Database/Model/Venue.ts";
  * @param {*} handler handler function
  */
 export const useOnClickOutside = (
-  ref: MutableRefObject<HTMLDivElement>,
+  ref: RefObject<HTMLDivElement>,
   handler: (event: { target: HTMLDivElement }) => void,
 ) => {
   useEffect(() => {
@@ -67,6 +68,7 @@ export function useImageDimensions(maxHeight?: number) {
 
 export function useRequest<T>(
   path: string,
+  block?: boolean,
 ): {
   response: T | null;
   isLoading: boolean;
@@ -93,8 +95,9 @@ export function useRequest<T>(
   }, [fetch]);
 
   useEffect(() => {
+    if (block) return;
     fetchData();
-  }, [fetchData]);
+  }, [fetchData, block]);
 
   return { response, isLoading, isError, refetch };
 }
@@ -167,7 +170,7 @@ export function useArtistRefetch() {
 export function useVenueRefetch() {
   const [_, refetchVenues] = useAtom(refetchFollowedVenues);
 
-  return { refetchArtists, venueFollowing };
+  return { refetchVenues, venueFollowing };
 }
 
 export function useIsFollowingVenue(venue: Venue) {

@@ -34,7 +34,7 @@ import {
   RequiredFieldContext,
   ValidatedContext,
   type ObjectWithKeys,
-  type UnderwaveEnumeration, StateHandler,
+  type UnderwaveEnumeration, StateHandler, Filter,
 } from "./Types.tsx";
 import { type DefaultAction } from "./Reducer.ts";
 import type { NavigateFunction } from "react-router-dom";
@@ -233,8 +233,8 @@ export function DynamicListForm<T extends ObjectWithKeys>({
   disabled
 }: DynamicListProps<T>) {
   //An internal array that keeps track of how long the array should be for the user to be able to input a value
-  const { arrStates, add, update, remove } = useStateArrayFactory(array);
-
+  const { arrStates, add, update, remove, reset } = useStateArrayFactory(array);
+  const internalTemplate = useMemo(() => { return { ...template, isNewEntry: true }}, []);
   function testPatternAgainstRequiredKeys<T extends ObjectWithKeys>(
     obj: T,
     regex: RegExp,
@@ -251,9 +251,17 @@ export function DynamicListForm<T extends ObjectWithKeys>({
   const t = useMemo(() => new Theme(), []);
 
   useEffect(() => {
-    if (arrStates.length === 0)
-      add(template);
-  }, [arrStates]);
+    if(arrStates[arrStates.length - 1] && !(arrStates[arrStates.length - 1].isNewEntry) && !disabled) {
+      add(internalTemplate)
+    }
+  }, [disabled])
+
+  useEffect(() => {
+    if(disabled && arrStates[arrStates.length - 1] && (arrStates[arrStates.length - 1].isNewEntry)) {
+      remove(arrStates.length - 1);
+    }
+    return () => reset();
+  }, [disabled])
 
   useEffect(() => {
     setArray(arrStates);
@@ -860,12 +868,13 @@ export function UseStateFactory<T extends ObjectWithKeys>(
 export function useStateArrayFactory<T extends ObjectWithKeys>(
   arr: T[],
 ): {
-  arrStates: T[];
+  arrStates: (T & { isNewEntry: boolean })[] ;
   add: (obj: T) => void;
   update: (index: number, key: keyof T, value: T[keyof T]) => void;
   remove: (index: number) => void;
+  reset: () => void;
 } {
-  const [arrStates, setArrStates] = useState<T[]>(arr);
+  const [arrStates, setArrStates] = useState<T[]>(() => arr.map(a => { return { ...a, isNewEntry: false}}));
 
   const add = (obj: T) => {
     setArrStates((prev) => [...prev, obj]);
@@ -888,7 +897,11 @@ export function useStateArrayFactory<T extends ObjectWithKeys>(
     setArrStates((prev) => prev.filter((_, i) => i !== index));
   };
 
-  return { arrStates, add, update, remove };
+  const reset = () => {
+    setArrStates(arr);
+  }
+
+  return { arrStates, add, update, remove, reset };
 }
 
 export function compareArrays<T extends ObjectWithKeys>(

@@ -7,6 +7,7 @@ import React, { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { PrimitiveAtom } from "jotai/vanilla/atom"
 import { Media } from "../../../../api/Database/Model/Media.ts";
+import { user } from "../../store.ts";
 
 export type ObservableItem = {
   id: string;
@@ -42,6 +43,7 @@ function ObservableListItem<T extends ObservableItem>({ item, setRefetch, refetc
   const p = useMemo(() => dimensions.height * 0.12, [dimensions]);
   const navigate = useNavigate();
   const img = useMemo(() => item.poster, [item])
+  const [_u] = useAtom(user);
   return (
     <StyledListBox
       minwidth={`${dimensions.height}px`}

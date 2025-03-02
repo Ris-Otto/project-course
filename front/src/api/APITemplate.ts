@@ -41,6 +41,10 @@ export async function postRequest<
   return new Result(response.data);
 }
 
+export function getImage(path: string) {
+  return `http://localhost:8000/uploads/${path}`;
+}
+
 export async function getRequest<TResponse>(
   path: string,
 ): Promise<Result<TResponse>> {

@@ -1,5 +1,8 @@
 {
   "imports": {
     "@types/react-icons": "npm:@types/react-icons@^3.0.0"
+  },
+  "compilerOptions": {
+    "no-explicit-any": false
   }
 }

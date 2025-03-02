@@ -26,6 +26,7 @@ import { ObservableListItem } from "../Misc/ObservableListItem.tsx";
 import { artistFollowing } from "../../store.ts";
 import { followArtist, unfollowArtist } from "../../api/Common.ts";
 import { VenueEvent } from "../Venue/Venue.tsx";
+import { Posts } from "../Misc/Posts.tsx";
 
 declare type ArtistProfileProps = {
   value: Artist;
@@ -56,6 +57,8 @@ export function ArtistProfile({value, subState, updateSubState, setPageState, pa
               artist={value}
               updateSubState={updateSubState}
           />
+        ) : pageState === "posts" ? (
+          <Posts updateSubState={updateSubState} subState={subState} />
         ) : null}
       </div>
     </Grid>
@@ -80,7 +83,7 @@ function ArtistViewProfile({ artist, subState, updateSubState }: { artist: Artis
       name: name,
       email: email,
       bio: bio,
-      members: members,
+      members: members.filter(m => m.name.length > 0),
       genre: genre,
       images: images,
       links: links
@@ -88,7 +91,9 @@ function ArtistViewProfile({ artist, subState, updateSubState }: { artist: Artis
 
     const res = await postRequest<Artist>(paths.artist.update, data);
 
-    const posterRes = await postFileRequest("/artist/bio/update/poster", { poster: poster[0].file });
+    if(poster[0].file) {
+      const posterRes = await postFileRequest("/artist/bio/update/poster", { poster: poster[0].file });
+    }
 
     if(res.isSuccess()) {
       toast.success("Profile updated");
@@ -111,7 +116,6 @@ function ArtistViewProfile({ artist, subState, updateSubState }: { artist: Artis
 
   const onChange = (imageList: ImageListType, addUpdateIndex: number) => {
     // data for submit
-    console.log(imageList, addUpdateIndex);
     setPoster(imageList);
   };
 
@@ -184,7 +188,7 @@ function ArtistViewProfile({ artist, subState, updateSubState }: { artist: Artis
                 color={t.redBrown}
                 pattern={/.+/}
                 setArray={setMembers}
-                template={{ name: ""}}
+                template={{ name: "", role: "" }}
                 disabled={!edit}
               />
               <Control
@@ -266,16 +270,22 @@ function ArtistEvents({ artist, subState, updateSubState }: { artist: Artist, su
 
   return (
     <ListWrapper>
-    <div className="row-wrap-start" >
-      <h3>Past events</h3>
-      {pastEvents.map((a, idx) =>
-        <VenueEvent key={idx} event={a} updateSubState={updateSubState} setCurrentEvent={setCurrentEvent} />
-      )}
-      <h3>Upcoming events</h3>
+      <UnderwaveHeader as="h3" header={"Upcoming events"} color={t.redBrown} />
+      <div className="row-wrap-start m-3">
       {upcomingEvents.map((a, idx) =>
-        <VenueEvent key={idx} event={a} updateSubState={updateSubState} setCurrentEvent={setCurrentEvent} />
+        <div key={idx} style={{margin: "2%"}}>
+        <VenueEvent event={a} updateSubState={updateSubState} setCurrentEvent={setCurrentEvent} viewable showName />
+        </div>
       )}
-    </div>
+      </div>
+      <UnderwaveHeader as="h3" header={"Past events"} color={t.redBrown} />
+      <div className="row-wrap-start m-3">
+      {pastEvents.map((a, idx) =>
+        <div key={idx} style={{margin: "2%"}}>
+        <VenueEvent key={idx} event={a} updateSubState={updateSubState} setCurrentEvent={setCurrentEvent} viewable showName />
+        </div>
+      )}
+      </div>
   </ListWrapper>
   );
 }
