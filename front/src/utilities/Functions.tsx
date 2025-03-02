@@ -1004,9 +1004,6 @@ function TextArea<TState extends {}>(
         as="textarea"
         required={context.required || required}
         value={state}
-        onKeyDown={(event) => {
-          if (event.key === "Enter") event.preventDefault();
-        }}
         onChange={(event) => {
           if (!setState) return;
           event.preventDefault();
