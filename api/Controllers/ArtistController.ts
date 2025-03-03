@@ -141,9 +141,12 @@ async function updatePostImages(c: Context) {
   if (!post) {
     return c.json(NotFound());
   }
-
-  for (const file of files) {
-    await upsertMedia(payload.id, post.BioId, file);
+  if (Array.isArray(files)) {
+    for (const file of files) {
+      await upsertMedia(payload.id, post.BioId, file);
+    }
+  } else {
+    await upsertMedia(payload.id, post.BioId, files);
   }
 
   return c.json(Ok());
@@ -199,6 +202,7 @@ async function publishAnnouncement(c: Context) {
     ArtistId: payload.id,
     BioId: bio.id,
     name: name,
+    published: true,
   });
 
   return c.json(Ok(post.get({ plain: true })));

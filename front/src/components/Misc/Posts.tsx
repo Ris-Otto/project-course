@@ -44,7 +44,7 @@ function Posts({subState, updateSubState}: PostsProps) {
       setName(currentPost.name ? currentPost.name : "");
       setText(currentPost.text ? currentPost.text : "");
       setImages(currentPost!.Bio.Media.map(a => {
-        return { data_url: getImage(a.href) };
+        return { data_url: getImage(a.href), internalised: true };
       }))
     } else {
       setName("");
@@ -92,6 +92,13 @@ function Posts({subState, updateSubState}: PostsProps) {
   async function update() {
     if(!currentPost) return;
     const res = await postRequest<Post>(`/artist/posts/update/${currentPost.id}`, { text, name, published: currentPost.published });
+    const imgs = images.map((image) => image.internalised ? image.data_url : image.file);
+    const imagesRes = await postFileRequest(`/artist/posts/${currentPost.id}/images`, { media: imgs });
+    if(imagesRes.isSuccess()) {
+      toast.success("Images updated")
+    } else {
+      toast.error("Failed to update images", { autoClose: false })
+    }
 
     if(res.isSuccess()) {
       toast("Successfully updated post");
