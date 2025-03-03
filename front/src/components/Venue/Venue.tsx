@@ -46,7 +46,8 @@ import { urlPattern } from "../../utilities/Regex.ts";
 import ReactImageUploading from "react-images-uploading";
 import { ExportInterface } from "react-images-uploading/dist/typings";
 import { ImageListType } from "npm:react-images-uploading@3.1.7";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import { ProfileImages } from "../Misc/ProfileImages.tsx";
 
 declare type VenueProfileProps = {
   value: Venue;
@@ -64,13 +65,12 @@ export function VenueProfile({value, subState, updateSubState, pageState, setPag
   })
 
   return (
-
       <Grid
         header={request.response.name}
         narrowColumnIndex={0}
         wideColumnIndex={1}
       >
-        <EditableProfileMenu pageState={pageState} setPageState={setPageState} updateSubState={updateSubState} />
+        <EditableProfileMenu pageState={pageState} setPageState={setPageState} updateSubState={updateSubState} states={"venue"} />
         <Divider>
           {pageState === "profile" ? (
             <VenueViewProfile
@@ -84,11 +84,29 @@ export function VenueProfile({value, subState, updateSubState, pageState, setPag
               venue={request.response}
               updateSubState={updateSubState}
             />
+          ) : pageState === "requests" ? (
+            <VenueRequests
+              subState={subState}
+              venue={request.response}
+              updateSubState={updateSubState}
+            />
           ) : null}
         </Divider>
       </Grid>
 
   );
+}
+
+export function VenueRequests({
+  venue,
+  subState,
+  updateSubState
+}: {
+  venue: Venue;
+  subState: SubState;
+  updateSubState: (subState: SubState, refetch?: boolean) => void
+}) {
+  return (<div>Hej</div>)
 }
 
 export function VenueEvents({
@@ -102,11 +120,8 @@ export function VenueEvents({
 }) {
   const add = useMemo(() => subState === "add", [subState]);
   const edit = useMemo(() => subState === "edit", [subState]);
-  const [events, sevents] = useState(venue.Events);
-  const [publishedEvents, setpublishedEvents] = useState<Event[]>(venue.Events.filter(a => a.published))
-  const [unpublishedEvents, setunpublishedEvents] = useState<Event[]>(venue.Events.filter(a => !a.published))
-  const [pastEvents, setpastEvents] = useState<Event[]>(venue.Events.filter(a => new Date(a.end) < new Date()));
-  const [upcomingEvents, setupcomingEvents] = useState<Event[]>(() => venue.Events.filter(a => new Date(a.start) > new Date()));
+  const [pastEvents, _setpastEvents] = useState<Event[]>(venue.Events.filter(a => new Date(a.end) < new Date()));
+  const [upcomingEvents, _setupcomingEvents] = useState<Event[]>(() => venue.Events.filter(a => new Date(a.start) > new Date()));
   const [currentEvent, setCurrentEvent] = useState<Event>();
   const t = useMemo(() => new Theme(), []);
 
@@ -137,6 +152,7 @@ export function VenueEvents({
                     updateSubState={updateSubState}
                     editable
                     viewable
+                    showName
                 />
               </div>
             )}
@@ -150,6 +166,7 @@ export function VenueEvents({
                       setCurrentEvent={setCurrentEvent}
                       updateSubState={updateSubState}
                       viewable
+                      showName
                   />
                 </div>
             ))}
@@ -207,6 +224,10 @@ export function VenueEvent({
     }
   }
 
+  async function deleteEvent() {
+
+  }
+
   return (
     <StyledListBox
       minwidth={`${dimensions.width}px`}
@@ -227,9 +248,12 @@ export function VenueEvent({
           >
             <LiaPencilAltSolid size={30} />
           </Button>
-          <Button>
-            <LiaTrashAltSolid size={30} />
-          </Button>
+          {!event.published ? (
+            <Button onClick={deleteEvent}>
+              <LiaTrashAltSolid size={30} />
+            </Button>
+          ) : null}
+
         </div>
       ) : null}
       <div className="silly-column-sb" style={{ marginTop: "5%" }} >
@@ -361,7 +385,13 @@ export function VenueViewProfile({
     return venue.Bio?.Links ? venue.Bio.Links : [];
   } )
 
-  const [images, setImages] = useState<ImageListType>([]);
+  const [images, setImages] = useState<ImageListType>(
+    venue.Bio?.Media ?
+      venue.Bio.Media.map(a => {
+        return { data_url: getImage(a.href), internalised: true }
+      }) :
+      []
+  );
 
   const [poster, setPoster] = useState<ImageListType>(() => [{ data_url: venue.poster }]);
 
@@ -393,7 +423,11 @@ export function VenueViewProfile({
     semail(venue.email);
     sbio((venue.Bio?.description ? venue.Bio.description : ""));
     slinks(venue.Bio?.Links ? venue.Bio.Links : []);
-    setImages([]);
+    setImages(venue.Bio?.Media ?
+      venue.Bio.Media.map(a => {
+        return { data_url: getImage(a.href), internalised: true }
+      }) :
+      []);
     setPoster([{ data_url: venue.poster }]);
   }
 
@@ -408,25 +442,45 @@ export function VenueViewProfile({
     const urls = links.filter(a => a.url.length > 0)
     const bioUpdate = await postRequest<Bio>(paths.venue.bio.update, { media, urls, bio, poster: { href: poster[0].data_url, poster: true} });
 
+    if(venueUpdate.isSuccess()) {
+      toast.success("Venue details updated")
+    } else {
+      toast.error("Failed to update venue details", { autoClose: false })
+    }
+
+    if(bioUpdate.isSuccess()) {
+      toast.success("Bio details updated")
+    } else {
+      toast.error("Failed to update bio details", { autoClose: false })
+    }
     //check if poster file has been updated
     if(poster[0].file) {
       const posterUpdate = await postFileRequest("/venue/bio/update/poster", { poster: poster[0].file });
+      if(posterUpdate.isSuccess()) {
+        toast.success("Poster updated")
+      } else {
+        toast.error("Failed to update poster", { autoClose: false })
+      }
     }
-    if(venueUpdate.isSuccess()) {
-      toast.success("Venue details successfully updated")
-    } else {
-      toast.error("Venue details failed to update")
-    }
-    if(bioUpdate.isSuccess()) {
-      toast.success("Bio details successfully updated")
-    } else {
-      toast.error("Bio details failed to update")
+
+    if(images.length > 0) {
+      const imgs = images.map((image) => image.internalised ? image.data_url : image.file);
+      const imagesRes = await postFileRequest(`/venue/media/upload`, { media: imgs });
+      if(imagesRes.isSuccess()) {
+        toast.success("Images updated")
+      } else {
+        toast.error("Failed to update images", { autoClose: false })
+      }
     }
   }
 
-  const onChange = (imageList: ImageListType, addUpdateIndex: number) => {
+  function onImagesChange(imageList: ImageListType) {
+    setImages(imageList);
+  }
+
+  const onChange = (imageList: ImageListType, _addUpdateIndex: number) => {
     // data for submit
-    console.log(imageList, addUpdateIndex);
+
     setPoster(imageList);
   };
 
@@ -605,17 +659,9 @@ export function VenueViewProfile({
                 </FlexCol>
               </div>
             </div>
-            <DynamicListForm
-              header={"Images"}
-              as={"h3"}
-              name={"images"}
-              array={images}
-              setArray={setImages}
-              template={{ data_url: "" }}
-              pattern={urlPattern}
-              disabled={!edit}
-              color={t.redBrown}
-            />
+            <UnderwaveHeader header="Images" as="h3" color={t.redBrown} disabled={!edit} />
+            {/*@ts-ignore bah*/}
+            <ProfileImages edit={edit} images={images} onImagesChange={onImagesChange} />
             <DynamicListForm
                 disabled={!edit}
                 header={"Links"}

@@ -172,14 +172,31 @@ export const paymentMethods = [
 export declare type SearchArtist = {
     value: string; label: string;
 }
-export type PageState = "profile" | "events" | "account" | "settings" | "posts";
+export type PageState = "profile" | "events" | "account" | "settings" | "posts" | "requests";
 export const PageStates: PageState[] = [
   "profile",
   "events",
-  "posts"
+  "posts",
+  "requests"
   /* "account",
   "settings", */
 ] as const;
+
+export const ArtistPageStates: ArtistPageState[] = [
+  "profile",
+  "events",
+  "posts",
+  "requests",
+] as const;
+
+export const VenuePageStates: VenuePageState[] = [
+  "profile",
+  "events",
+  "requests",
+] as const;
+
+export type ArtistPageState = "profile" | "events" | "posts" | "requests";
+export type VenuePageState = "profile" | "events" | "requests";
 export type SubState = "view" | "edit" | "add";
 export type Filter = {
   [key: string]: {

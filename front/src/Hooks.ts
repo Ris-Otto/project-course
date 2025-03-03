@@ -30,7 +30,7 @@ export const useOnClickOutside = (
   handler: (event: { target: HTMLDivElement }) => void,
 ) => {
   useEffect(() => {
-    const listener = (event: { target: any }) => {
+    const listener = (event) => {
       if (!ref.current || ref.current.contains(event.target)) {
         return;
       }
@@ -49,7 +49,7 @@ export function useImageDimensions(maxHeight?: number) {
     height: 0,
   });
 
-  const handleImageLoad = (e: any) => {
+  const handleImageLoad = (e) => {
     const { naturalHeight, naturalWidth } = e.target;
 
     if (naturalWidth > naturalHeight) {
@@ -59,7 +59,7 @@ export function useImageDimensions(maxHeight?: number) {
     } else {
       const ratio = naturalHeight / naturalWidth;
       const height = maxHeight ? maxHeight : globalThis.innerHeight / 8;
-      setDimensions({ height: height, width: height * ratio });
+      setDimensions({ height: height, width: height * (1 / ratio) });
     }
   };
 
@@ -88,7 +88,9 @@ export function useRequest<T>(
     const res = await getRequest<T>(path);
     if (res.isSuccess()) {
       setResponse(res.response);
+      setIsLoading(false);
     } else {
+      setIsLoading(false);
       setIsError(res.message);
     }
     setIsLoading(false);

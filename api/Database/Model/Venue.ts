@@ -1,12 +1,11 @@
 ﻿import Event from "./Event.ts";
 import sequelize from "../database.ts";
-import { DataTypes, FindOptions, Model } from "npm:sequelize";
+import { DataTypes, Model } from "npm:sequelize";
 import Sequelize from "npm:sequelize";
 import * as bcrypt from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
 import { Bio, type BioRead } from "./Bio.ts";
 import type EventMapping from "./EventMapping.ts";
 import { OpeningHour } from "./OpeningHour.ts";
-import { getPoster } from "../../Controllers/Extensions/Extensions.ts";
 
 class Venue extends Model {
   declare verified: 0 | 1;
@@ -119,20 +118,6 @@ Venue.addHook("beforeCreate", async (venue: Venue) => {
   const salt = await bcrypt.genSalt(12);
   venue.password = await bcrypt.hash(venue.password, salt);
 });
-
-Venue.afterFind(
-  "poster",
-  (venue: Venue | readonly Venue[] | null, _options: FindOptions<any>) => {
-    if (!venue) return;
-    if (venue instanceof Venue) {
-      venue.poster = getPoster(venue);
-      return;
-    }
-    for (const venue1 of venue) {
-      venue1.poster = getPoster(venue1);
-    }
-  },
-);
 
 export { Venue };
 export type { VenueRead };

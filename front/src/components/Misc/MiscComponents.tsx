@@ -1,15 +1,15 @@
 import { LiaHeart, LiaHeartSolid } from "react-icons/lia";
 import { useState } from "react";
-import { useAtom } from "jotai";
+import { useAtom, SetStateAction } from "jotai";
 import { user } from "../../store.ts";
 import { Row, Button, Col } from "react-bootstrap";
 
 type FollowHeartProps = {
-  setRefetch: (s: boolean | ((s: boolean) => void)) => void;
+  setRefetch: any;
   id: string;
   followed?: boolean;
-  follow: (id: string, callback: (s: boolean | ((s: boolean) => void)) => void) => Promise<boolean>;
-  unfollow: (id: string, callback: (s: boolean | ((s: boolean) => void)) => void) => Promise<boolean>;
+  follow: (id: string, callback: any) => Promise<boolean>;
+  unfollow: (id: string, callback: any) => Promise<boolean>;
 };
 
 export function FollowHeartSmall({

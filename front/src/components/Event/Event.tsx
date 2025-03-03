@@ -3,7 +3,13 @@ import Event from "../../../../api/Database/Model/Event.ts";
 import { getRequest, postRequest } from "../../api/APITemplate.ts";
 import paths from "../../../../Shared/paths.ts";
 import {Filter, ObjectEntries, paymentMethods} from "../../utilities/Types.tsx";
-import { ExtractHoursMinutes, resolveBitmask, ToCurrencySymbol, UnderwaveHeader } from "../../utilities/Functions.tsx";
+import {
+  ExtractHoursMinutes,
+  parseTextWithPossibleLineBreaks,
+  resolveBitmask,
+  ToCurrencySymbol,
+  UnderwaveHeader,
+} from "../../utilities/Functions.tsx";
 import {Strong} from "./Event.styled.ts";
 import Grid from "../Misc/Grid.tsx";
 import {EventCalendar} from "./EventCalendar.tsx";
@@ -14,6 +20,7 @@ import {Loading} from "../../utilities/Loading.tsx";
 import {ListFilter} from "../Misc/Filter.tsx";
 import {useAtom} from "jotai";
 import { refetchFollowedArtists, user } from "../../store.ts";
+import { IoCheckmark } from "react-icons/io5";
 import Fuse from "fuse.js";
 import {Button} from "react-bootstrap"
 import { SimpleObservableListItem } from "../Misc/ObservableListItem.tsx";
@@ -22,6 +29,8 @@ import { IoLocationSharp } from "react-icons/io5"
 import { Theme } from "../../theme.ts";
 import { useImageDimensions} from "../../Hooks.ts";
 import { EventPicture } from "../Venue/Venue.tsx";
+import { EditButton } from "../User/StyledProfile.tsx";
+import { EventInterest} from "../../../../api/Database/Model/EventInterest.ts";
 
 
 function EventPage() {
@@ -66,7 +75,7 @@ export function AllEvents() {
     async function getData() {
       const a = await getRequest<Event[]>(`${paths.event.all}`);
       if (a.isSuccess()) {
-        const upcoming = a.response.filter(b => new Date(b.start) > new Date() && b.published);
+        const upcoming = a.response.filter(b => b);
         setList(upcoming);
         setFilteredList(upcoming);
       }
@@ -134,12 +143,29 @@ export function AllEvents() {
 function RenderEvent({ event }: { event: Event }) {
   const [u,] = useAtom(user);
   const navigate = useNavigate();
-  const { dimensions, handleImageLoad } = useImageDimensions(globalThis.innerHeight/ 2);
+  const { dimensions, handleImageLoad } = useImageDimensions(globalThis.innerHeight / 2);
+
+  const poster = useMemo(() => event.Bio?.Media?.find(a => a.poster)?.href, [event]);
+
+  const userInterest = useRequest<EventInterest>(`/user/interest/${event.id}`, !u);
 
   const start = useMemo(
     () => ExtractHoursMinutes(new Date(event.start)),
     [event],
   );
+  const artistReview = useMemo(() => {
+    const relevant = u && u.type === 1;
+    const other = event.Artists.find(a => a.id === u.id)
+    const date = new Date(event.end) < new Date();
+    return relevant && other && date;
+  }, [u, event]);
+
+  const venueReview = useMemo(() => {
+    const relevant = u && u.type === 2;
+    const other = event.Venue.id === u.id;
+    const date = new Date(event.end) < new Date();
+    return relevant && other && date;
+  }, [u, event])
   const end = useMemo(() => ExtractHoursMinutes(new Date(event.end)), [event]);
   const t = useMemo(() => new Theme(), [])
   return (
@@ -155,23 +181,28 @@ function RenderEvent({ event }: { event: Event }) {
       <UnderwaveHeader header={`@${event.Venue.name}, ${event.Venue.address}, ${event.Venue.zip} ${event.Venue.city}`} as={"h3"} />
       <UnderwaveHeader header={`${new Date(event.start).toDateString()} ${start} - ${end}`} as={"h3"}/>
       <hr />
-      {/*
-        POSTER POSTER POSTER POSTER POSTER POSTER
-        POSTER POSTER POSTER POSTER POSTER POSTER
-        POSTER POSTER POSTER POSTER POSTER POSTER
-        POSTER POSTER POSTER POSTER POSTER POSTER
-        POSTER POSTER POSTER POSTER POSTER POSTER
-       */}
-      <EventPicture image={event.poster} onImageLoad={handleImageLoad} dimensions={dimensions} name={""} />
-
+      {u ? (
+        <>
+          {u.type === 0 ? (
+            <EventInterestButtons event={event} interest={userInterest.response} refetch={userInterest.refetch} />
+          ): u.type === 1 ? (
+            <></>
+          ): u.type === 2 ? (
+            <></>
+          ) : null}
+        </>
+      ): null}
+      <Grid>
+      <EventPicture image={poster} onImageLoad={handleImageLoad} dimensions={dimensions} name={""} />
+        {parseTextWithPossibleLineBreaks(event.Bio?.description ? event.Bio.description : "")}
+      </Grid>
       <UnderwaveHeader header={"Artists"} as={"h3"} color={t.orange} />
       <Row justifycontent={"start"} flexwrap={"wrap"} >
       {event.Artists?.map((a, idx) => {
         return (
-
             <SimpleObservableListItem key={idx} item={a} navigatePath={"/artists/public?artistId"}>
               <>
-              {u && u.type === 2 && event.Venue.id === u.id ? (
+              {venueReview ? (
                 <Button onClick={() => navigate(
                   {
                     pathname: `/events/review/${event.id}`,
@@ -202,9 +233,10 @@ function RenderEvent({ event }: { event: Event }) {
         <>
           <IoLocationSharp />
           {event.Venue.address}
-          {u && u.type === 1 && event.Artists.find(a => a.id === u.id) ? (
+          {artistReview ? (
             <>
-              <Button onClick={() => navigate(
+              <br/>
+              <Button className={"mt-3"} onClick={() => navigate(
                 {
                   pathname: `/events/review/${event.id}`,
                   search: createSearchParams(
@@ -221,52 +253,45 @@ function RenderEvent({ event }: { event: Event }) {
               }>
                 Review
               </Button>
-              <br/>
+
             </>
           ): null}
         </>
       </SimpleObservableListItem>
       </Row>
-      {u ? (
-        <>
-          {u.type === 0 ? (
-            <EventInterest event={event} />
-          ): u.type === 1 ? (
-            <></>
-          ): u.type === 2 ? (
-            <></>
-          ) : null}
-        </>
-      ): null}
     </>
   );
 }
 
-function EventInterest({ event }: { event: Event }) {
-  return <>
-    <button onClick={async () => {
-      await postRequest<Event>(`user/events/${event.id}/show-interest`, {
-        interest_level: 2,
-      })
-    }}>
-      Going
-    </button>
-    <button onClick={async () => {
-      await postRequest<Event>(`user/events/${event.id}/show-interest`, {
-        interest_level: 1,
-      })
-    }}>
-      interested
-    </button>
-    <button onClick={async () => {
-      await postRequest<Event>(`user/events/${event.id}/show-interest`, {
-        interest_level: 0,
-      })
-    }}>
-      not going
-    </button>
-  </>
-
+function EventInterestButtons({ event, interest, refetch }: { event: Event, interest: EventInterest | null, refetch }) {
+  return (
+    <>
+      <EditButton disabled={interest ? interest.interest === 2 : false} onClick={async () => {
+        await postRequest<Event>(`user/events/${event.id}/show-interest`, {
+          interest_level: 2,
+        }).then(() => refetch())
+      }}>
+        Going
+        {interest && interest.interest === 2 ? (<IoCheckmark />) : null}
+      </EditButton>
+      <EditButton disabled={interest ? interest.interest === 1 : false} onClick={async () => {
+        await postRequest<Event>(`user/events/${event.id}/show-interest`, {
+          interest_level: 1,
+        }).then(() => refetch())
+      }}>
+        Interested
+        {interest && interest.interest === 1 ? (<IoCheckmark />) : null}
+      </EditButton>
+      <EditButton disabled={interest ? interest.interest === 0 : false} onClick={async () => {
+        await postRequest<Event>(`user/events/${event.id}/show-interest`, {
+          interest_level: 0,
+        }).then(() => refetch())
+      }}>
+        Not going
+        {interest && interest.interest === 0 ? (<IoCheckmark />) : null}
+      </EditButton>
+    </>
+  )
 }
 
 export { EventPage, RenderEvent };

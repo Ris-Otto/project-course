@@ -1,6 +1,6 @@
 ﻿import { useArtistRefetch, useAuth, useImageDimensions, useIsFollowingArtist, useRequest } from "../../Hooks.ts";
 import type { Artist } from "../../../../api/Database/Model/Artist.ts";
-import { getRequest } from "../../api/APITemplate.ts";
+import { getImage, getRequest } from "../../api/APITemplate.ts";
 import { StyledArtistProfile } from "../User/StyledProfile.tsx";
 import Grid from "../Misc/Grid.tsx";
 import { FlexCol } from "../Misc/CustomStyles.tsx";
@@ -8,12 +8,16 @@ import { EventCalendar } from "../Event/EventCalendar.tsx";
 import { ProfilePicture } from "../Misc/ProfilePicture.tsx";
 import { FollowHeartButton } from "../Misc/MiscComponents.tsx";
 import { followArtist, unfollowArtist } from "../../api/Common.ts";
-import { useMemo } from "react";
+import { useMemo, useContext } from "react";
 import { useSearchParams} from "react-router-dom";
 import { IoNewspaperSharp} from "react-icons/io5";
 import { LiaShareAltSquareSolid, LiaEnvelope } from "react-icons/lia"
 import { Tabs, Tab, Col, Row, Button } from "react-bootstrap";
 import { Loading } from "../../utilities/Loading.tsx";
+import { parseTextWithPossibleLineBreaks } from "../../utilities/Functions.tsx";
+import { ViewableListPost } from "../Misc/Posts.tsx";
+import { ArtistImage } from "./Artist.tsx";
+import { ThemeContext } from "styled-components";
 
 export default function ArtistProfilePublic() {
   useAuth(-1);
@@ -31,7 +35,7 @@ export default function ArtistProfilePublic() {
   return (
     <StyledArtistProfile className="top-level-component">
       {artist.response ? (
-        <Grid header={artist.response.name}>
+        <Grid header={artist.response.name} wideColumnIndex={1}>
           <ArtistLeft
             artist={artist.response}
           />
@@ -52,22 +56,45 @@ type ArtistProps = {
 };
 
 function ArtistLeft({ artist }: ArtistProps) {
-
   const { refetchArtists } = useArtistRefetch();
   const isFollowing = useIsFollowingArtist(artist);
   const { dimensions, handleImageLoad } = useImageDimensions(
-    globalThis.innerHeight / 3,
+    globalThis.outerHeight / 2.5,
   );
   const img = useMemo(() => artist.poster, [artist]);
-
+  const theme = useContext(ThemeContext);
   return (
-    <Col>
+    <FlexCol>
       <ProfilePicture
         item={artist}
         image={img}
         dimensions={dimensions}
         handleImageLoad={handleImageLoad}
+        border
       />
+      <div
+        className="mt-3 mb-3"
+        style={{
+          boxShadow: "0 0 10px 2px",
+          borderRadius: "10px",
+          padding: "5%",
+          backgroundColor: theme.darkCream
+        }}
+      >
+        <h3>Images</h3>
+        <div
+          style={{
+            overflowX: "auto",
+            maxWidth: `${dimensions.width *0.9}px`,
+            display: "inline-block",
+            whiteSpace:"nowrap",
+          }}
+        >
+          {artist.Bio?.Media?.map((a, i) => {
+            return <ArtistImage image={{href: getImage(a.href)}} key={i}/>
+          })}
+        </div>
+      </div>
       <br />
       <div style={{ textAlign: "left", marginLeft: 30 }}>
         <Button
@@ -88,44 +115,57 @@ function ArtistLeft({ artist }: ArtistProps) {
         <LiaEnvelope size={60} />
         {artist.email}
       </a>
-    </Col>
+    </FlexCol>
   );
 }
 
 function ArtistMiddle(props: ArtistProps) {
+  const theme = useContext(ThemeContext);
   return (
-    <Col>
+    <Col style={{boxShadow: "0 0 10px 2px", borderRadius: "10px", padding: "5%", backgroundColor: theme.darkCream}}>
       <h3>Members</h3>
       {props.artist.Members.map((m, idx) => {
         return (
           <Row key={idx}>
-            <Col>{m.name}</Col>
+            <Col>{m.name} - {m.Role.role}</Col>
           </Row>
         );
       })}
       <br />
       <h3 className="mb-3">About</h3>
+      <div style={{maxHeight: "50vh", overflowY: "auto", overflowX: "hidden"}}>
       {props.artist.Bio ? (
-        <div>{props.artist.Bio.description}</div>
+        parseTextWithPossibleLineBreaks(props.artist.Bio.description)
       ) : (
         "Nothing to show"
       )}
+      </div>
     </Col>
   );
 }
 
 function ArtistRight(props: ArtistProps) {
+  const theme = useContext(ThemeContext);
   return (
     <FlexCol>
-      <Row className="mb-3">
-        <h1>Posts</h1>
-        <IoNewspaperSharp size={300} />
+      <Row className="mb-3" style={{boxShadow: "0 0 10px 2px", borderRadius: "10px", padding: "2%", backgroundColor: theme.darkCream}}>
+        <h3>Recent posts</h3>
+        <div style={{maxHeight: "50vh", overflowY: "auto", overflowX: "hidden"}}>
+        {props.artist.Posts?.map((a, idx) => {
+          return (
+            <div key={idx} style={{margin: "5%", overflowX: "visible", maxWidth: "90%"}}>
+              <ViewableListPost post={a} />
+            </div>
+          )
+        })}
+        </div>
       </Row>
-      <Tabs fill>
+      <Row style={{boxShadow: "0 0 10px 2px", borderRadius: "10px", backgroundColor: theme.darkCream, minWidth: "107%"}}>
+      <Tabs fill >
         <Tab
           eventKey="upcoming"
-          title="Upcoming performances"
-          style={{ margin: "5px" }}
+          title="Upcoming events"
+
         >
           <EventCalendar
             events={props.artist.Events.filter(
@@ -135,8 +175,8 @@ function ArtistRight(props: ArtistProps) {
         </Tab>
         <Tab
           eventKey="past"
-          title="Past performances"
-          style={{ margin: "5px" }}
+          title="Past events"
+
         >
           <EventCalendar
             events={props.artist.Events.filter(
@@ -145,6 +185,7 @@ function ArtistRight(props: ArtistProps) {
           />
         </Tab>
       </Tabs>
+      </Row>
 
     </FlexCol>
   );

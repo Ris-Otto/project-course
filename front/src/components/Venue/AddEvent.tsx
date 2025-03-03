@@ -9,7 +9,7 @@ import {toast} from "react-toastify";
 import {EditButton} from "../User/StyledProfile.tsx";
 import { postFileRequest, postRequest } from "../../api/APITemplate.ts";
 import paths from "../../../../Shared/paths.ts";
-import {Button, Modal} from "react-bootstrap";
+import {Button, Modal, Alert} from "react-bootstrap";
 import Event from "../../../../api/Database/Model/Event.ts";
 import {EventSpecifics} from "./EventSpecifics.tsx";
 import { ImageListType } from "npm:react-images-uploading@3.1.7";
@@ -47,7 +47,6 @@ export function AddEvent({
   const [age, sage] = useState(false);
 
   const [show, setShow] = useState(false);
-
   function searchArtists(inputValue: string, callback: (options: SearchArtist[]) => void) {
     return postRequest<SearchArtist[]>(paths.artist.search, { searchValue: inputValue })
         .then(response => response.response)
@@ -66,6 +65,21 @@ export function AddEvent({
         toast.warn("Please enter a valid price")
         return false;
       }
+    }
+
+    if(start >= end || (new Date(start) > new Date(end))) {
+      toast.warn("Start date can't be greater than end date")
+      return false;
+    }
+
+    if(name.length === 0) {
+      toast.warn("The event needs a name")
+      return false;
+    }
+
+    if(loc === 1 && (addr.length === 0 || city.length === 0 || zip.length === 0)) {
+      toast.warn("The event needs a complete address")
+      return false;
     }
 
     const res = await postRequest<Event>(paths.venue.event.create, {
@@ -114,10 +128,11 @@ export function AddEvent({
         <Modal contentClassName="underwave-modal" show={show}>
           <Modal.Header closeButton>
             <Modal.Title>Add artist</Modal.Title>
+
           </Modal.Header>
           <Modal.Body>
+            <Alert variant={"warning"}>This is not implemented yet</Alert>
             <Control color={t.redBrown} header="Name" state={nonArtist.name} onChange={(e) => {
-              console.log(e.target.value)
               setNonArtist({...nonArtist, name: e.target.value})
             }} />
             <Control color={t.redBrown} header="Genre" state={nonArtist.genre} onChange={(e) => setNonArtist({...nonArtist, genre: e.target.value})} />
@@ -178,6 +193,7 @@ export function AddEvent({
             cost={cost}
             scost={scost}
             spm={spm}
+            pm={pm}
             selectedArtist={selectedArtist}
             searchArtists={searchArtists}
             setSelectedArtist={setSelectedArtist}

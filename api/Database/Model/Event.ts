@@ -94,20 +94,5 @@ Event.addHook("afterFind", "addPoster", (event: Event) => {
   event.poster = getPoster(event);
 });
 
-Event.afterFind(
-  "addPoster",
-  (event: Event | readonly Event[] | null) => {
-    if (!event) return;
-
-    if (event instanceof Event) {
-      event.poster = getPoster(event);
-    } else {
-      for (const e of event) {
-        e.poster = getPoster(event);
-      }
-    }
-  },
-);
-
 export default Event;
 export type { EventRead };

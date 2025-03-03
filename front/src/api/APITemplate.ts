@@ -41,7 +41,7 @@ export async function postRequest<
   return new Result(response.data);
 }
 
-export function getImage(path: string) {
+export function getImage(path?: string) {
   return `http://localhost:8000/uploads/${path}`;
 }
 

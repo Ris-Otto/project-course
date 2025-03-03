@@ -73,7 +73,7 @@ function CreatePost({
               </Button>
               <br/>
               {imageList.map((image, index) => {
-                return <SingleImage index={index} image={image} key={index} onImageUpdate={onImageUpdate} onImageRemove={onImageRemove} />
+                return <SingleImage index={index} image={image} key={index} onImageUpdate={onImageUpdate} onImageRemove={onImageRemove} edit />
               })}
             </div>
           )}
@@ -84,8 +84,8 @@ function CreatePost({
   )
 }
 
-function SingleImage({image, onImageUpdate, onImageRemove, index}) {
-  const { dimensions, handleImageLoad } = useImageDimensions(globalThis.innerHeight / 5,);
+function SingleImage({image, onImageUpdate, onImageRemove, index, edit}) {
+  const { dimensions, handleImageLoad } = useImageDimensions(globalThis.innerHeight / 6,);
   return (
     <div className="image-item mb-3">
       <img onLoad={handleImageLoad}
@@ -96,7 +96,7 @@ function SingleImage({image, onImageUpdate, onImageRemove, index}) {
            }}
            src={image.data_url}
            alt="picture" />
-      <div>
+      <div hidden={!edit}>
         <Button onClick={() => onImageUpdate(index)}><LiaPencilAltSolid /></Button>
         <Button onClick={() => onImageRemove(index)}><LiaTrashAltSolid /></Button>
       </div>
@@ -105,4 +105,4 @@ function SingleImage({image, onImageUpdate, onImageRemove, index}) {
 }
 
 
-export { CreatePost };
+export { CreatePost, SingleImage };

@@ -80,7 +80,6 @@ function SimpleObservableListItem<T extends ObservableItem>({item, navigatePath,
   );
   const p = useMemo(() => dimensions.height * 0.12, [dimensions]);
   const navigate = useNavigate();
-  const img = useMemo(() => item.poster, [item])
   return (
     <StyledListBox
       minwidth={`${dimensions.height}px`}
@@ -91,7 +90,6 @@ function SimpleObservableListItem<T extends ObservableItem>({item, navigatePath,
       <div style={{cursor: "pointer"}} onClick={() => navigate(`${navigatePath}=${item.id}`)}>
         <ProfilePicture
           item={item}
-          image={img}
           showName={true}
           dimensions={dimensions}
           handleImageLoad={handleImageLoad}

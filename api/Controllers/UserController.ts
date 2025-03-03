@@ -21,6 +21,8 @@ import { deleteCookie } from "npm:hono/cookie";
 import { Task } from "../Utilities.ts";
 import { EventInterest } from "../Database/Model/EventInterest.ts";
 import { getPoster } from "./Extensions/Extensions.ts";
+import { Post } from "../Database/Model/Post.ts";
+import { Op } from "npm:sequelize";
 
 const userController = new Hono();
 
@@ -48,6 +50,12 @@ userController.post(
   followArtist,
 );
 
+userController.get(
+  "/user/artists/following/posts/recent",
+  tokenMiddleware.verifyIsUser,
+  getRecentPosts,
+);
+
 userController.post(
   "/user/venues/unfollow/:venueId",
   tokenMiddleware.verifyIsUser,
@@ -65,8 +73,51 @@ userController.post(
   showInterest,
 );
 
+userController.get(
+  "/user/interest/:eventId",
+  tokenMiddleware.verifyIsUser,
+  getEventInterest,
+);
+
+async function getEventInterest(c: Context) {
+  const payload = c.get("tokenPayload");
+  const eventId = c.req.param("eventId");
+
+  const res = await EventInterest.findOne({
+    where: {
+      UserId: payload.id,
+      EventId: eventId,
+    },
+  });
+
+  if (!res) return c.json(NotFound());
+
+  return c.json(Ok(res));
+}
+
+async function getRecentPosts(c: Context) {
+  const payload = c.get("tokenPayload");
+  const user = await User.findByPk(payload.id);
+  if (!user) {
+    return c.json(NotFound());
+  }
+
+  const artists = await user.getArtists();
+  const ids = artists.map((a) => a.id);
+
+  const posts = await Post.findAll({
+    where: {
+      ArtistId: { [Op.in]: ids },
+    },
+    include: [includeBio()],
+    order: [["createdAt", "DESC"]],
+  });
+
+  return c.json(Ok(posts));
+}
+
 async function getEvents(c: Context) {
-  //TODO pagination, sequelize probably has some functionality for this
+  //const { offset } = await c.req.json();
   const events = await Event.findAll({
     include: [
       includeModel({
@@ -89,8 +140,12 @@ async function getEvents(c: Context) {
     attributes: {
       exclude: ["VenueId", "PricingId", "createdAt", "updatedAt"],
     },
+    limit: 20,
+    offset: 0,
+    order: [["start", "DESC"]],
   });
-  return c.json(Ok(events));
+  const ret = events.map((event) => event.get({ plain: true }));
+  return c.json(Ok(ret));
 }
 
 async function getEvent(c: Context) {
@@ -103,6 +158,7 @@ async function getEvent(c: Context) {
       includeModel({
         model: Venue,
         exclude: ["password", "verified", "contactEmail", "contactName"],
+        include: includeBio(),
       }),
       includeArtist(),
       includeBio(),

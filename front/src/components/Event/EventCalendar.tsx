@@ -15,13 +15,12 @@ import {StyledListBox} from "../Misc/CustomStyles.tsx";
 const StyledEventCalendar = styled.div<{ theme: Theme }>`
   display: flex;
   flex-direction: column;
-  justify-content: center;
   background-color: ${({ theme }) => theme.darkCream};
   padding: 30px;
   max-height: 60vh;
-  overflow-x: visible;
+  overflow-x: auto;
   overflow-y: auto;
-  border-radius: 10px 10px 10px 10px;
+  border-radius: 10px;
 
   .calendar-date {
     text-align: center;
@@ -80,15 +79,15 @@ function EventCalendar({ events }: EventCalendarProps) {
   return (
     <StyledEventCalendar>
       {events.length > 0 ? (
-      <>
-      {events.map((e, idx) => {
+
+      events.map((e, idx) => {
         return (
-          <div className="mb-3" key={idx}>
+          <div className="mt-3" key={idx}>
             <EventInCalendar event={e} />
           </div>
         );
-      })}
-      </>
+      })
+
       ): "Nothing to show"}
     </StyledEventCalendar>
   );
@@ -182,7 +181,7 @@ function EventHover({ event, rect }: { event: Event, rect: DOMRect | undefined }
     if(!rect) return {x: 0, y: 0}
     if(rect.right + 200 > globalThis.innerWidth) {
       return {
-        x: rect.right - rect.left*0.65 - 10,
+        x: rect.right - rect.left*0.4 - 10,
         y: rect.top - rect.top/2,
       }
     }
@@ -201,7 +200,7 @@ function EventHover({ event, rect }: { event: Event, rect: DOMRect | undefined }
         borderRadius: "15px",
       }}
     >
-      <VenueEvent event={event} updateSubState={(s,r) => {}} />
+      <VenueEvent event={event} updateSubState={(s,r) => {}} showName />
     </div>
   );
 }

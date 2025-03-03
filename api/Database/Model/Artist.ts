@@ -5,6 +5,7 @@ import Sequelize from "npm:sequelize";
 import * as bcrypt from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
 import type { Member } from "./Member.ts";
 import type { Bio } from "./Bio.ts";
+import type { Post } from "./Post.ts";
 import { getPoster } from "../../Controllers/Extensions/Extensions.ts";
 
 class Artist extends Model {
@@ -18,6 +19,7 @@ class Artist extends Model {
   declare Members: Member[];
   declare Events: Event[];
   declare Bio: Bio;
+  declare Posts: Post[];
   declare BioId: number;
   declare poster?: string;
   declare createdAt: Date;
@@ -83,25 +85,6 @@ Artist.prototype.authenticate = async function (
 Artist.addHook("beforeCreate", async (artist: Artist) => {
   const salt = await bcrypt.genSalt(12);
   artist.password = await bcrypt.hash(artist.password, salt);
-});
-
-Artist.afterFind(
-  "beforeCreate",
-  (artist: Artist | readonly Artist[] | null) => {
-    if (!artist) return;
-
-    if (artist instanceof Artist) {
-      artist.poster = getPoster(artist);
-    } else {
-      for (const e of artist) {
-        e.poster = getPoster(artist);
-      }
-    }
-  },
-);
-
-Artist.afterUpdate("poster", (instance, options) => {
-  instance.poster = getPoster(instance);
 });
 
 class Role extends Model {

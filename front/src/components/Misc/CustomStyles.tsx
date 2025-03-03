@@ -2,9 +2,9 @@
 import type {Theme} from "../../theme.ts";
 
 const StyledListBox = styled.div<
-    { minwidth?: string; padding?: string }
+    { minwidth?: string; padding?: string; backgroundcolor?: string }
 >`
-  background-color: ${({ theme }) => theme.darkCream};
+  background-color: ${({ backgroundcolor, theme }) => backgroundcolor ? backgroundcolor : theme.darkCream};
   box-shadow: ${({ theme }) => theme.darkCream};
   border-radius: 15px;
   padding: ${({ padding }) => (padding ? padding : "5")}px;

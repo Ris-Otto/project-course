@@ -57,6 +57,11 @@ export const GlobalStyles = createGlobalStyle<{
         color: black !important;
     }
 
+    .leaflet-container {
+        width: 100%;
+        height: 50%;
+    }
+
     body {
         align-items: center;
         background: ${({ theme }) => theme.cream};

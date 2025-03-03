@@ -1,8 +1,9 @@
 ﻿//@ts-ignore bah
 import cd from "../../resources/Images-Assets/cd+cover.png";
 import { ObservableItem } from "./ObservableListItem.tsx";
-import { useMemo } from "react";
+import { useMemo, useContext } from "react";
 import { getImage } from "../../api/APITemplate.ts";
+import {ThemeContext} from "styled-components";
 
 export declare type PictureProps = {
 
@@ -11,6 +12,7 @@ export declare type PictureProps = {
   item?: ObservableItem;
   showName?: boolean;
   image?: string;
+  border?: boolean;
 }
 
 function ProfilePicture({
@@ -18,20 +20,23 @@ function ProfilePicture({
   dimensions,
   handleImageLoad,
   item,
-  showName
+  showName,
+  border
 }: PictureProps) {
 
   const img = useMemo(() => image ? image : getImage(item?.Bio?.Media?.find(a => a.poster)?.href) || "", [item, image]);
-
+  const theme = useContext(ThemeContext)
   return (
     <div className="picture">
-      {showName? (<h4 className="picture-name">{item.name}</h4>): null}
+      {showName? (<h4 className="picture-name">{item!.name}</h4>): null}
     <img
       onLoad={handleImageLoad}
       onChange={handleImageLoad}
       style={{
+        boxShadow: border ? "0 0 10px 2px" : "",
         borderRadius: "10px",
         width: `${dimensions.width}px`,
+        maxWidth: `${dimensions.width}px`,
         height: `${dimensions.height}px`,
       }}
       onError={({ currentTarget }) => {

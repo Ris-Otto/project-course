@@ -36,13 +36,11 @@ export const StyledMenu = styled.nav<{ open: boolean }>`
     font-size: 2rem;
     text-transform: uppercase;
     padding: 0.5rem;
-    font-weight: bold;
     letter-spacing: 0.5rem;
-    color: ${({ theme }) => theme.menuText};
     text-decoration: none;
     transition: color 0.3s linear;
 
-    @media (max-width: ${({ theme }) => theme.mobile}) {
+    @media (max-width: ${({ theme }) => theme.mobileS}) {
       font-size: 1.5rem;
       padding: 0.75rem 0;
       text-align: center;
@@ -60,7 +58,7 @@ export const StyledMenu = styled.nav<{ open: boolean }>`
 `;
 
 export function Menu() {
-  const [_u, _] = useAtom(user);
+  const [u, _] = useAtom(user);
   const [o, setO] = useAtom(open);
 
   const tabIndex = o ? 0 : -1;
@@ -82,14 +80,14 @@ export function Menu() {
         </Link>
       </>
       {
-        /*//Links to content specific for an admin
+        //Links to content specific for an admin
         u?.type === 2 ? (
           <>
-            <Link to="/events/create" tabIndex={tabIndex} onClick={hide}>
+            <Link to="/venues/profile" state={{pageState: "events", subState: "add"}} tabIndex={tabIndex} onClick={hide}>
               Create event
             </Link>
           </>
-        ) : null*/
+        ) : null
       }
     </StyledMenu>
   );

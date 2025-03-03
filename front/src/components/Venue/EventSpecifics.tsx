@@ -51,9 +51,9 @@ type EventSpecificsProps = {
     scost: StateHandler<number>,
     spm: StateHandler<number>,
     pm: number;
-    selectedArtist: SearchArtist,
+    selectedArtist?: SearchArtist,
     searchArtists: (inputValue: string, callback: (options: SearchArtist[]) => void) => Promise<void>,
-    setSelectedArtist: StateHandler<SearchArtist>,
+    setSelectedArtist: StateHandler<SearchArtist | undefined>,
     addedArtists: SearchArtist[],
     setAddedArtists: StateHandler<SearchArtist[]>,
     setShow: StateHandler<boolean>,
@@ -104,12 +104,6 @@ export function EventSpecifics({
         // data for submit
         setImage(imageList);
     };
-
-    useEffect(() => {
-        const a = paymentMethods
-          .filter((method) => (pm & method.value) !== 0)
-        console.log(a, pm);
-    })
 
     return <div className="profile mt-3">
         <Grid>
@@ -172,6 +166,8 @@ export function EventSpecifics({
                                 state={name}
                                 color={t.redBrown}
                                 setState={sname}
+                                pattern={'.+'}
+                                required
                             />
                         </div>
                         <div className="silly-row-sb">
@@ -206,6 +202,7 @@ export function EventSpecifics({
                         color={t.redBrown}
                         setState={saddr}
                         disabled={loc === 0}
+                        required
                     />
 
                     <div className="silly-row">
@@ -215,6 +212,7 @@ export function EventSpecifics({
                             color={t.redBrown}
                             setState={scity}
                             disabled={loc === 0}
+                            required
                         />
                         <Control
                             header={"Zip/Postal code"}

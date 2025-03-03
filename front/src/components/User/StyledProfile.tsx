@@ -29,23 +29,24 @@ export const StyledProfile = styled.div<{ theme: Theme }>`
 `;
 
 export const StyledArtistProfile = styled.div<{ theme: Theme }>`
+    color: ${({ theme }) => theme.redBrown};
   .artist-helmet {
     background-color: ${({ theme }) => theme.teal};
     color: ${({ theme }) => theme.cream};
   }
 
   .follow-share-button {
-    background-color: ${({ theme }) => theme.orange};
-    border-color: ${({ theme }) => theme.orange};
+    background-color: ${({ theme }) => theme.lightOrange};
+    border-color: ${({ theme }) => theme.lightOrange};
     color: ${({ theme }) => theme.text};
 
     &:focus {
-      box-shadow: ${({ theme }) => theme.darkOrange};
+      box-shadow: ${({ theme }) => theme.orange};
     }
 
     &:hover {
-      background-color: ${({ theme }) => theme.darkOrange};
-      border-color: ${({ theme }) => theme.darkOrange} !important;
+      background-color: ${({ theme }) => theme.orange};
+      border-color: ${({ theme }) => theme.orange} !important;
     }
 
     &:active {
@@ -56,146 +57,6 @@ export const StyledArtistProfile = styled.div<{ theme: Theme }>`
       --bs-btn-active-border-color: ${({ theme }) =>
         theme.darkOrange} !important;
     }
-  }
-`;
-
-export const StyledListBox = styled.div<{ theme: Theme }>`
-  margin-right: 40px;
-  margin-bottom: 40px;
-  border: 5px solid ${({ theme }) => theme.orange};
-  background-color: white;
-  cursor: pointer;
-`;
-
-export const StyledVenueProfile = styled.div<{ theme: Theme }>`
-  /*idk*/
-  justify-items: left;
-  justify-content: left;
-  justify-self: left;
-  display: flex;
-  flex-direction: column;
-  color: ${({ theme }) => theme.redBrown};
-
-  .profile {
-    background-color: ${({ theme }) => theme.darkCream};
-    border-radius: 15px;
-  }
-
-  .btn-primary,
-  .btn-success {
-    background-color: ${({ theme }) => theme.darkCream};
-    border-color: ${({ theme }) => theme.darkCream};
-    color: ${({ theme }) => theme.brownText};
-    &:focus {
-      box-shadow: ${({ theme }) => theme.darkCream2};
-    }
-
-    &:disabled {
-      color: black !important;
-    }
-
-    &:hover {
-      background-color: ${({ theme }) => theme.darkCream2};
-      border-color: ${({ theme }) => theme.darkCream2} !important;
-    }
-
-    &:active {
-      background-color: ${({ theme }) => theme.darkCream};
-      border-color: ${({ theme }) => theme.darkCream};
-      --bs-btn-active-color: #fff;
-      --bs-btn-active-bg: ${({ theme }) => theme.darkCream2} !important;
-      --bs-btn-active-border-color: ${({ theme }) =>
-        theme.darkCream} !important;
-    }
-  }
-
-  .selected-page-state {
-    background-color: ${({ theme }) => theme.darkCream2} !important;
-    box-shadow: ${({ theme }) => theme.darkCream} !important;
-    border: 2px solid black !important;
-  }
-
-  .silly-row {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    min-width: min-content;
-    max-width: max-content;
-    vertical-align: middle;
-    flex-wrap: wrap;
-  }
-
-  .silly-row-start {
-    display: flex;
-    flex-direction: row;
-    justify-content: start;
-    min-width: min-content;
-    flex-wrap: wrap;
-  }
-
-  .silly-row-end {
-    display: flex;
-    flex-direction: row;
-    justify-content: end;
-    min-width: min-content;
-  }
-
-  .silly-row-sb {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    min-width: min-content;
-    vertical-align: middle;
-    flex-wrap: wrap;
-  }
-
-  .silly-row-sb-wrap {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    min-width: max-content;
-    vertical-align: middle;
-    flex-wrap: wrap;
-  }
-
-  .silly-row-se-wrap {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-evenly;
-    min-width: min-content;
-    vertical-align: middle;
-    flex-wrap: wrap;
-  }
-
-    .silly-row-se {
-        display: flex;
-        flex-direction: row;
-        justify-content: space-evenly;
-        min-width: min-content;
-        vertical-align: middle;
-    }
-
-  .silly-column-sb {
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    vertical-align: middle;
-  }
-
-  .silly-row-sb-nowrap {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    min-width: min-content;
-    vertical-align: middle;
-  }
-
-  .btn,
-  .btn-primary {
-    text-align: left;
-    background-color: ${({ theme }) => theme.darkCream};
-    color: black;
-    border-color: ${({ theme }) => theme.darkCream};
   }
 `;
 

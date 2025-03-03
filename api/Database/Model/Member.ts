@@ -8,6 +8,7 @@ class Member extends Model {
   declare createdAt: Date;
   declare updatedAt: Date;
   declare Roles: Role[];
+  declare Role: Role;
   declare Artists: Artist[];
 }
 

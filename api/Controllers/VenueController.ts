@@ -17,6 +17,7 @@ import { OpeningHour } from "../Database/Model/OpeningHour.ts";
 import { Artist } from "../Database/Model/Artist.ts";
 import { storage } from "../storage.ts";
 import {
+  deleteMedia,
   getModelWithPoster,
   getPoster,
   upsertMedia,
@@ -65,8 +66,10 @@ venueController.post("/bio/update", tokenMiddleware.verifyIsVenue, updateBio);
 venueController.post(
   "/media/upload",
   tokenMiddleware.verifyIsVenue,
+  storage.multiple("media[]"),
   uploadMedia,
 );
+
 venueController.post("/update", tokenMiddleware.verifyIsVenue, updateVenue);
 
 venueController.get("/", tokenMiddleware.verifyIsVenue, getVenue);
@@ -80,6 +83,29 @@ venueController.post(
   storage.single("poster"),
   updatePoster,
 );
+
+async function uploadMedia(c: Context) {
+  const files = c.var.files["media[]"];
+  const payload = c.get("tokenPayload");
+
+  const venue = await Venue.findByPk(payload.id, {
+    include: [Bio],
+  });
+
+  if (!venue) {
+    return c.json(NotFound());
+  }
+
+  for (const file of files) {
+    await upsertMedia(payload.id, venue.BioId, file);
+  }
+
+  const allMedia = await venue.Bio.getMedia();
+
+  await deleteMedia(files, allMedia, payload.id, venue.BioId);
+
+  return c.json(Ok());
+}
 
 async function getVenues(c: Context) {
   const venues = (await Venue.findAll({
@@ -190,7 +216,6 @@ async function updateEvent(c: Context) {
     start,
     end,
     bio,
-    //poster,
     //address,
     //city,
     //zip,
@@ -232,12 +257,6 @@ async function updateEvent(c: Context) {
 
   await pricing?.update({ ...newPricing });
   await bioRes?.update({ description: newBio.description });
-  /*if (newBio.media) {
-    await Media.destroy({ where: { BioId: bio?.id } });
-    for (const media of data.bio.media) {
-      await Media.create({ internal: false, href: media, BioId: bio?.id });
-    }
-  }*/
 
   //DISCLAIMER for below: Probably shit
   const a = await event.getArtists();
@@ -268,8 +287,10 @@ async function cancelEvent(c: Context) {
   const eventId = c.req.param("eventId");
   const event = await Event.findOne({ where: { id: eventId } });
 
-  if (!event) return c.text("found no event");
-  if (event.VenueId != payload.id) return c.text("does not own the event");
+  if (!event) return c.json(NotFound(null, "found no event"));
+  if (event.VenueId != payload.id) {
+    return c.json(Unauthorized("does not own the event"));
+  }
 
   const updatedEvent = await event.update({ cancelled: 1 });
   return c.json(Ok(updatedEvent));
@@ -322,7 +343,6 @@ async function updateBio(c: Context) {
   if (!venue) return c.json(NotFound());
   if (venue.BioId === null) {
     const bio = await Bio.create({ description: data.bio });
-    await updateMediaAndLinks(data, bio.id);
     await venue.update({ BioId: bio.id });
     return c.json(Ok(bio));
   } else {
@@ -333,7 +353,6 @@ async function updateBio(c: Context) {
     });
     if (bio === null) return c.json(NotFound());
     const updatedBio = await bio.update({ description: data.bio });
-    await updateMediaAndLinks(data, updatedBio.id);
     const reloadedBio = await updatedBio.reload({ include: [Media, Link] });
     return c.json(Ok(reloadedBio));
   }
@@ -356,11 +375,6 @@ async function updateMediaAndLinks<
       await Link.create({ url: link.url, BioId: bioId });
     }
   }
-}
-
-async function uploadMedia(c: Context) {
-  const media = await Media.create({ internal: false, href: "lmao" });
-  return c.json(Ok(media));
 }
 
 async function getVenue(c: Context) {

@@ -23,6 +23,7 @@ import { Review } from "../Database/Model/Review.ts";
 import { Post } from "../Database/Model/Post.ts";
 import { storage } from "../storage.ts";
 import {
+  deleteMedia,
   getModelWithPoster,
   getPoster,
   upsertMedia,
@@ -62,6 +63,7 @@ artistController.get(
 artistController.post(
   "/media/upload",
   tokenMiddleware.verifyIsBand,
+  storage.multiple("media[]"),
   uploadMedia,
 );
 
@@ -85,12 +87,15 @@ artistController.post("/search", searchArtists);
 
 artistController.get("/posts/:artistId", getPosts);
 
-artistController.get("/posts/update/:postId", getPost);
-
 artistController.post(
-  "/posts/:artistId/:postId",
+  "/posts/update/:postId",
   tokenMiddleware.verifyIsBand,
   updatePost,
+);
+
+artistController.get(
+  "/posts/:artistId/:postId",
+  getPost,
 );
 
 async function getPosts(c: Context) {
@@ -109,7 +114,6 @@ async function getPosts(c: Context) {
 async function getPost(c: Context) {
   const artistId = c.req.param("artistId");
   const postId = c.req.param("postId");
-
   const post = await Post.findOne({
     where: {
       id: postId,
@@ -287,14 +291,38 @@ async function rateVenue(c: Context) {
 
 async function getEventAndStatistics(c: Context) {}
 
-async function uploadMedia(c: Context) {}
+async function uploadMedia(c: Context) {
+  const files = c.var.files["media[]"];
+  const payload = c.get("tokenPayload");
+
+  const artist = await Artist.findByPk(payload.id, {
+    include: [Bio],
+  });
+
+  if (!artist) {
+    return c.json(NotFound());
+  }
+
+  for (const file of files) {
+    await upsertMedia(payload.id, artist.BioId, file);
+  }
+
+  const allMedia = await artist.Bio.getMedia();
+
+  await deleteMedia(files, allMedia, payload.id, artist.BioId);
+
+  return c.json(Ok());
+}
 
 async function registerForEvent(c: Context) {}
 
 async function getArtistProfile(c: Context) {
   const pk = c.req.param("artistId");
   const artist = await Artist.findByPk(pk, {
-    include: [includeEvent(), includeBio(), Member],
+    include: [includeEvent(), includeBio(), Member, {
+      model: Post,
+      include: [includeBio()],
+    }],
     attributes: {
       exclude: ["password", "createdAt", "updatedAt"],
     },

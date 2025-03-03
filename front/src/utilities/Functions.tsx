@@ -25,8 +25,6 @@ import {
   Row,
 } from "react-bootstrap";
 import { styled } from "styled-components";
-
-import {} from "react-bootstrap";
 import {
   handleStateType,
   keyIsExcluded,
@@ -34,12 +32,11 @@ import {
   RequiredFieldContext,
   ValidatedContext,
   type ObjectWithKeys,
-  type UnderwaveEnumeration, StateHandler, Filter,
+  type UnderwaveEnumeration, StateHandler,
 } from "./Types.tsx";
 import { type DefaultAction } from "./Reducer.ts";
 import type { NavigateFunction } from "react-router-dom";
-import { checkToken, logout } from "../api/auth.ts";
-import { getRequest } from "../api/APITemplate.ts";
+import { logout } from "../api/auth.ts";
 import {Theme} from "../theme.ts";
 
 export function ToCurrencySymbol(currency: string) {
@@ -48,26 +45,6 @@ export function ToCurrencySymbol(currency: string) {
       return "€";
     default:
       return "€";
-  }
-}
-
-export function PricingTypeToString(type: number | string) {
-  //"0: Cash, 1: Wallet, 2: Card",
-  switch (type) {
-    case 0:
-      return "Cash";
-    case 1:
-      return "Wallet";
-    case 2:
-      return "Card";
-    case "0":
-      return "Cash";
-    case "1":
-      return "Wallet";
-    case "2":
-      return "Card";
-    default:
-      throw new Error("Unknown type " + type);
   }
 }
 
@@ -81,6 +58,7 @@ export function ExtractHoursMinutes(date: Date) {
 /**
  * Get the payment method labels for a given value.
  * @param {number} value - The value to check (from 1 to 7).
+ * @param bitmask
  * @returns {string[]} - The labels of the matched payment methods.
  */
 export function resolveBitmask(
@@ -95,33 +73,30 @@ export function resolveBitmask(
 }
 
 export const StyledUnderwaveField = styled.div`
-  .invalid {
-    border: 1px solid #ff0000;
-  }
-
-  .rounded-corners {
-    border-bottom-left-radius: 6px !important;
-    border-bottom-right-radius: 6px !important;
-    border-top-left-radius: 6px !important;
-    border-top-right-radius: 6px !important;
-  }
-
-  .field {
-    background-color: ${({ theme }) => theme.semiLightCream};
-
-    color: ${({ theme }) => theme.brownText};
-
-    &:disabled {
-      border-color: ${({ theme }) => theme.darkCream};
-      color: grey;
+    .invalid {
+        border: 1px solid #ff0000;
     }
 
-    border-color: ${({ theme }) => theme.redBrown};
-  }
+    .rounded-corners {
+        border-radius: 6px;
+    }
 
-  .underwave-toggle {
-    border-color: ${({ theme }) => theme.redBrown} !important;
-  }
+    .field {
+        background-color: ${({ theme }) => theme.semiLightCream};
+
+        color: ${({ theme }) => theme.brownText};
+
+        &:disabled {
+            border-color: ${({ theme }) => theme.darkCream};
+            color: grey;
+        }
+
+        border-color: ${({ theme }) => theme.redBrown};
+    }
+
+    .underwave-toggle {
+        border-color: ${({ theme }) => theme.redBrown} !important;
+    }
 `;
 export const StyledHeaderField = styled.div<{
   color: string;
@@ -372,23 +347,6 @@ export function DynamicListForm<T extends ObjectWithKeys>({
   );
 }
 
-/**
- * Creates a list with one empty element represented as a {@link FormControl} component.
- *
- * The list will automatically be populated and extended if the last item in the array is filled in and properly formatted. The 'Enter' key and '+' button function in a similar manner.
- *
- * The fields in the array will never be listed as `invalid` since the array is only populated if a properly formatted value is present in the field.
- *
- * @param array The in which values are to be saved
- * @param setArray Its corresponding {@link React.SetStateAction<T>}
- * @param pattern The RegExp pattern to be used for validating field input
- * @param header {@link UnderwaveHeaderProps}
- * @param notes {@link UnderwaveHeaderProps}
- * @param required {@link UnderwaveHeaderProps}
- * @param as {@link UnderwaveHeaderProps}
- * @returns
- */
-
 export function UnderwaveHeader({
   header,
   notes,
@@ -587,7 +545,7 @@ function StateDropdownField<
   disabled,
 }: StateDropdownFieldProps<TState, TDropdownValues>) {
   const context = useContext(RequiredFieldContext);
-  const vContext = useContext(ValidatedContext);
+  const _vContext = useContext(ValidatedContext);
 
   return (
     <StyledUnderwaveField>
@@ -662,7 +620,7 @@ function StateRadioButtonField<
     type
 }: EnumeratedField<TState, TDropdownValues>) {
   const context = useContext(RequiredFieldContext);
-  const vContext = useContext(ValidatedContext);
+  const _vContext = useContext(ValidatedContext);
 
   function handleStateType(newState: string | number): TState {
     if (Number(newState) >= 0) {
@@ -904,41 +862,6 @@ export function useStateArrayFactory<T extends ObjectWithKeys>(
   return { arrStates, add, update, remove, reset };
 }
 
-export function compareArrays<T extends ObjectWithKeys>(
-  original: T[],
-  updated: T[],
-) {
-  const added: T[] = [];
-  const removed: T[] = [];
-  const modified: T[] = [];
-  added.push(
-    ...updated.filter(
-      (currItem) =>
-        !original.some((prevItem) => prevItem.name === currItem.name), // Compare by name or other unique identifier
-    ),
-  );
-
-  // Find removed objects
-  removed.push(
-    ...original.filter(
-      (prevItem) =>
-        !updated.some((currItem) => currItem.name === prevItem.name), // Compare by name or other unique identifier
-    ),
-  );
-
-  // Find modified objects
-  modified.push(
-    ...updated.filter((currItem) =>
-      original.some(
-        (prevItem) =>
-          prevItem.name === currItem.name && prevItem.role !== currItem.role, // Compare properties
-      ),
-    ),
-  );
-
-  return { added, removed, modified };
-}
-
 export function cfl(val) {
   return String(val).charAt(0).toUpperCase() + String(val).slice(1);
 }
@@ -1023,13 +946,6 @@ function TextArea<TState extends {}>(
   );
 }
 
-async function handleLogout(navigate: NavigateFunction) {
-  const ret = await logout();
-  if (ret.isSuccess()) {
-    navigate("/home");
-  }
-}
-
 export function convertToDateTimeLocalString(date: Date){
   const year = date.getFullYear();
   const month = (date.getMonth() + 1).toString().padStart(2, "0");
@@ -1078,11 +994,17 @@ export function debounceApiCall(
     if (timeout) clearTimeout(timeout);
     timeout = setTimeout(later, wait);
   };
-};
+}
+
+export function parseTextWithPossibleLineBreaks(text: string) {
+  return text.split("\n").map((a, idx) => {
+      return <p key={idx}>{a}</p>;
+    })
+}
 
 export const Toggle = StateToggleButtonField;
 export const Radio = StateRadioButtonField;
 export const Control = DefaultStandaloneField;
 export const Select = StateDropdownField;
 export const Check = StateCheckField;
-export { TextArea, handleLogout };
+export { TextArea };

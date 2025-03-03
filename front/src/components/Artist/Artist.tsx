@@ -1,6 +1,6 @@
 ﻿// @deno-types="npm:@types/react"
 import { useMemo, useState } from "react";
-import { postFileRequest, postRequest } from "../../api/APITemplate.ts";
+import { getImage, postFileRequest, postRequest } from "../../api/APITemplate.ts";
 import { Button } from "react-bootstrap";
 import { LiaEnvelope, LiaPencilAltSolid, LiaTrashAltSolid } from "react-icons/lia";
 import type { Artist } from "../../../../api/Database/Model/Artist.ts";
@@ -9,7 +9,7 @@ import Grid from "../Misc/Grid.tsx";
 import { Control, DynamicListForm, TextArea, UnderwaveHeader } from "../../utilities/Functions.tsx";
 import { EditableProfileHeaders, EditableProfileMenu } from "../Misc/EditableProfileBase.tsx";
 //@ts-ignore bah
-import cd from "../../resources/Images-Assets/cd+cover.png";
+
 import { useImageDimensions } from "../../Hooks.ts";
 import { Theme } from "../../theme.ts";
 import { FlexCol, ListWrapper, Row } from "../Misc/CustomStyles.tsx";
@@ -22,11 +22,10 @@ import { toast } from "react-toastify";
 import Event from "../../../../api/Database/Model/Event.ts";
 import ReactImageUploading, { ImageListType } from "react-images-uploading";
 import { ExportInterface } from "react-images-uploading/dist/typings.d.ts";
-import { ObservableListItem } from "../Misc/ObservableListItem.tsx";
-import { artistFollowing } from "../../store.ts";
-import { followArtist, unfollowArtist } from "../../api/Common.ts";
 import { VenueEvent } from "../Venue/Venue.tsx";
 import { Posts } from "../Misc/Posts.tsx";
+import { SingleImage } from "../Misc/CreatePost.tsx";
+import { ProfileImages } from "../Misc/ProfileImages.tsx";
 
 declare type ArtistProfileProps = {
   value: Artist;
@@ -43,7 +42,7 @@ export function ArtistProfile({value, subState, updateSubState, setPageState, pa
       narrowColumnIndex={0}
       wideColumnIndex={1}
     >
-      <EditableProfileMenu pageState={pageState} setPageState={setPageState} updateSubState={updateSubState} />
+      <EditableProfileMenu pageState={pageState} setPageState={setPageState} updateSubState={updateSubState} states={"artist"} />
       <div style={{ borderLeft: "1px solid black", paddingLeft: "50px" }}>
         {pageState === "profile" ? (
           <ArtistViewProfile
@@ -75,10 +74,17 @@ function ArtistViewProfile({ artist, subState, updateSubState }: { artist: Artis
   const [members, setMembers] = useState(artist.Members);
   const [genre, setGenre] = useState(artist.genre);
   const [poster, setPoster] = useState<ImageListType>([{ data_url: artist.poster }])
-  const [images, setImages] = useState<Media[]>(artist.Bio?.Media ? artist.Bio.Media :[]);
+  const [images, setImages] = useState<ImageListType>(
+    artist.Bio?.Media ?
+    artist.Bio.Media.map(a => {
+      return { data_url: getImage(a.href), internalised: true }
+    }) :
+    []
+  );
   const [links, setLinks] = useState<Link[]>(artist.Bio?.Links ? artist.Bio.Links : []);
 
   async function submit() {
+    console.log(images);
     const data = {
       name: name,
       email: email,
@@ -93,6 +99,14 @@ function ArtistViewProfile({ artist, subState, updateSubState }: { artist: Artis
 
     if(poster[0].file) {
       const posterRes = await postFileRequest("/artist/bio/update/poster", { poster: poster[0].file });
+      if(posterRes.isSuccess()) {
+        toast.success("Picture updated")
+      }
+    }
+
+    if(images.length > 0) {
+      const imgs = images.map((image) => image.internalised ? image.data_url : image.file);
+      const imagesRes = await postFileRequest(`/artist/media/upload`, { media: imgs });
     }
 
     if(res.isSuccess()) {
@@ -114,10 +128,14 @@ function ArtistViewProfile({ artist, subState, updateSubState }: { artist: Artis
 
   const edit = useMemo(() => subState === "edit", [subState]);
 
-  const onChange = (imageList: ImageListType, addUpdateIndex: number) => {
+  const onChange = (imageList: ImageListType, _addUpdateIndex: number) => {
     // data for submit
     setPoster(imageList);
   };
+
+  const onImagesChange = (imageList: ImageListType) => {
+    setImages(imageList);
+  }
 
   return (
     <>
@@ -187,6 +205,7 @@ function ArtistViewProfile({ artist, subState, updateSubState }: { artist: Artis
                 as="h3"
                 color={t.redBrown}
                 pattern={/.+/}
+                //@ts-ignore bah
                 setArray={setMembers}
                 template={{ name: "", role: "" }}
                 disabled={!edit}
@@ -203,6 +222,7 @@ function ArtistViewProfile({ artist, subState, updateSubState }: { artist: Artis
                 as="h3"
                 color={t.redBrown}
                 array={links}
+                //@ts-ignore bah
                 setArray={setLinks}
                 pattern={urlPattern}
                 template={{ url: "" }}
@@ -244,13 +264,8 @@ function ArtistViewProfile({ artist, subState, updateSubState }: { artist: Artis
               </Row>
             </div>
             <UnderwaveHeader header="Images" as="h3" color={t.redBrown} disabled={!edit} />
-            <div style={{display: "flex", justifyContent: "left"}}>
-            <div style={{overflowX: "auto", width:"30vw", display: "inline-block", whiteSpace:"nowrap"}}  className="mt-3">
-              {[0,1,2,3,4,5,6,7].map((i) => {
-                return <ArtistImage image={{href: cd}} key={i}/>
-              })}
-            </div>
-            </div>
+              {/*@ts-ignore bah*/}
+              <ProfileImages edit={edit} images={images} onImagesChange={onImagesChange} />
           </FlexCol>
         </Grid>
       </div>
@@ -258,14 +273,14 @@ function ArtistViewProfile({ artist, subState, updateSubState }: { artist: Artis
   )
 }
 
-function ArtistImage({image}:{image: Partial<Media>}) {
-  return <img className="p-3" src={image.href} alt={"Image"} style={{width: "140px", height: "140px"}}/>
+export function ArtistImage({image}:{image: Partial<Media>}) {
+  return <a target="_blank" href={image.href}><img className="p-3" src={image.href} alt={"Image"} style={{width: "140px", height: "140px"}}/></a>
 }
 
-function ArtistEvents({ artist, subState, updateSubState }: { artist: Artist, subState: SubState, updateSubState: (subState: SubState, refetch?: boolean) => void }) {
-  const [pastEvents, setpastEvents] = useState<Event[]>(artist.Events.filter(a => new Date(a.end) < new Date()));
-  const [upcomingEvents, setupcomingEvents] = useState<Event[]>(() => artist.Events.filter(a => new Date(a.start) > new Date()));
-  const [currentEvent, setCurrentEvent] = useState<Event>();
+function ArtistEvents({ artist, updateSubState }: { artist: Artist, subState: SubState, updateSubState: (subState: SubState, refetch?: boolean) => void }) {
+  const [pastEvents, _setpastEvents] = useState<Event[]>(artist.Events.filter(a => new Date(a.end) < new Date()));
+  const [upcomingEvents, _setupcomingEvents] = useState<Event[]>(() => artist.Events.filter(a => new Date(a.start) > new Date()));
+  const [_currentEvent, setCurrentEvent] = useState<Event>();
   const t = useMemo(() => new Theme(), []);
 
   return (

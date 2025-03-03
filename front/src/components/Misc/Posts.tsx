@@ -2,17 +2,17 @@
 import { CreatePost } from "./CreatePost.tsx";
 import { EditButton } from "../User/StyledProfile.tsx";
 import { Button } from "react-bootstrap"
-import { ImageListType, ImageType } from "npm:react-images-uploading@3.1.7";
-import { getImage, getRequest, postFileRequest, postRequest } from "../../api/APITemplate.ts";
+import { ImageListType } from "npm:react-images-uploading@3.1.7";
+import { getImage, postFileRequest, postRequest } from "../../api/APITemplate.ts";
 import { Post } from "../../../../api/Database/Model/Post.ts";
 import { toast } from "react-toastify";
-import { useState, useEffect, useMemo } from "react";
+//@deno-types="npm:@types/react"
+import { useState, useEffect, useMemo, useContext } from "react";
 import { user } from "../../store.ts";
 import { useAtom } from "jotai";
 import { useAuth, useImageDimensions, useRequest } from "../../Hooks.ts";
 import { FlexCol, ListWrapper, StyledListBox } from "./CustomStyles.tsx";
 import { useNavigate,useSearchParams } from "react-router-dom";
-
 import {
   GoUpload
 } from "react-icons/go"
@@ -20,9 +20,12 @@ import {
   LiaPencilAltSolid,
   LiaTrashAltSolid,
 } from "react-icons/lia"
+//@ts-ignore bah
 import cd from "../../resources/Images-Assets/cd+cover.png";
 import Grid from "./Grid.tsx";
 import { Loading } from "../../utilities/Loading.tsx";
+import { parseTextWithPossibleLineBreaks } from "../../utilities/Functions.tsx";
+import { ThemeContext } from "styled-components";
 
 type PostsProps = {
   subState: SubState;
@@ -52,7 +55,7 @@ function Posts({subState, updateSubState}: PostsProps) {
 
   const [u] = useAtom(user);
 
-  const posts = useRequest<Post[]>(`/artist/posts/${u.id}`);
+  const posts = useRequest<Post[]>(`/artist/posts/${u!.id}`, !u);
 
   if(posts.isError) {
     return <div></div>
@@ -75,7 +78,7 @@ function Posts({subState, updateSubState}: PostsProps) {
 
     if(images.length > 0 && res.isSuccess()) {
       const imgs = images.map((image) => image.file);
-      const imagesRes = await postFileRequest(`/artist/posts/${res.response.id}/images`, { media: imgs, time: new Date().getTime() });
+      const imagesRes = await postFileRequest(`/artist/posts/${res.response.id}/images`, { media: imgs });
       if(imagesRes.isSuccess()) {
         toast("Successfully Added!");
         updateSubState("view", true);
@@ -120,7 +123,7 @@ function Posts({subState, updateSubState}: PostsProps) {
             <div className="row-wrap-start m-3">
             {posts.response.map((post, idx) => (
               <div style={{margin: "2%"}} key={idx}>
-                <ListPost post={post} setCurrentPost={setCurrentPost} updateSubState={updateSubState} />
+                <ListPost post={post} setCurrentPost={setCurrentPost} updateSubState={updateSubState} subState={subState} />
               </div>
             ))}
             </div>
@@ -145,12 +148,42 @@ function Posts({subState, updateSubState}: PostsProps) {
 }
 
 type ListPostProps = {
-  setCurrentPost: StateHandler<Post>
+  setCurrentPost?: StateHandler<Post | undefined>
 } & PostPageProps
-  & PostsProps
+  & (PostsProps | undefined)
 
 type PostPageProps = {
   post: Post
+}
+
+function ViewableListPost({ post }: PostPageProps): JSX.Element {
+  const { dimensions, handleImageLoad } = useImageDimensions(globalThis.innerHeight / 6);
+  const p = useMemo(() => dimensions.width * 0.12, [dimensions]);
+  const postPath = useMemo(() => post.ArtistId ?
+    `/artists/public/posts?artistId=${post.ArtistId}&postId=${post.id}` :
+    `/venues/public/posts?venueId=${post.ArtistId}&postId=${post.id}`, [post]);
+  const navigate = useNavigate();
+  const theme = useContext(ThemeContext);
+  if(!theme) throw new Error("No theme");
+  return (
+    <StyledListBox
+      backgroundcolor={theme.brownBackground}
+      minwidth={`${dimensions.width}px`}
+      padding={String(p)}
+    >
+      <div className="silly-column-sb" style={{ marginTop: "5%" }} >
+        <div onClick={() => navigate(postPath)} style={{cursor: "pointer"}}>
+          <PostImage name={post.name} href={post.Bio.Media[0]?.href} handleImageLoad={handleImageLoad} dimensions={dimensions} showName={!!post.name} />
+        </div>
+        <div
+          className="description mt-3 mb-3"
+          style={{ maxWidth: `${dimensions.width}px`, color: theme.cream }}
+        >
+          {parseTextWithPossibleLineBreaks(post.text)}
+        </div>
+      </div>
+    </StyledListBox>
+  )
 }
 
 function ListPost({ post, subState, updateSubState, setCurrentPost }: ListPostProps) {
@@ -173,6 +206,7 @@ function ListPost({ post, subState, updateSubState, setCurrentPost }: ListPostPr
         ): null }
         <Button
           onClick={() => {
+            if(!setCurrentPost) return;
             setCurrentPost(post);
             updateSubState("edit");
           }}
@@ -198,7 +232,7 @@ function ListPost({ post, subState, updateSubState, setCurrentPost }: ListPostPr
   )
 }
 
-function PostImage({href, handleImageLoad, dimensions, name, showName}: { href: string }) {
+function PostImage({href, handleImageLoad, dimensions, name, showName}: { href: string, handleImageLoad: any, dimensions: any, name?: string, showName?: boolean }) {
 
   return (
     <div className="picture">
@@ -210,6 +244,7 @@ function PostImage({href, handleImageLoad, dimensions, name, showName}: { href: 
          borderRadius: "10px",
          width: `${dimensions.width}px`,
          height: `${dimensions.height}px`,
+          maxWidth: "100%"
         }}
         onError={({ currentTarget }) => {
           currentTarget.onerror = null; // prevents looping
@@ -221,7 +256,7 @@ function PostImage({href, handleImageLoad, dimensions, name, showName}: { href: 
   )
 }
 
-function PostPageImage({href, name, showName}) {
+function PostPageImage({href, name, showName}: {href: string, name?: string, showName?: boolean}) {
   const { dimensions, handleImageLoad } = useImageDimensions(globalThis.innerHeight / 4);
   return (
     <div className="picture">
@@ -247,28 +282,36 @@ function PostPageImage({href, name, showName}) {
 function PostPage() {
   useAuth(-1);
   const [sp] = useSearchParams();
-  const post = useRequest<Post>(`artist/posts/${sp.get("artistId")}/${sp.get("postId")}`);
+  const { response, isError, isLoading } = useRequest<Post>(`artist/posts/${sp.get("artistId")}/${sp.get("postId")}`);
 
-  if (!post.response) return <div>Error</div>;
-
-  if (post.isLoading) return <Loading />;
-
-  if (post.isError)
-    return <div style={{ marginTop: "60px" }}>{post.isError}</div>;
   return (
-    <Grid header={post.response.name ? post.response.name : "Post"}>
-      <FlexCol>
-        {post.response.text}
-      </FlexCol>
-      <FlexCol>
-        {post.response.Bio.Media.map((m, idx) =>
-          <div style={{margin: "2%"}}>
-            <PostPageImage href={m.href} key={idx} />
-          </div>
-        )}
-      </FlexCol>
-    </Grid>
+    <>
+    {isError ? (
+          <div style={{ position: "absolute", top:"45vh" }}>{isError}</div>
+        )
+        : isLoading ? (
+          <Loading />
+          )
+          : (!response) ? (
+            <div style={{ position: "absolute", top:"45vh", left:"50vh" }}>Error</div>
+          ) : (
+            <Grid header={response.name ? response.name : "Post"}>
+              <FlexCol>
+                {response.text}
+              </FlexCol>
+              <FlexCol>
+                {response.Bio.Media.map((m, idx) =>
+                  <div style={{margin: "2%"}}>
+                    <PostPageImage href={m.href} key={idx} />
+                  </div>
+                )}
+              </FlexCol>
+            </Grid>
+          )
+    }
+
+    </>
   )
 }
 
-export { Posts, PostPage };
+export { Posts, PostPage, ListPost, ViewableListPost };

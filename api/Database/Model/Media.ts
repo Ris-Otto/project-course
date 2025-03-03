@@ -49,6 +49,10 @@ Media.init(
         unique: true,
         fields: ["BioId", "media_id"],
       },
+      {
+        unique: true,
+        fields: ["BioId", "href"],
+      },
     ],
   },
 );

@@ -1,4 +1,10 @@
-﻿import {PageState, PageStates, StateHandler, SubState} from "../../utilities/Types.tsx";
+﻿import {
+    PageState,
+    PageStates,
+    StateHandler,
+    SubState,
+    VenuePageStates, ArtistPageStates,
+} from "../../utilities/Types.tsx";
 import { useAuth, useRequest } from "../../Hooks.ts";
 import {Loading} from "../../utilities/Loading.tsx";
 //deno-types="npm:@types/react;
@@ -9,6 +15,7 @@ import {Button} from "react-bootstrap";
 import {EditButton} from "../User/StyledProfile.tsx";
 import { LiaPencilAltSolid, LiaSave } from "react-icons/lia";
 import {StyledEditableProfile} from "./CustomStyles.tsx";
+import { useLocation } from "react-router-dom";
 
 
 export declare type EditableProfileBaseProps = {
@@ -18,18 +25,13 @@ export declare type EditableProfileBaseProps = {
 }
 
 function EditableProfileBase<T>({accessType, requestPath, Profile}: EditableProfileBaseProps) {
-    const [pageState, setPageState] = useState<PageState>("profile");
-    const [subState, setSubState] = useState<SubState>("view");
+    const loc = useLocation();
+    const [pageState, setPageState] = useState<PageState>(() => loc.state?.pageState ? loc.state.pageState : "profile");
+    const [subState, setSubState] = useState<SubState>(loc.state?.subState ? loc.state.subState : "view");
     useAuth(accessType);
 
     const request = useRequest<T>(requestPath);
 
-    useEffect(() => {
-        return () => {
-            setSubState("view");
-            setPageState("profile");
-        };
-    }, []);
     if (!request.response) return <div>Error</div>;
 
     if (request.isLoading) return <Loading />;
@@ -45,20 +47,35 @@ function EditableProfileBase<T>({accessType, requestPath, Profile}: EditableProf
     }
 
     return (
-        <StyledEditableProfile >
+        <StyledEditableProfile>
+            {request.isError ? (
+                <div style={{ position: "absolute", top:"45vh" }}>{request.isError}</div>
+              )
+              : request.isLoading ? (
+                  <Loading />
+                )
+                : (!request.response) ? (
+                  <div style={{ position: "absolute", top:"45vh", left:"50vh" }}>Error</div>
+                ) : (
             <Profile
                 value={request.response}
                 subState={subState}
                 updateSubState={updateSubState}
                 pageState={pageState}
-                setPageState={setPageState} />
+                setPageState={setPageState} />)}
         </StyledEditableProfile>
     )
 }
 
-declare type EditableProfileMenuProps = { pageState: PageState, setPageState: StateHandler<PageState>, updateSubState: (subState: SubState, refetch?: boolean) => void }
+declare type EditableProfileMenuProps = {
+    pageState: PageState,
+    setPageState: StateHandler<PageState>,
+    updateSubState: (subState: SubState, refetch?: boolean) => void;
+    states: "artist" | "venue";
+}
 
-function EditableProfileMenu({pageState, setPageState, updateSubState}: EditableProfileMenuProps) {
+function EditableProfileMenu({pageState, setPageState, updateSubState, states}: EditableProfileMenuProps) {
+    const pageStates = useMemo(() => states === "venue" ? VenuePageStates : ArtistPageStates, [states]);
     return (
         <div
             style={{
@@ -69,7 +86,7 @@ function EditableProfileMenu({pageState, setPageState, updateSubState}: Editable
                 maxWidth: "max-content",
             }}
         >
-            {PageStates.map((s, i) => {
+            {pageStates.map((s, i) => {
                 return (
                     <Button
                         key={i}

@@ -36,6 +36,9 @@ export async function upsertMedia(
   file: any,
   poster?: boolean,
 ) {
+  if (typeof file === "string") {
+    return;
+  }
   const [name, extension] = file.name.split(".");
   await Media.upsert({
     BioId: bioId,
@@ -43,4 +46,37 @@ export async function upsertMedia(
     href: `${name}-${id}.${extension}`,
     poster: poster ? poster : null,
   });
+}
+
+export async function deleteMedia(
+  files: any[],
+  media: Media[],
+  id: string,
+  bioId: number,
+) {
+  for (const m of media) {
+    if (m.poster) continue;
+    let remove = true;
+    for (const file of files) {
+      let fullName = "";
+      if (typeof file === "string") {
+        const temp = file.split("/");
+        fullName = temp[temp.length - 1];
+      } else {
+        const [name, extension] = file.name.split(".");
+        fullName = `${name}-${id}.${extension}`;
+      }
+      if (fullName === m.href) {
+        remove = false;
+      }
+    }
+    if (remove) {
+      await Media.destroy({
+        where: {
+          href: m.href,
+          bioId: bioId,
+        },
+      });
+    }
+  }
 }
