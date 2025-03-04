@@ -1,21 +1,20 @@
 ﻿import {
     PageState,
-    PageStates,
     StateHandler,
     SubState,
     VenuePageStates, ArtistPageStates,
 } from "../../utilities/Types.tsx";
 import { useAuth, useRequest } from "../../Hooks.ts";
-import {Loading} from "../../utilities/Loading.tsx";
+import { Loading } from "../../utilities/Loading.tsx";
 //deno-types="npm:@types/react;
-import React, {useEffect, useState, useMemo} from "react";
+import React, { useState, useMemo } from "react";
 import {cfl} from "../../utilities/Functions.tsx";
 import {logout} from "../../api/auth.ts";
 import {Button} from "react-bootstrap";
 import {EditButton} from "../User/StyledProfile.tsx";
 import { LiaPencilAltSolid, LiaSave } from "react-icons/lia";
 import {StyledEditableProfile} from "./CustomStyles.tsx";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 
 export declare type EditableProfileBaseProps = {
@@ -76,6 +75,7 @@ declare type EditableProfileMenuProps = {
 
 function EditableProfileMenu({pageState, setPageState, updateSubState, states}: EditableProfileMenuProps) {
     const pageStates = useMemo(() => states === "venue" ? VenuePageStates : ArtistPageStates, [states]);
+    const navigate = useNavigate();
     return (
         <div
             style={{
@@ -103,7 +103,12 @@ function EditableProfileMenu({pageState, setPageState, updateSubState, states}: 
                     </Button>
                 );
             })}
-            <Button style={{ marginTop: "10vh" }} onClick={() => logout()}>
+            <Button style={{ marginTop: "10vh" }} onClick={async () => {
+                const lo = await logout();
+                if(lo.isSuccess()) {
+                    navigate("/")
+                }
+            }}>
                 Sign out
             </Button>
         </div>
@@ -134,8 +139,8 @@ function EditableProfileHeaders({reset, submit, subState, updateSubState}: Edita
                         </EditButton>
                         <EditButton
                             onClick={async () => {
-                                await submit();
-                                updateSubState("view", true);
+                                const submitted = await submit();
+                                updateSubState("view", submitted !== undefined ? submitted : true);
                             }}
                         >
                             Save

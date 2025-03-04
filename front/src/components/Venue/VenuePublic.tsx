@@ -40,6 +40,15 @@ function MapComponent() {
   return null;
 }
 
+function MapPlaceholder() {
+  return (
+    <p>
+      Map{' '}
+      <noscript>You need to enable JavaScript to see this map.</noscript>
+    </p>
+  )
+}
+
 function MapWithPlaceholder({center}: { center?: [number, number]}) {
 
   return (
@@ -49,6 +58,7 @@ function MapWithPlaceholder({center}: { center?: [number, number]}) {
       zoom={15}
       scrollWheelZoom={false}
       style={{zIndex: 1}}
+      placeholder={<MapPlaceholder />}
     >
       <TileLayer
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -173,7 +183,7 @@ function VenueMiddle(props: VenueProps) {
   return (
     <>
       {results ? (
-      <MapWithPlaceholder center={[results[0].y, results[0].x]} />
+      <MapWithPlaceholder center={results[0] ? [results[0].y, results[0].x] : [60.45, 22.27]} />
       ): null}
       <br/>
       <FlexCol

@@ -83,7 +83,7 @@ export const StyledUnderwaveField = styled.div`
 
     .field {
         background-color: ${({ theme }) => theme.semiLightCream};
-        max-width: min-content;
+        width: max-content;
         color: ${({ theme }) => theme.brownText};
 
         &:disabled {
@@ -841,7 +841,6 @@ export function useStateArrayFactory<T extends ObjectWithKeys>(
 
   function add (obj: T) {
     setArrStates((prev) => {
-      console.log([...prev, obj])
       return [...prev, obj]
     });
   }

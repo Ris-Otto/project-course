@@ -380,6 +380,12 @@ function handleInitializeHours(venue: Venue) {
   }
 }
 
+const objectsEqual = (o1, o2) =>
+  typeof o1 === 'object' && Object.keys(o1).length > 0
+    ? Object.keys(o1).length === Object.keys(o2).length
+    && Object.keys(o1).every(p => objectsEqual(o1[p], o2[p]))
+    : o1 === o2;
+
 export function VenueViewProfile({
   venue,
     subState,
@@ -452,28 +458,75 @@ export function VenueViewProfile({
     setPoster([{ data_url: venue.poster }]);
   }
 
+  function checkVenue() {
+    let update = false;
+    if(name !== venue.name) {
+      update = true;
+    }
+    if(addr !== venue.address) {
+      update = true;
+    }
+
+    if(zip !== venue.zip){
+      update = true;
+    }
+    if(city !== venue.city) {
+      update = true;
+    }
+    if(!objectsEqual(hrs, handleInitializeHours(venue))) {
+      update = true;
+    }
+
+    if(phone !== venue.phone) {
+      update = true;
+    }
+
+    return update;
+  }
+
+  function checkBio() {
+    let update = false;
+    if(bio !== venue.Bio?.description) {
+      update = true;
+    }
+    const venueLinks = venue.Bio?.Links;
+    if(!venueLinks && links.length > 0) return true;
+
+    for (let i = 0; i < links.length; i++) {
+      if(venueLinks.find(l => l.url !== links[i].url)) {
+        update = true;
+        break;
+      }
+    }
+
+    return update;
+  }
+
   const { dimensions, handleImageLoad } = useImageDimensions();
   async function submit() {
-    //Submit venue-specific details
-    // name, addr, zip, city, hrs, phone
-    const venueUpdate = await postRequest<Venue>(paths.venue.update, { name, addr, zip, city, hrs, phone });
+    let updated = false;
+    if(checkVenue()) {
+      const venueUpdate = await postRequest<Venue>(paths.venue.update, { name, addr, zip, city, hrs, phone });
+      if(venueUpdate.isSuccess()) {
+        toast.success("Venue details updated");
+      } else {
+        toast.error("Failed to update venue details", { autoClose: false })
+      }
+      updated = true;
+    }
+
     //Submit bio-specific details
     // media, links, description
-    const media = images.filter(a => a.data_url.length > 0)
-    const urls = links.filter(a => a.url.length > 0)
-    const bioUpdate = await postRequest<Bio>(paths.venue.bio.update, { media, urls, bio, links });
-
-    if(venueUpdate.isSuccess()) {
-      toast.success("Venue details updated")
-    } else {
-      toast.error("Failed to update venue details", { autoClose: false })
+    if(checkBio()) {
+      const bioUpdate = await postRequest<Bio>(paths.venue.bio.update, { bio, links });
+      if(bioUpdate.isSuccess()) {
+        toast.success("Bio details updated")
+      } else {
+        toast.error("Failed to update bio details", { autoClose: false })
+      }
+      updated = true;
     }
 
-    if(bioUpdate.isSuccess()) {
-      toast.success("Bio details updated")
-    } else {
-      toast.error("Failed to update bio details", { autoClose: false })
-    }
     //check if poster file has been updated
     if(poster[0].file) {
       const posterUpdate = await postFileRequest("/venue/bio/update/poster", { poster: poster[0].file });
@@ -482,17 +535,24 @@ export function VenueViewProfile({
       } else {
         toast.error("Failed to update poster", { autoClose: false })
       }
+      updated = true;
     }
 
     if(images.length > 0) {
+      const imagesWillBeUpdated = images.find(image => !image.internalised);
       const imgs = images.map((image) => image.internalised ? image.data_url : image.file);
       const imagesRes = await postFileRequest(`/venue/media/upload`, { media: imgs });
+      if(!imagesWillBeUpdated) return updated;
       if(imagesRes.isSuccess()) {
         toast.success("Images updated")
       } else {
         toast.error("Failed to update images", { autoClose: false })
       }
+      updated = true;
     }
+
+    console.log(updated);
+    return updated;
   }
 
   function onImagesChange(imageList: ImageListType) {
@@ -510,6 +570,12 @@ export function VenueViewProfile({
       updateSubState("view");
     };
   }, []);
+
+  function toastErrors(errors) {
+    errors.maxFileSize && toast.warning("Selected file size exceed maxFileSize")
+    errors.maxFileSize = false;
+    return <></>
+  }
   return (
     <>
       <EditableProfileHeaders reset={reset} submit={submit} subState={subState} updateSubState={updateSubState} />
@@ -521,6 +587,7 @@ export function VenueViewProfile({
                 {/*@ts-ignore bah*/}
                 <ReactImageUploading
                   value={poster}
+                  maxFileSize={25_000}
                   onChange={onChange}
                   maxNumber={1}
                   dataURLKey="data_url"
@@ -532,9 +599,13 @@ export function VenueViewProfile({
                       onImageRemove,
                       isDragging,
                       dragProps,
+                      errors
                     }: ExportInterface) => (
                     // write your building UI
                     <div className="upload__image-wrapper">
+                      {errors ?
+                        toastErrors(errors)
+                       : null}
                       {(edit && poster.length === 0) ? (
                         <>
                       <Button
@@ -609,46 +680,43 @@ export function VenueViewProfile({
                 />
                 {ObjectEntries(hrs).map(([k, v], i) => {
                   return (
-                    <>
-                      <div className="silly-row-start-nowrap">
-                        <div
-                          style={{
-                            marginRight: "0.5rem",
-                            color: edit ? t.redBrown : "grey"
-                          }}
-                        >
-                          {cfl(k)}
-                        </div>
-                        <Control
-                          state={v.from}
-                          type={"time"}
-                          onChange={
-                            edit
-                              ? (e) => handleOhrs(k, e.target.value, "from")
-                              : undefined
-                          }
-                        />
-                        <div
-                          style={{
-                            marginRight: "10px",
-                            marginLeft: "10px",
-                            color: edit ? t.redBrown : "grey"
-                          }}
-                        >
-                          -
-                        </div>
-                        <Control
-                          state={v.to}
-                          type={"time"}
-                          onChange={
-                            edit
-                              ? (e) => handleOhrs(k, e.target.value, "to")
-                              : undefined
-                          }
-                        />
-
+                    <div className="silly-row-start-nowrap" key={i}>
+                      <div
+                        style={{
+                          marginRight: "0.5rem",
+                          color: edit ? t.redBrown : "grey"
+                        }}
+                      >
+                        {cfl(k)}
                       </div>
-                    </>
+                      <Control
+                        state={v.from}
+                        type={"time"}
+                        onChange={
+                          edit
+                            ? (e) => handleOhrs(k, e.target.value, "from")
+                            : undefined
+                        }
+                      />
+                      <div
+                        style={{
+                          marginRight: "10px",
+                          marginLeft: "10px",
+                          color: edit ? t.redBrown : "grey"
+                        }}
+                      >
+                        -
+                      </div>
+                      <Control
+                        state={v.to}
+                        type={"time"}
+                        onChange={
+                          edit
+                            ? (e) => handleOhrs(k, e.target.value, "to")
+                            : undefined
+                        }
+                      />
+                    </div>
                   );
                 })}
 

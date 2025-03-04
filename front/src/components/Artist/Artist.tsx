@@ -84,36 +84,95 @@ function ArtistViewProfile({ artist, subState, updateSubState }: { artist: Artis
   const [sample, setSample] = useState(artist.Bio?.Links?.filter(a => a.sample))
   const [links, setLinks] = useState<Link[]>(artist.Bio?.Links ? artist.Bio.Links : []);
 
-  async function submit() {
-    const data = {
-      name: name,
-      email: email,
-      bio: bio,
-      members: members.filter(m => m.name.length > 0),
-      genre: genre,
-      images: images,
-      links: links.filter(l => l.url.length > 0)
+  function checkBio() {
+    let update = false;
+    if(bio !== artist.Bio?.description) {
+      update = true;
+    }
+    const artistLinks = artist.Bio?.Links;
+    if(!artistLinks && links.length > 0) return true;
+
+    for (let i = 0; i < links.length; i++) {
+      if(artistLinks.find(l => l.url !== links[i].url)) {
+        update = true;
+        break;
+      }
+    }
+    return update;
+  }
+
+  function checkArtist() {
+    let update = false;
+    if(name !== artist.name) {
+      update = true;
+    }
+    if(genre !== artist.address) {
+      update = true;
     }
 
-    const res = await postRequest<Artist>(paths.artist.update, data);
+    if(members.find(a => a.id === undefined)) {
+      update = true;
+    }
+    if(bio !== artist.Bio?.description) {
+      update = true;
+    }
+    const artistLinks = artist.Bio?.Links;
+    if(!artistLinks && links.length > 0) return true;
+
+    for (let i = 0; i < links.length; i++) {
+      if(artistLinks.find(l => l.url !== links[i].url)) {
+        update = true;
+        break;
+      }
+    }
+
+    return update;
+  }
+
+  async function submit() {
+    let updated = false;
+    if(checkArtist()) {
+      const data = {
+        name: name,
+        email: email,
+        bio: bio,
+        members: members.filter(m => m.name.length > 0),
+        genre: genre,
+        links: links.filter(l => l.url.length > 0)
+      }
+      const res = await postRequest<Artist>(paths.artist.update, data);
+      if(res.isSuccess()) {
+        toast.success("Profile updated");
+      } else {
+        toast.error("Error updating profile");
+      }
+      updated = true;
+    }
+
 
     if(poster[0].file) {
       const posterRes = await postFileRequest("/artist/bio/update/poster", { poster: poster[0].file });
       if(posterRes.isSuccess()) {
         toast.success("Picture updated")
       }
+      updated = true;
     }
 
     if(images.length > 0) {
+      const imagesWillBeUpdated = images.find(image => !image.internalised);
       const imgs = images.map((image) => image.internalised ? image.data_url : image.file);
       const imagesRes = await postFileRequest(`/artist/media/upload`, { media: imgs });
+      if(!imagesWillBeUpdated) return updated;
+      if(imagesRes.isSuccess()) {
+        toast.success("Images updated")
+      } else {
+        toast.error("Failed to update images", { autoClose: false })
+      }
+      updated = true;
     }
 
-    if(res.isSuccess()) {
-      toast.success("Profile updated");
-    } else {
-      toast.error("Error updating profile");
-    }
+    console.log(updated);
+    return updated;
   }
   function reset() {
     setName(artist.name);
@@ -238,7 +297,7 @@ function ArtistViewProfile({ artist, subState, updateSubState }: { artist: Artis
           </Col>
 
           <FlexCol>
-            <Row flexwrap={"wrap"} justifycontent={"start"}>
+
             <Control
               header="Genre"
               as="h3"
@@ -254,7 +313,7 @@ function ArtistViewProfile({ artist, subState, updateSubState }: { artist: Artis
               setState={edit ? setBio : undefined}
               color={t.redBrown}
             />
-            </Row>
+
             <div className="mt-3">
               <UnderwaveHeader
                 header="Contact"

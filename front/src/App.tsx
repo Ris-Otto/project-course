@@ -3,6 +3,7 @@ import {
   createRoutesFromElements,
   Route,
   RouterProvider,
+  useNavigate
 } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import Login from "./components/Login/Login.tsx";
@@ -38,6 +39,7 @@ const theme = new Theme();
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path={"/"} element={<UserSession />}>
+      <Route path={"*"} element={null}/>
       <Route path="login" element={<Login />} />
       <Route path="register">
         <Route path="" element={<Register />} />

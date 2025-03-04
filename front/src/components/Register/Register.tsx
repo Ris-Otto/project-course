@@ -37,9 +37,11 @@ export function Register() {
     const form = event.currentTarget;
     if (form.checkValidity()) {
       await handleRegister()
+    } else {
+      setValidated(true);
     }
 
-    setValidated(true);
+
   };
 
   useEffect(() => {
@@ -67,7 +69,13 @@ export function Register() {
     } else {
       setCPw("");
       dispatch({ payload: "", type: "password" });
-      toast.warning("Something went wrong");
+      setValidated(false);
+      if(register.message) {
+        toast.error(register.message);
+      } else {
+        toast.error("Something went wrong");
+      }
+
     }
   }
 
@@ -156,11 +164,11 @@ export function BaseRegisterForm<T extends Record<string, string>>(
           }
           aria-describedby={"display-name"}
           required
-          pattern={/[A-Za-z0-9_\s\-]+/.source}
+          pattern={/^.{1,32}$/.source}
           isValid={false}
         />
         <Form.Control.Feedback type="invalid" style={{color: "#B44819"}}>
-          A display name is required.
+          A display name is required and should be between 1 and 32 characters long.
         </Form.Control.Feedback>
       </InputGroup>
       <InputGroup className="mb-3">

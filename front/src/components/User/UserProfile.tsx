@@ -11,6 +11,7 @@ import { ArtistInList } from "../Artist/AllArtists.tsx";
 import { VenueInList } from "../Venue/VenuePublic.tsx";
 import { ObservableListItem } from "../Misc/ObservableListItem.tsx";
 import { followArtist, followVenue, unfollowArtist, unfollowVenue } from "../../api/Common.ts";
+import { UnderwaveHeader } from "../../utilities/Functions.tsx";
 
 export function UserProfile() {
   useAuth(0);
@@ -33,36 +34,43 @@ export function UserProfile() {
   return (
     <StyledProfile id="component-margin" className="top-level-component">
       <PageHeader header={response!.name} className={"mb-3"} />
-      <h3>Artists</h3>
-      <ListWrapper>
-        <div className="row-wrap-start" >
-          {af ? af.map((a, idx) =>
-            <ObservableListItem
-              key={idx}
-              item={a}
-              setRefetch={setRefetchArtists}
-              refetchAtom={artistFollowing}
-              follow={followArtist}
-              unfollow={unfollowArtist}
-              navigatePath={"/artists/public?artistId"}/>
-          ): null}
-        </div>
-      </ListWrapper>
-      <h3>Venues</h3>
-      <ListWrapper>
-        <div className="row-wrap-start" >
-          {vf ? vf.map((a, idx) =>
-            <ObservableListItem
-              key={idx}
-              item={a}
-              setRefetch={setRefetchVenues}
-              refetchAtom={venueFollowing}
-              follow={followVenue}
-              unfollow={unfollowVenue}
-              navigatePath={"/venues/public?venueId"}/>
-          ): null}
-        </div>
-      </ListWrapper>
+        {af.length === 0 && vf.length === 0 ? (
+          <UnderwaveHeader header={"You haven’t followed any bands or venues yet. Start exploring and follow your favorites!"} as={"h3"} />
+        ) : (
+          <>
+            <h3>Artists</h3>
+            <ListWrapper>
+              <div className="row-wrap-start" >
+                {af ? af.map((a, idx) =>
+                  <ObservableListItem
+                    key={idx}
+                    item={a}
+                    setRefetch={setRefetchArtists}
+                    refetchAtom={artistFollowing}
+                    follow={followArtist}
+                    unfollow={unfollowArtist}
+                    navigatePath={"/artists/public?artistId"}/>
+                ): null}
+              </div>
+            </ListWrapper>
+            <h3>Venues</h3>
+            <ListWrapper>
+              <div className="row-wrap-start" >
+                {vf ? vf.map((a, idx) =>
+                  <ObservableListItem
+                    key={idx}
+                    item={a}
+                    setRefetch={setRefetchVenues}
+                    refetchAtom={venueFollowing}
+                    follow={followVenue}
+                    unfollow={unfollowVenue}
+                    navigatePath={"/venues/public?venueId"}/>
+                ): null}
+              </div>
+            </ListWrapper>
+          </>
+        )}
+
     </StyledProfile>
   );
 }

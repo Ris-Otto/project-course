@@ -16,6 +16,7 @@ import { ViewableListPost } from "../Misc/Posts.tsx";
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Resolve } from "../../utilities/Functions.tsx";
+import { AllEvents } from "../Event/Event.tsx";
 
 const StyledHome = styled.div`
   background: ${({ theme }) => theme.cream} !important;
@@ -107,22 +108,7 @@ export function Home() {
             </Col>
           </Grid>
         ) : (
-          <Grid header={"Home"}>
-            <Row
-              className="col-pane"
-              style={{ margin: "60px", justifyContent: "center" }}
-            >
-              <Col
-                className="col-pane"
-                style={{
-                  padding: "20px",
-                  borderRadius: "15px",
-                }}
-              >
-                <EventCalendar events={response} />
-              </Col>
-            </Row>
-          </Grid>
+          <AllEvents />
         )}
       </StyledHome>
     </Resolve>

@@ -1,7 +1,13 @@
 ﻿import { Hono } from "npm:hono";
 import type { Context } from "npm:hono";
 import { User } from "../Database/Model/User.ts";
-import { NotFound, Ok, Unauthorized } from "../../Shared/Result.ts";
+import {
+  Aborted,
+  InternalError,
+  NotFound,
+  Ok,
+  Unauthorized,
+} from "../../Shared/Result.ts";
 import {
   generateJWTAccessToken,
   verifyAndDecodeToken,
@@ -64,18 +70,34 @@ async function authenticate(c: Context) {
 
 async function registerUser(c: Context) {
   const { name, email, password } = await c.req.json<User>();
-  const dbRes = await User.create({
-    name: name,
-    email: email,
-    password: password,
-    verified: 1,
+  const already = await User.findOne({
+    where: {
+      name: name,
+    },
   });
-  dl.info("User: {@a}", dbRes);
-  //TODO send confirm email email
-  const payload = await generateJWTAccessToken(dbRes);
 
-  setCookie(c, "access_token", payload);
-  return c.json(Ok());
+  if (already) {
+    return c.json(Aborted(null, "Display name already taken"));
+  }
+  try {
+    const dbRes = await User.create({
+      name: name,
+      email: email,
+      password: password,
+      verified: 1,
+    });
+    dl.info("User: {@a}", dbRes);
+    //TODO send confirm email email
+    const payload = await generateJWTAccessToken(dbRes);
+
+    setCookie(c, "access_token", payload);
+    return c.json(Ok());
+  } catch (error: any) {
+    if (error.name === "SequelizeUniqueConstraintError") {
+      return c.json(Aborted(null, "Email is already in use"));
+    }
+    return c.json(InternalError());
+  }
 }
 
 //TODO Split
