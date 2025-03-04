@@ -7,6 +7,7 @@ import Pricing from "./Model/Pricing.ts";
 import { Bio } from "./Model/Bio.ts";
 import { Media } from "./Model/Media.ts";
 import { OpeningHour } from "./Model/OpeningHour.ts";
+import { Link } from "./Model/Link.ts";
 
 /**
  * `excludeMapping` can only be true if the association between the parent model and the included model
@@ -102,14 +103,14 @@ export function includeBio() {
   return includeModel({
     model: Bio,
     exclude: ["createdAt", "updatedAt"],
-    include: {
+    include: [{
       model: Media,
       exclude: ["createdAt", "updatedAt"],
       //TODO actually fetch images as well
       //Likely can't be done with sequelize
       //Or at least internal media
       //Could store all 'internal' media on a file server and then fetch client-side
-    },
+    }, { model: Link, exclude: ["createdAt", "updatedAt"] }],
   });
 }
 

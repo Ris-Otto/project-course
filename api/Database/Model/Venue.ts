@@ -30,7 +30,7 @@ class Venue extends Model {
   declare authenticate: (enteredPassword: string) => Promise<boolean>;
   declare addEvent: (eventId: string) => Promise<EventMapping | null>;
   declare getEvents: () => Promise<Event[]>;
-  declare addBio: (bioId: number) => Promise<Bio | null>;
+  declare addBio: (bio: number | Bio) => Promise<Bio | null>;
   declare poster?: string;
 }
 

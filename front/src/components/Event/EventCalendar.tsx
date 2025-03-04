@@ -21,6 +21,7 @@ const StyledEventCalendar = styled.div<{ theme: Theme }>`
   overflow-x: auto;
   overflow-y: auto;
   border-radius: 10px;
+  min-width: min-content;
 
   .calendar-date {
     text-align: center;
@@ -33,7 +34,7 @@ const StyledEventCalendar = styled.div<{ theme: Theme }>`
     border-left: 1px solid black;
     border-top: 1px solid black;
     border-bottom: 1px solid black;
-    min-width: min-content;
+    min-width: max-content;
     min-height: 100%;
   }
 
@@ -78,7 +79,7 @@ type EventInCalendarProps = {
 function EventCalendar({ events }: EventCalendarProps) {
   return (
     <StyledEventCalendar>
-      {events.length > 0 ? (
+      {events && events.length > 0 ? (
 
       events.map((e, idx) => {
         return (
@@ -179,17 +180,20 @@ function CalendarInfo({
 function EventHover({ event, rect }: { event: Event, rect: DOMRect | undefined }) {
   const pos = useMemo(() => {
     if(!rect) return {x: 0, y: 0}
-    if(rect.right + 200 > globalThis.innerWidth) {
+
+    if(rect.right + 300 > globalThis.innerWidth) {
       return {
-        x: rect.right - rect.left*0.4 - 10,
-        y: rect.top - rect.top/2,
+        x: Math.abs(rect.x - (globalThis.innerWidth - rect.width)*0.6),
+        y: rect.top/2,
       }
     }
     return {
       x: rect.right + 10,
-      y: rect.top - rect.top/2,
+      y: rect.top/2,
     }
   }, [rect])
+
+  console.log(pos);
   return (
     <div
       style={{

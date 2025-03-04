@@ -25,7 +25,7 @@ class Artist extends Model {
   declare createdAt: Date;
   declare updatedAt: Date;
   declare addEvent: (eventId: string) => Promise<Event | null>;
-  declare addBio: (bioId: number) => Promise<Bio | null>;
+  declare addBio: (bio: number | Bio) => Promise<Bio | null>;
   declare addMember: (memberId: number) => Promise<Member | null>;
   declare removeMember: (memberId: number) => Promise<Member | null>;
   declare getEvents: () => Promise<Event[]>;

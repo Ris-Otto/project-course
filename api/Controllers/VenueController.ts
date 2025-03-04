@@ -6,7 +6,13 @@ import {
   includeEvent,
   includeOpeningHours,
 } from "../Database/framework.ts";
-import { Aborted, NotFound, Ok, Unauthorized } from "../../Shared/Result.ts";
+import {
+  Aborted,
+  InternalError,
+  NotFound,
+  Ok,
+  Unauthorized,
+} from "../../Shared/Result.ts";
 import { Venue } from "../Database/Model/Venue.ts";
 import Event from "../Database/Model/Event.ts";
 import { Bio } from "../Database/Model/Bio.ts";
@@ -16,12 +22,7 @@ import { Link } from "../Database/Model/Link.ts";
 import { OpeningHour } from "../Database/Model/OpeningHour.ts";
 import { Artist } from "../Database/Model/Artist.ts";
 import { storage } from "../storage.ts";
-import {
-  deleteMedia,
-  getModelWithPoster,
-  getPoster,
-  upsertMedia,
-} from "./Extensions/Extensions.ts";
+import { updateImages } from "./Extensions/Extensions.ts";
 import { PlayRequest } from "../Database/Model/PlayRequest.ts";
 import { Review } from "../Database/Model/Review.ts";
 
@@ -39,6 +40,12 @@ venueController.post(
   tokenMiddleware.verifyIsVenue,
   storage.single("poster"),
   addEventPoster,
+);
+
+venueController.post(
+  "event/delete/:eventId",
+  tokenMiddleware.verifyIsVenue,
+  deleteEvent,
 );
 
 venueController.post(
@@ -84,11 +91,35 @@ venueController.post(
   updatePoster,
 );
 
+async function deleteEvent(c: Context) {
+  const payload = c.get("tokenPayload");
+  const eventId = c.req.param("eventId");
+
+  const del = await Event.destroy({
+    where: {
+      id: eventId,
+      VenueId: payload.id,
+      published: 0,
+    },
+  });
+
+  if (del !== 1) {
+    return c.json(Unauthorized());
+  }
+  return c.json(Ok());
+}
+
 async function uploadMedia(c: Context) {
   const files = c.var.files["media[]"];
   const payload = c.get("tokenPayload");
 
-  const venue = await Venue.findByPk(payload.id, {
+  try {
+    const ret = await updateImages(Venue, files, payload.id);
+    return c.json(ret);
+  } catch {
+    return c.json(InternalError());
+  }
+  /*const venue = await Venue.findByPk(payload.id, {
     include: [Bio],
   });
 
@@ -104,7 +135,7 @@ async function uploadMedia(c: Context) {
 
   await deleteMedia(files, allMedia, payload.id, venue.BioId);
 
-  return c.json(Ok());
+  return c.json(Ok());*/
 }
 
 async function getVenues(c: Context) {
@@ -148,14 +179,14 @@ async function addEvent(c: Context) {
     start,
     end,
     bio,
-    poster,
+    /*poster,
     address,
     city,
     zip,
-    capacity,
+    capacity,*/
     artists,
-    type,
-    tags,
+    /*type,
+    tags,*/
     published,
     amount,
     paymentMethod,
@@ -197,14 +228,25 @@ async function addEventPoster(c: Context) {
   const file = c.var.files["poster"];
   const payload = c.get("tokenPayload");
   const eventId = c.req.param("eventId");
-  const event = await Event.findByPk(eventId, { include: [Bio] });
+
+  try {
+    const ret = await updateImages(Event, file, eventId, {
+      parentModelId: payload.id,
+      isPoster: true,
+    });
+    return c.json(ret);
+  } catch (e) {
+    console.log(e);
+    return c.json(InternalError());
+  }
+  /*const event = await Event.findByPk(eventId, { include: [Bio] });
   if (!event) {
     return c.json(NotFound());
   }
 
   await upsertMedia(payload.id, event.BioId, file, true);
 
-  return c.json(Ok());
+  return c.json(Ok());*/
 }
 
 async function updateEvent(c: Context) {
@@ -301,37 +343,37 @@ async function rateArtist(c: Context) {
   const artistId = c.req.param("artistId");
   const eventId = c.req.param("eventId");
   const { description, score } = await c.req.json();
-  try {
-    const response = await Review.create({
-      VenueId: payload.id,
-      ArtistId: artistId,
-      EventId: eventId,
-      score: score,
-      description: description,
-      reviewer_type: 0,
-    });
-    return c.json(Ok(response, "Review submitted"));
-  } catch (e: any) {
-    console.log(e.name);
-    if (e.name === "SequelizeUniqueConstraintError") {
-      return c.json(
-        Aborted(null, "You have already reviewed this band/event combination"),
-      );
-    }
-  }
+
+  const [response] = await Review.upsert({
+    VenueId: payload.id,
+    ArtistId: artistId,
+    EventId: eventId,
+    score: score,
+    description: description,
+    reviewer_type: 0,
+  });
+  return c.json(Ok(response, "Review submitted"));
 }
 
 async function updatePoster(c: Context) {
   const file = c.var.files["poster"];
   const payload = c.get("tokenPayload");
-  const venue = await Venue.findByPk(payload.id, { include: [Bio] });
+
+  try {
+    const ret = await updateImages(Venue, file, payload.id, { isPoster: true });
+    return c.json(ret);
+  } catch (e) {
+    console.log(e);
+    return c.json(InternalError());
+  }
+  /*const venue = await Venue.findByPk(payload.id, { include: [Bio] });
   if (!venue) {
     return c.json(NotFound());
   }
 
   await upsertMedia(payload.id, venue.BioId, file, true);
 
-  return c.json(Ok());
+  return c.json(Ok());*/
 }
 
 async function updateBio(c: Context) {
@@ -358,7 +400,7 @@ async function updateBio(c: Context) {
   }
 }
 
-async function updateMediaAndLinks<
+async function _updateMediaAndLinks<
   TData extends { media: { data_url: string }[]; urls: { url: string }[] },
 >(data: TData, bioId: number) {
   if (data.media) {

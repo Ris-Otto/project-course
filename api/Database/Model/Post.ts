@@ -15,6 +15,7 @@ class Post extends Model {
   declare ArtistId: string;
   declare VenueId: string;
   declare published: boolean;
+  declare addBio: (bio: number | Bio) => Promise<Bio | null>;
 }
 
 Post.init(

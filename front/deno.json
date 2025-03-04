@@ -5,6 +5,13 @@
     "preview": "deno run -A --node-modules-dir npm:vite preview",
     "serve": "deno run --allow-net --allow-read https://deno.land/std@0.157.0/http/file_server.ts dist/"
   },
+  "lint": {
+    "indent-width": 2,
+    "rules": {
+      "tags": ["recommended"],
+      "no-explicit-any": false
+    }
+  },
   "compilerOptions": {
     "jsx": "react-jsx",
     "jsxImportSource": "npm:react",

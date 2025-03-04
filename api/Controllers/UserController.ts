@@ -117,7 +117,11 @@ async function getRecentPosts(c: Context) {
 }
 
 async function getEvents(c: Context) {
-  //const { offset } = await c.req.json();
+  const offset = c.req.query("offset") ?? 0;
+  const payload = c.get("tokenPayload");
+  const whereOptions = payload && payload.id
+    ? { start: { [Op.gte]: new Date() } }
+    : { start: { [Op.gte]: new Date() }, published: true };
   const events = await Event.findAll({
     include: [
       includeModel({
@@ -141,8 +145,9 @@ async function getEvents(c: Context) {
       exclude: ["VenueId", "PricingId", "createdAt", "updatedAt"],
     },
     limit: 20,
-    offset: 0,
-    order: [["start", "DESC"]],
+    offset: Number(offset),
+    order: [["start", "ASC"]],
+    where: whereOptions,
   });
   const ret = events.map((event) => event.get({ plain: true }));
   return c.json(Ok(ret));
@@ -150,6 +155,7 @@ async function getEvents(c: Context) {
 
 async function getEvent(c: Context) {
   const id = c.req.param("eventId");
+  const payload = c.get("tokenPayload");
   const event = await Event.findByPk(id, {
     include: [
       includeModel({
@@ -171,8 +177,17 @@ async function getEvent(c: Context) {
   if (event === null) {
     return c.json(NotFound());
   }
+
+  if (!event.published) {
+    if (payload && payload.id === (await event.getVenue()).id) {
+      return c.json(Ok(event.get({ plain: true })));
+    } else {
+      //Uh obscurity I guess, pointless but fun!
+      return c.json(NotFound());
+    }
+  }
   const ret = event.get({ plain: true });
-  return c.json(Ok({ ...ret, poster: getPoster(event) }));
+  return c.json(Ok(ret));
 }
 
 async function getUser(c: Context) {

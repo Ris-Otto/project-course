@@ -40,6 +40,7 @@ class Event extends Model {
   declare getArtists: () => Promise<Artist[]>;
   declare getVenue: () => Promise<Venue>;
   declare getBio: () => Promise<Bio>;
+  declare addBio: (bio: number | Bio) => Promise<Bio | null>;
   declare getPricing: () => Promise<Pricing>;
   declare getEventMapping: () => Promise<EventMapping>;
 }
@@ -88,11 +89,6 @@ Event.init(
     sequelize: sequelize,
   },
 );
-
-Event.addHook("afterFind", "addPoster", (event: Event) => {
-  console.log(event.name);
-  event.poster = getPoster(event);
-});
 
 export default Event;
 export type { EventRead };

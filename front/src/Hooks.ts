@@ -5,6 +5,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { useNavigate } from "react-router-dom";
@@ -54,11 +55,12 @@ export function useImageDimensions(maxHeight?: number) {
 
     if (naturalWidth > naturalHeight) {
       const ratio = naturalWidth / naturalHeight;
-      const height = maxHeight ? maxHeight : globalThis.innerHeight / 8;
-      setDimensions({ height: height, width: height * ratio });
+      const width = maxHeight ? maxHeight : globalThis.innerWidth / 6;
+
+      setDimensions({ height: width * (1 / ratio), width: width });
     } else {
       const ratio = naturalHeight / naturalWidth;
-      const height = maxHeight ? maxHeight : globalThis.innerHeight / 8;
+      const height = maxHeight ? maxHeight : globalThis.innerHeight / 6;
       setDimensions({ height: height, width: height * (1 / ratio) });
     }
   };
@@ -191,4 +193,12 @@ export function useIsFollowingArtist(artist: Artist) {
   }, [af]);
 
   return isFollowing;
+}
+
+export function usePrevious(value) {
+  const ref = useRef();
+  useEffect(() => {
+    ref.current = value;
+  });
+  return ref.current;
 }

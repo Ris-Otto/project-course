@@ -44,9 +44,9 @@ const StyledEditableProfile = styled.div<{ theme: Theme }>`
   justify-items: left;
   justify-content: left;
   justify-self: left;
-    text-align: right;
+  text-align: right;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   color: ${({ theme }) => theme.redBrown};
 
   .profile {
@@ -61,6 +61,8 @@ const StyledEditableProfile = styled.div<{ theme: Theme }>`
     color: ${({ theme }) => theme.brownText};
     &:focus {
       box-shadow: ${({ theme }) => theme.darkCream2};
+        background-color: ${({ theme }) => theme.darkCream};
+        border-color: ${({ theme }) => theme.darkCream};
     }
 
     &:disabled {
@@ -75,10 +77,16 @@ const StyledEditableProfile = styled.div<{ theme: Theme }>`
     &:active {
       background-color: ${({ theme }) => theme.darkCream};
       border-color: ${({ theme }) => theme.darkCream};
-      --bs-btn-active-color: #fff;
+      --bs-btn-active-color: ${({ theme }) => theme.brownText};
       --bs-btn-active-bg: ${({ theme }) => theme.darkCream2} !important;
-      --bs-btn-active-border-color: ${({ theme }) =>
-    theme.darkCream} !important;
+      --bs-btn-active-border-color: ${({ theme }) => theme.darkCream} !important;
+        color: ${({ theme }) => theme.brownText};
+    }
+      
+    &:after {
+      background-color: ${({ theme }) => theme.darkCream};
+      border-color: ${({ theme }) => theme.darkCream};
+      color: ${({ theme }) => theme.brownText};
     }
   }
 
@@ -106,6 +114,14 @@ const StyledEditableProfile = styled.div<{ theme: Theme }>`
     flex-wrap: wrap;
   }
 
+  .silly-row-start-nowrap {
+      display: flex;
+      flex-direction: row;
+      justify-content: start;
+      min-width: min-content;
+      flex-wrap: nowrap;
+  }
+
   .silly-row-end {
     display: flex;
     flex-direction: row;
@@ -122,13 +138,13 @@ const StyledEditableProfile = styled.div<{ theme: Theme }>`
     flex-wrap: wrap;
   }
 
-  .silly-row-sb-wrap {
+  .silly-row-sb-nowrap {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
     min-width: max-content;
     vertical-align: middle;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
   }
 
   .silly-row-se-wrap {
@@ -139,14 +155,22 @@ const StyledEditableProfile = styled.div<{ theme: Theme }>`
     vertical-align: middle;
     flex-wrap: wrap;
   }
+  .silly-row-se-nowrap {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-evenly;
+      min-width: min-content;
+      vertical-align: middle;
+      flex-wrap: nowrap;
+  }
 
-    .silly-row-se {
-        display: flex;
-        flex-direction: row;
-        justify-content: space-evenly;
-        min-width: min-content;
-        vertical-align: middle;
-    }
+  .silly-row-se {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-evenly;
+      min-width: min-content;
+      vertical-align: middle;
+  }
 
   .silly-column-sb {
     display: flex;
@@ -190,7 +214,7 @@ const FlexCol = styled.div<{ flexwrap?: string, justifycontent?: string}>`
     display: flex;
     flex-direction: column;
     justify-content: ${({ justifycontent }) => (justifycontent ? justifycontent : "space-evenly")};
-    vertical-align: middle;
+    vertical-align: baseline;
     flex-wrap: ${({ flexwrap }) => (flexwrap ? flexwrap : "")};
     
 `

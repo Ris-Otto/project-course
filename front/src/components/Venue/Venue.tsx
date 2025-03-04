@@ -38,7 +38,7 @@ import {AddEvent} from "./AddEvent.tsx";
 import {Hours} from "../../../../Shared/Types.ts";
 import {Bio} from "../../../../api/Database/Model/Bio.ts";
 import {toast} from "react-toastify";
-import {Divider, FlexCol, StyledListBox} from "../Misc/CustomStyles.tsx";
+import {Divider, FlexCol, StyledListBox, Row} from "../Misc/CustomStyles.tsx";
 import {Link} from "../../../../api/Database/Model/Link.ts";
 import {EditableProfileHeaders, EditableProfileMenu} from "../Misc/EditableProfileBase.tsx";
 import { ProfilePicture } from "../Misc/ProfilePicture.tsx";
@@ -48,6 +48,7 @@ import { ExportInterface } from "react-images-uploading/dist/typings";
 import { ImageListType } from "npm:react-images-uploading@3.1.7";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ProfileImages } from "../Misc/ProfileImages.tsx";
+import { Modal } from "react-bootstrap";
 
 declare type VenueProfileProps = {
   value: Venue;
@@ -211,6 +212,7 @@ export function VenueEvent({
   );
   const p = useMemo(() => dimensions.width * 0.12, [dimensions]);
   const poster = useMemo(() => event.Bio?.Media?.find(a => a.poster)?.href, [event])
+  const [show, setShow] = useState(false);
 
   const navigate = useNavigate();
 
@@ -225,14 +227,33 @@ export function VenueEvent({
   }
 
   async function deleteEvent() {
-
+    const res = await postRequest(`venue/event/delete/${event.id}`)
+    if(res.isSuccess()) {
+      toast.success("Event deleted");
+    } else {
+      toast.error("Either the event is not deletable or you are not its owner")
+    }
+    updateSubState("view", true);
+    setShow(false);
   }
+
+
 
   return (
     <StyledListBox
       minwidth={`${dimensions.width}px`}
       padding={String(p)}
     >
+      <Modal contentClassName="underwave-modal" show={show} onHide={() => setShow(false)} centered>
+        <Modal.Header closeButton>Are you sure?</Modal.Header>
+        <Modal.Body>
+          You can't undo this action.
+        </Modal.Body>
+        <Modal.Footer style={{textAlign: "right"}}>
+          <Button onClick={() => setShow(false)}>Cancel</Button>
+          <Button variant={"danger"} onClick={deleteEvent}>Delete</Button>
+        </Modal.Footer>
+      </Modal>
       {editable && setCurrentEvent ? (
         <div style={{ textAlign: "right" }}>
           {!event.published ? (
@@ -249,7 +270,7 @@ export function VenueEvent({
             <LiaPencilAltSolid size={30} />
           </Button>
           {!event.published ? (
-            <Button onClick={deleteEvent}>
+            <Button onClick={() => setShow(true)}>
               <LiaTrashAltSolid size={30} />
             </Button>
           ) : null}
@@ -440,7 +461,7 @@ export function VenueViewProfile({
     // media, links, description
     const media = images.filter(a => a.data_url.length > 0)
     const urls = links.filter(a => a.url.length > 0)
-    const bioUpdate = await postRequest<Bio>(paths.venue.bio.update, { media, urls, bio, poster: { href: poster[0].data_url, poster: true} });
+    const bioUpdate = await postRequest<Bio>(paths.venue.bio.update, { media, urls, bio, links });
 
     if(venueUpdate.isSuccess()) {
       toast.success("Venue details updated")
@@ -496,7 +517,7 @@ export function VenueViewProfile({
         <Grid>
           <Col>
             <div className="silly-row-start">
-              <div>
+              <div className={"m-3"}>
                 {/*@ts-ignore bah*/}
                 <ReactImageUploading
                   value={poster}
@@ -544,6 +565,7 @@ export function VenueViewProfile({
               <Control
                 header={"Venue name"}
                 as={"h3"}
+                className={"m-3"}
                 state={name}
                 color={t.redBrown}
                 setState={edit ? sname : undefined}
@@ -561,7 +583,7 @@ export function VenueViewProfile({
             </div>
             <div className="silly-row-sb-wrap">
               <Control
-                header={"Postal/ZIP-code"}
+                header={"ZIP-code"}
                 as={"h3"}
                 state={zip}
                 color={t.redBrown}
@@ -576,65 +598,64 @@ export function VenueViewProfile({
                 setState={edit ? scity : undefined}
                 className="m-3"
               />
-              <div></div>
             </div>
-            <div style={{ alignItems: "center" }}>
-              <UnderwaveHeader
-                as="h3"
-                header={"Opening hours"}
-                color={t.redBrown}
-                disabled={!edit}
-              />
-              {ObjectEntries(hrs).map(([k, v], i) => {
-                return (
-                  <Grid
-                    key={i}
-                    margin="0px"
-                    cPadding="0px"
-                    padding="0px"
-                    gap="0px"
-                  >
-                    <div
-                      style={{
-                        textAlign: "left",
-                        color: edit ? t.redBrown : "grey"
-                      }}
-                    >
-                      {cfl(k)}
-                    </div>
-                    <div className="silly-row-sb-wrap">
-                      <Control
+            <FlexCol>
+              <div style={{ margin: "1rem", padding: "0.5rem" }}>
+                <UnderwaveHeader
+                  as="h3"
+                  header={"Opening hours"}
+                  color={t.redBrown}
+                  disabled={!edit}
+                />
+                {ObjectEntries(hrs).map(([k, v], i) => {
+                  return (
+                    <>
+                      <div className="silly-row-start-nowrap">
+                        <div
+                          style={{
+                            marginRight: "0.5rem",
+                            color: edit ? t.redBrown : "grey"
+                          }}
+                        >
+                          {cfl(k)}
+                        </div>
+                        <Control
                           state={v.from}
+                          type={"time"}
                           onChange={
                             edit
-                                ? (e) => handleOhrs(k, e.target.value, "from")
-                                : undefined
+                              ? (e) => handleOhrs(k, e.target.value, "from")
+                              : undefined
                           }
-                      />
-                      <div
+                        />
+                        <div
                           style={{
                             marginRight: "10px",
                             marginLeft: "10px",
                             color: edit ? t.redBrown : "grey"
                           }}
-                      >
-                        -
-                      </div>
-                      <Control
+                        >
+                          -
+                        </div>
+                        <Control
                           state={v.to}
+                          type={"time"}
                           onChange={
                             edit
-                                ? (e) => handleOhrs(k, e.target.value, "to")
-                                : undefined
+                              ? (e) => handleOhrs(k, e.target.value, "to")
+                              : undefined
                           }
-                      />
-                    </div>
-                  </Grid>
-                );
-              })}
-            </div>
+                        />
+
+                      </div>
+                    </>
+                  );
+                })}
+
+              </div>
+            </FlexCol>
           </Col>
-          <Col>
+          <div>
             <TextArea
               header="Bio"
               as="h3"
@@ -659,9 +680,11 @@ export function VenueViewProfile({
                 </FlexCol>
               </div>
             </div>
+            <div style={{overflowX: "auto", maxWidth: "50%", whiteSpace: "nowrap"}}>
             <UnderwaveHeader header="Images" as="h3" color={t.redBrown} disabled={!edit} />
             {/*@ts-ignore bah*/}
             <ProfileImages edit={edit} images={images} onImagesChange={onImagesChange} />
+            </div>
             <DynamicListForm
                 disabled={!edit}
                 header={"Links"}
@@ -673,8 +696,9 @@ export function VenueViewProfile({
                 template={{ url: "" }}
                 color={t.redBrown}
             />
-          </Col>
+          </div>
         </Grid>
+
       </div>
     </>
   );

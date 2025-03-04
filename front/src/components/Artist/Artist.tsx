@@ -1,7 +1,7 @@
 ﻿// @deno-types="npm:@types/react"
 import { useMemo, useState } from "react";
 import { getImage, postFileRequest, postRequest } from "../../api/APITemplate.ts";
-import { Button } from "react-bootstrap";
+import { Button, Col } from "react-bootstrap";
 import { LiaEnvelope, LiaPencilAltSolid, LiaTrashAltSolid } from "react-icons/lia";
 import type { Artist } from "../../../../api/Database/Model/Artist.ts";
 import { PageState, StateHandler, SubState } from "../../utilities/Types.tsx";
@@ -81,10 +81,10 @@ function ArtistViewProfile({ artist, subState, updateSubState }: { artist: Artis
     }) :
     []
   );
+  const [sample, setSample] = useState(artist.Bio?.Links?.filter(a => a.sample))
   const [links, setLinks] = useState<Link[]>(artist.Bio?.Links ? artist.Bio.Links : []);
 
   async function submit() {
-    console.log(images);
     const data = {
       name: name,
       email: email,
@@ -92,7 +92,7 @@ function ArtistViewProfile({ artist, subState, updateSubState }: { artist: Artis
       members: members.filter(m => m.name.length > 0),
       genre: genre,
       images: images,
-      links: links
+      links: links.filter(l => l.url.length > 0)
     }
 
     const res = await postRequest<Artist>(paths.artist.update, data);
@@ -122,7 +122,11 @@ function ArtistViewProfile({ artist, subState, updateSubState }: { artist: Artis
     setMembers(artist.Members);
     setGenre(artist.genre);
     setPoster([{ data_url: artist.poster }]);
-    setImages(artist.Bio?.Media ? artist.Bio.Media :[]);
+    setImages(artist.Bio?.Media ?
+      artist.Bio.Media.map(a => {
+        return { data_url: getImage(a.href), internalised: true }
+      }) :
+      []);
     setLinks(artist.Bio?.Links ? artist.Bio.Links : []);
   }
 
@@ -140,10 +144,10 @@ function ArtistViewProfile({ artist, subState, updateSubState }: { artist: Artis
   return (
     <>
     <EditableProfileHeaders subState={subState} updateSubState={updateSubState} submit={submit} reset={reset} />
-      <div className="profile">
+      <div className="profile" style={{textAlign: "left"}}>
         <Grid>
-          <FlexCol>
-            <div className="silly-row-start">
+          <Col>
+            <Row justifycontent={"start"}>
               {/*@ts-ignore bah*/}
               <ReactImageUploading
                 value={poster}
@@ -190,12 +194,12 @@ function ArtistViewProfile({ artist, subState, updateSubState }: { artist: Artis
               <Control
                 as={"h3"}
                 header={"Artist name"}
+                className={"m-3"}
                 state={name}
                 color={t.redBrown}
                 setState={edit ? setName : undefined}
               />
-
-            </div>
+            </Row>
             <Row justifycontent="start">
             <FlexCol>
               <DynamicListForm
@@ -211,18 +215,19 @@ function ArtistViewProfile({ artist, subState, updateSubState }: { artist: Artis
                 disabled={!edit}
               />
               <Control
-                className="mt-3"
                 header={"Sample"}
-                as="h3" state={""}
-                setState={undefined}
+                as={"h3"}
+                state={sample}
+                setState={edit ? setSample : undefined}
+                pattern={urlPattern}
                 color={t.redBrown}
               />
               <DynamicListForm
+                requiredKeys={["url"]}
                 header={"Links"}
                 as="h3"
                 color={t.redBrown}
                 array={links}
-                //@ts-ignore bah
                 setArray={setLinks}
                 pattern={urlPattern}
                 template={{ url: "" }}
@@ -230,8 +235,10 @@ function ArtistViewProfile({ artist, subState, updateSubState }: { artist: Artis
               />
             </FlexCol>
             </Row>
-          </FlexCol>
+          </Col>
+
           <FlexCol>
+            <Row flexwrap={"wrap"} justifycontent={"start"}>
             <Control
               header="Genre"
               as="h3"
@@ -239,6 +246,7 @@ function ArtistViewProfile({ artist, subState, updateSubState }: { artist: Artis
               setState={edit ? setGenre : undefined}
               color={t.redBrown}
             />
+
             <TextArea
               header="Bio"
               as="h3"
@@ -246,6 +254,7 @@ function ArtistViewProfile({ artist, subState, updateSubState }: { artist: Artis
               setState={edit ? setBio : undefined}
               color={t.redBrown}
             />
+            </Row>
             <div className="mt-3">
               <UnderwaveHeader
                 header="Contact"
@@ -263,9 +272,12 @@ function ArtistViewProfile({ artist, subState, updateSubState }: { artist: Artis
                 />
               </Row>
             </div>
+            <div style={{overflowX: "auto", maxWidth: "50%", whiteSpace:"nowrap"}}>
             <UnderwaveHeader header="Images" as="h3" color={t.redBrown} disabled={!edit} />
               {/*@ts-ignore bah*/}
+              <br/>
               <ProfileImages edit={edit} images={images} onImagesChange={onImagesChange} />
+            </div>
           </FlexCol>
         </Grid>
       </div>

@@ -24,10 +24,11 @@ export const GlobalStyles = createGlobalStyle<{
     }
 
     #root {
-        max-width: 1280px;
         margin: 0 auto;
         padding: 2rem;
         text-align: center;
+        min-height: 100vh;
+        min-width: 98vw;
     }
 
     *, *::after, *::before {
@@ -63,27 +64,21 @@ export const GlobalStyles = createGlobalStyle<{
     }
 
     body {
-        align-items: center;
+        align-items: flex-start;
         background: ${({ theme }) => theme.cream};
         color: ${({ theme }) => theme.orange};
         display: flex;
         min-height: 100vh;
-        width: 100vw;
-        justify-content: center;
+        justify-content: left;
         text-rendering: optimizeLegibility;
         transition: all 0.50s linear;
-        overflow-x: hidden;
+        overflow-x: visible;
 
 
         @media (max-width: ${({ theme }) => theme.mobile}) {
             font-size: 1.5rem;
             text-align: center;
         }
-    }
-
-    #root {
-        min-height: 100vh;
-        min-width: 100vw;
     }
 
     .container {
@@ -110,6 +105,12 @@ export const GlobalStyles = createGlobalStyle<{
         background-color: rgba(0, 0, 0, 0.7);
         border-radius: 10px;
         padding: 1%;
+        overflow-x: hidden;
+        max-width: 100%;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 0;
+        -webkit-box-orient: vertical;
     }
 
     .picture-age {
@@ -208,7 +209,7 @@ export const GlobalStyles = createGlobalStyle<{
 
     .btn-danger:hover, .btn-danger:focus, .btn-danger:active {
         border-color: ${({ theme }) => theme.darkOrange};
-        background-color: ${({ theme }) => theme.darkOrange};
+        --bs-btn-active-bg: ${({ theme }) => theme.darkOrange} !important;
     }
 
     .btn-primary:hover, .btn-primary:focus, .btn-primary:active, .btn-primary.active, .open > .dropdown-toggle.btn-primary, .show > .dropdown-toggle.btn-primary,

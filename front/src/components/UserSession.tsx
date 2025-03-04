@@ -1,6 +1,6 @@
 ﻿import { Outlet} from "react-router-dom";
 // @deno-types="npm:@types/react"
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import { useAtom } from "jotai";
 import {
   open,
@@ -28,8 +28,10 @@ export function UserSession() {
     setOpen(false);
   });
 
-  const artists = useRequest<Artist[]>(paths.user.artists, !u)
-  const venues = useRequest<Venue[]>(paths.user.venues, !u);
+  const blockRequest = useMemo(() => !u || u.type !== 0, [u])
+
+  const artists = useRequest<Artist[]>(paths.user.artists, blockRequest)
+  const venues = useRequest<Venue[]>(paths.user.venues, blockRequest);
 
   useEffect(() => {
     if(!artists.isLoading &&  !artists.isError && artists.response) {

@@ -164,7 +164,7 @@ type PostPageProps = {
 }
 
 function ViewableListPost({ post }: PostPageProps): JSX.Element {
-  const { dimensions, handleImageLoad } = useImageDimensions(globalThis.innerHeight / 6);
+  const { dimensions, handleImageLoad } = useImageDimensions(globalThis.innerHeight / 4);
   const p = useMemo(() => dimensions.width * 0.12, [dimensions]);
   const postPath = useMemo(() => post.ArtistId ?
     `/artists/public/posts?artistId=${post.ArtistId}&postId=${post.id}` :
@@ -248,10 +248,11 @@ function PostImage({href, handleImageLoad, dimensions, name, showName}: { href: 
         onLoad={handleImageLoad}
         onChange={handleImageLoad}
         style={{
-         borderRadius: "10px",
-         width: `${dimensions.width}px`,
-         height: `${dimensions.height}px`,
-          maxWidth: "100%"
+          borderRadius: "10px",
+          width: `${dimensions.width}px`,
+          height: `${dimensions.height}px`,
+          maxWidth: "100%",
+          maxHeight: "100%",
         }}
         onError={({ currentTarget }) => {
           currentTarget.onerror = null; // prevents looping
@@ -264,7 +265,7 @@ function PostImage({href, handleImageLoad, dimensions, name, showName}: { href: 
 }
 
 function PostPageImage({href, name, showName}: {href: string, name?: string, showName?: boolean}) {
-  const { dimensions, handleImageLoad } = useImageDimensions(globalThis.innerHeight / 4);
+  const { dimensions, handleImageLoad } = useImageDimensions(globalThis.outerHeight/ 1.5);
   return (
     <div className="picture">
       {showName ? (<h4 className="picture-name">{name}</h4>) : null}

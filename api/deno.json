@@ -19,6 +19,13 @@
     "start": "deno run --allow-net --allow-read --allow-write --allow-env main.ts"
   },
   "lint": {
-    "indent-width": 2
+    "indent-width": 2,
+    "rules": {
+      "tags": ["recommended"],
+      "no-explicit-any": false
+    }
+  },
+  "compilerOptions": {
+    "noImplicitAny": false
   }
 }

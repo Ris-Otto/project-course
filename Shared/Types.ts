@@ -13,7 +13,6 @@ export type UserPayload = {
 };
 
 export function ResolveUserType(user: UserType) {
-  console.log(user instanceof User, user instanceof Artist);
   if (user instanceof User) {
     return 0;
   } else if (user instanceof Artist) {

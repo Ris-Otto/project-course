@@ -2,7 +2,13 @@ import { Hono } from "npm:hono";
 import type { Context } from "npm:hono";
 import * as tokenMiddleware from "../Middleware/JWTMiddleware.ts";
 import Event from "../Database/Model/Event.ts";
-import { Aborted, NotFound, Ok, Unauthorized } from "../../Shared/Result.ts";
+import {
+  Aborted,
+  InternalError,
+  NotFound,
+  Ok,
+  Unauthorized,
+} from "../../Shared/Result.ts";
 import { Artist, Role } from "../Database/Model/Artist.ts";
 import { Bio } from "../Database/Model/Bio.ts";
 import { Link } from "../Database/Model/Link.ts";
@@ -10,24 +16,14 @@ import { Member } from "../Database/Model/Member.ts";
 
 import { deleteCookie } from "npm:hono/cookie";
 
-import {
-  includeBio,
-  includeEvent,
-  includeMember,
-} from "../Database/framework.ts";
+import { includeBio, includeEvent } from "../Database/framework.ts";
 import sequelize from "../Database/database.ts";
 import { Media } from "../Database/Model/Media.ts";
-import Pricing from "../Database/Model/Pricing.ts";
 import { PlayRequest } from "../Database/Model/PlayRequest.ts";
 import { Review } from "../Database/Model/Review.ts";
 import { Post } from "../Database/Model/Post.ts";
 import { storage } from "../storage.ts";
-import {
-  deleteMedia,
-  getModelWithPoster,
-  getPoster,
-  upsertMedia,
-} from "./Extensions/Extensions.ts";
+import { updateImages } from "./Extensions/Extensions.ts";
 
 const artistController = new Hono();
 artistController.get("/all", getArtists);
@@ -134,7 +130,16 @@ async function updatePostImages(c: Context) {
   const postId = c.req.param("postId");
   const payload = c.get("tokenPayload");
 
-  const post = await Post.findByPk(postId, {
+  try {
+    const ret = await updateImages(Post, files, postId, {
+      parentModelId: payload.id,
+    });
+    return c.json(ret);
+  } catch (e) {
+    console.log(e);
+    return c.json(InternalError());
+  }
+  /*const post = await Post.findByPk(postId, {
     include: [Bio],
   });
 
@@ -149,7 +154,7 @@ async function updatePostImages(c: Context) {
     await upsertMedia(payload.id, post.BioId, files);
   }
 
-  return c.json(Ok());
+  return c.json(Ok());*/
 }
 
 async function updatePost(c: Context) {
@@ -173,12 +178,21 @@ async function updatePost(c: Context) {
 async function updatePoster(c: Context) {
   const file = c.var.files["poster"];
   const payload = c.get("tokenPayload");
-  const artist = await Artist.findByPk(payload.id, { include: [Bio] });
+  try {
+    const ret = await updateImages(Artist, file, payload.id, {
+      isPoster: true,
+    });
+    return c.json(ret);
+  } catch (e) {
+    console.log(e);
+    return c.json(InternalError());
+  }
+  /*const artist = await Artist.findByPk(payload.id, { include: [Bio] });
   if (!artist) {
     return c.json(NotFound());
   }
   await upsertMedia(payload.id, artist.BioId, file, true);
-  return c.json(Ok());
+  return c.json(Ok());*/
 }
 
 async function getArtists(c: Context) {
@@ -219,7 +233,6 @@ async function updateArtist(c: Context) {
     bio,
     members,
     genre,
-    images,
     links,
   } = data;
 
@@ -239,8 +252,20 @@ async function updateArtist(c: Context) {
   if (!bioRes) {
     const newBio = await Bio.create({ description: bio });
     await artistUpdateRes.update({ BioId: newBio.id });
+    for (const link of links) {
+      await Link.upsert({
+        BioId: newBio.id,
+        url: link.url,
+      });
+    }
   } else {
     await bioRes.update({ description: bio });
+    for (const link of links) {
+      await Link.upsert({
+        BioId: bioRes.id,
+        url: link.url,
+      });
+    }
   }
 
   for (const member of members) {
@@ -299,7 +324,16 @@ async function uploadMedia(c: Context) {
   const files = c.var.files["media[]"];
   const payload = c.get("tokenPayload");
 
-  const artist = await Artist.findByPk(payload.id, {
+  try {
+    const ret = await updateImages(Artist, files, payload.id, {
+      parentModelId: payload.id,
+    });
+    return c.json(ret);
+  } catch (e) {
+    console.log(e);
+    return c.json(InternalError(null, "Something went wrong"));
+  }
+  /*const artist = await Artist.findByPk(payload.id, {
     include: [Bio],
   });
 
@@ -315,7 +349,7 @@ async function uploadMedia(c: Context) {
 
   await deleteMedia(files, allMedia, payload.id, artist.BioId);
 
-  return c.json(Ok());
+  return c.json(Ok());*/
 }
 
 async function registerForEvent(c: Context) {}

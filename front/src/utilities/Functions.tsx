@@ -10,7 +10,7 @@ import React, {
   KeyboardEvent,
   Dispatch,
   useContext,
-    useMemo
+  useMemo
 } from "react";
 import {
   Button,
@@ -35,9 +35,9 @@ import {
   type UnderwaveEnumeration, StateHandler,
 } from "./Types.tsx";
 import { type DefaultAction } from "./Reducer.ts";
-import type { NavigateFunction } from "react-router-dom";
-import { logout } from "../api/auth.ts";
 import {Theme} from "../theme.ts";
+import { Loading } from "./Loading.tsx";
+import { usePrevious } from "../Hooks.ts";
 
 export function ToCurrencySymbol(currency: string) {
   switch (currency) {
@@ -83,7 +83,7 @@ export const StyledUnderwaveField = styled.div`
 
     .field {
         background-color: ${({ theme }) => theme.semiLightCream};
-
+        max-width: min-content;
         color: ${({ theme }) => theme.brownText};
 
         &:disabled {
@@ -180,9 +180,9 @@ export declare type UnderwaveHeaderProps<E extends ElementType> =
 
 declare type DynamicListProps<T extends ObjectWithKeys> =
   UnderwaveHeaderProps<ElementType> & {
-    array: T[];
+    array: (T & { isNewEntry?: boolean })[];
     name: string;
-    setArray: React.Dispatch<SetStateAction<T[]>>
+    setArray: React.Dispatch<SetStateAction<(T & { isNewEntry?: boolean })[]>>
     pattern: RegExp;
     noDisable?: boolean;
     template: Partial<T>;
@@ -222,11 +222,12 @@ export function DynamicListForm<T extends ObjectWithKeys>({
     }
     return ret;
   }
+  const prevEditState = usePrevious(disabled)
 
   const t = useMemo(() => new Theme(), []);
 
   useEffect(() => {
-    if(arrStates[arrStates.length - 1] && !(arrStates[arrStates.length - 1].isNewEntry) && !disabled) {
+    if(arrStates[arrStates.length - 1] && !(arrStates[arrStates.length - 1].isNewEntry) && !disabled || !(arrStates[arrStates.length - 1])) {
       add(internalTemplate)
     }
   }, [disabled])
@@ -235,8 +236,11 @@ export function DynamicListForm<T extends ObjectWithKeys>({
     if(disabled && arrStates[arrStates.length - 1] && (arrStates[arrStates.length - 1].isNewEntry)) {
       remove(arrStates.length - 1);
     }
-    return () => reset();
   }, [disabled])
+
+  useEffect(() => {
+    reset()
+  }, [disabled]);
 
   useEffect(() => {
     setArray(arrStates);
@@ -331,7 +335,7 @@ export function DynamicListForm<T extends ObjectWithKeys>({
                       hidden={disabled}
                       className="add-remove-button"
                       onClick={() => add(template)}
-                      disabled={!testPatternAgainstRequiredKeys(a, pattern)}
+                      disabled={!testPatternAgainstRequiredKeys(a, pattern) || disabled}
                       style={{backgroundColor: t.teal }}
                     >
                       +
@@ -832,13 +836,17 @@ export function useStateArrayFactory<T extends ObjectWithKeys>(
   remove: (index: number) => void;
   reset: () => void;
 } {
-  const [arrStates, setArrStates] = useState<T[]>(() => arr.map(a => { return { ...a, isNewEntry: false}}));
+  const original = useMemo(() => arr, []);
+  const [arrStates, setArrStates] = useState<T[]>(arr.map(a => { return { ...a, isNewEntry: false}}));
 
-  const add = (obj: T) => {
-    setArrStates((prev) => [...prev, obj]);
-  };
+  function add (obj: T) {
+    setArrStates((prev) => {
+      console.log([...prev, obj])
+      return [...prev, obj]
+    });
+  }
 
-  const update = (index: number, key: keyof T, value: T[keyof T]) => {
+  function update(index: number, key: keyof T, value: T[keyof T]) {
     setArrStates((prev) =>
       prev.map((item, i) =>
         i === index
@@ -849,21 +857,21 @@ export function useStateArrayFactory<T extends ObjectWithKeys>(
           : item,
       ),
     );
-  };
+  }
 
-  const remove = (index: number) => {
+  function remove(index: number) {
     setArrStates((prev) => prev.filter((_, i) => i !== index));
-  };
+  }
 
-  const reset = () => {
-    setArrStates(arr);
+  function reset() {
+    setArrStates(original);
   }
 
   return { arrStates, add, update, remove, reset };
 }
 
 export function cfl(val) {
-  return String(val).charAt(0).toUpperCase() + String(val).slice(1);
+  return String(val).charAt(0).toUpperCase() + (val as unknown as string).slice(1);
 }
 
 // deno-lint-ignore ban-types
@@ -1000,6 +1008,62 @@ export function parseTextWithPossibleLineBreaks(text: string) {
   return text.split("\n").map((a, idx) => {
       return <p key={idx}>{a}</p>;
     })
+}
+
+declare type ResolveProps<T> = RequestReturn<T> & WithChildren;
+
+declare type WithChildren = {
+  children?: React.ReactNode;
+}
+
+declare type RequestReturn<T> = {
+  isLoading: boolean;
+  isError: string | null;
+  response: T | null;
+}
+
+/**
+ * Children of `Resolve` that make use of the `response`-parameter need to be able to accept a `null` value
+ *
+ * otherwise the application will throw
+ */
+export function Resolve<T>({ isLoading, isError, response, children }: ResolveProps<T>) {
+
+
+  if(isLoading) return <Loading />
+  if(!response) return <h1 style={{ position: "absolute", top: "45vh", left: "50vh" }}>Error</h1>
+  if(isError) return <h1 style={{ position: "absolute", top: "45vh" }}>{isError}</h1>
+
+  return children
+}
+
+declare type ResolveAllProps = WithChildren & {
+  requests: RequestReturn<any>[];
+}
+
+export function ResolveAll({ requests, children }: ResolveAllProps) {
+  const errors = useMemo(() => requests.filter(a => a.isError), [requests]);
+  const loaders = useMemo(() => requests.filter(a => a.isLoading), [requests]);
+  const nullResponses = useMemo(() => requests.filter(a => !a.response), [requests]);
+
+  console.log(errors, loaders, nullResponses)
+  return (
+    <>
+      {
+        errors.length > 0 ? (
+            <h1 style={{ position: "absolute", top:"45vh" }}>{isError}</h1>
+          )
+          : loaders.length > 0 ? (
+              <Loading />
+            )
+            : nullResponses.length > 0 ? (
+              <h1 style={{ position: "absolute", top:"45vh", left:"50vh" }}>Error</h1>
+            ) : (
+              children
+            )
+      }
+    </>
+  )
 }
 
 export const Toggle = StateToggleButtonField;

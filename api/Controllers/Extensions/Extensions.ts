@@ -1,13 +1,12 @@
-﻿import { Venue } from "../../Database/Model/Venue.ts";
+﻿import { Media } from "../../Database/Model/Media.ts";
 import { Artist } from "../../Database/Model/Artist.ts";
-import { Media } from "../../Database/Model/Media.ts";
+import { Venue } from "../../Database/Model/Venue.ts";
+import Event from "../../Database/Model/Event.ts";
+import { Post } from "../../Database/Model/Post.ts";
 import readFileSync = Deno.readFileSync;
-
-async function addPoster<T extends Venue | Artist | Event>(
-  model: T,
-  media: Media[],
-) {
-}
+import { ModelStatic } from "npm:sequelize";
+import { Bio } from "../../Database/Model/Bio.ts";
+import { NotFound, Ok } from "../../../Shared/Result.ts";
 
 export function getPoster<
   T extends { Bio?: { Media?: Media[] }; [index: string]: any },
@@ -33,13 +32,33 @@ export function getModelWithPoster<
 export async function upsertMedia(
   id: string | number,
   bioId: number,
-  file: any,
+  files: any,
   poster?: boolean,
 ) {
-  if (typeof file === "string") {
+  if (typeof files === "string" || !files) {
     return;
   }
-  const [name, extension] = file.name.split(".");
+
+  if (Array.isArray(files)) {
+    for (const file of files) {
+      if (typeof file === "string") {
+        continue;
+      }
+
+      const [name, extension] = file.name.split(".");
+      await Media.upsert({
+        BioId: bioId,
+        internal: true,
+        href: `${name}-${id}.${extension}`,
+        poster: poster ? poster : null,
+      });
+    }
+    return;
+  }
+  if (typeof files === "string") {
+    return;
+  }
+  const [name, extension] = files.name.split(".");
   await Media.upsert({
     BioId: bioId,
     internal: true,
@@ -49,7 +68,7 @@ export async function upsertMedia(
 }
 
 export async function deleteMedia(
-  files: any[],
+  files: any,
   media: Media[],
   id: string,
   bioId: number,
@@ -79,4 +98,52 @@ export async function deleteMedia(
       });
     }
   }
+}
+
+type BioModel = Artist | Venue | Post | Event;
+
+export async function updateImages<T extends ModelStatic<BioModel>>(
+  model: T,
+  files: Array<File> | Array<string> | File | string,
+  modelId: string | number,
+  options?: {
+    parentModelId?: string;
+    isPoster?: boolean;
+  },
+) {
+  const modelInstance = await model.findByPk(modelId, {
+    include: [Bio],
+  });
+
+  if (!modelInstance) {
+    return NotFound(null, `Entry with id ${modelId} doesn't exist`);
+  }
+  let bio: Bio | null;
+  if (!modelInstance.Bio) {
+    bio = await Bio.create({});
+    await modelInstance.addBio(bio);
+  } else {
+    bio = modelInstance.Bio;
+  }
+
+  const fileId = options?.parentModelId
+    ? options.parentModelId
+    : String(modelId);
+
+  await upsertMedia(fileId, bio!.id, files, options?.isPoster);
+
+  if (options?.isPoster) {
+    return Ok();
+  }
+
+  const allMedia = await modelInstance.Bio.getMedia();
+
+  await deleteMedia(
+    files,
+    allMedia,
+    fileId,
+    bio!.id,
+  );
+
+  return Ok();
 }

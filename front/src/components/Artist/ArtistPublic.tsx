@@ -1,6 +1,6 @@
 ﻿import { useArtistRefetch, useAuth, useImageDimensions, useIsFollowingArtist, useRequest } from "../../Hooks.ts";
 import type { Artist } from "../../../../api/Database/Model/Artist.ts";
-import { getImage, getRequest } from "../../api/APITemplate.ts";
+import { getImage } from "../../api/APITemplate.ts";
 import { StyledArtistProfile } from "../User/StyledProfile.tsx";
 import Grid from "../Misc/Grid.tsx";
 import { FlexCol } from "../Misc/CustomStyles.tsx";
@@ -10,7 +10,6 @@ import { FollowHeartButton } from "../Misc/MiscComponents.tsx";
 import { followArtist, unfollowArtist } from "../../api/Common.ts";
 import { useMemo, useContext } from "react";
 import { useSearchParams} from "react-router-dom";
-import { IoNewspaperSharp} from "react-icons/io5";
 import { LiaShareAltSquareSolid, LiaEnvelope } from "react-icons/lia"
 import { Tabs, Tab, Col, Row, Button } from "react-bootstrap";
 import { Loading } from "../../utilities/Loading.tsx";
@@ -18,6 +17,8 @@ import { parseTextWithPossibleLineBreaks } from "../../utilities/Functions.tsx";
 import { ViewableListPost } from "../Misc/Posts.tsx";
 import { ArtistImage } from "./Artist.tsx";
 import { ThemeContext } from "styled-components";
+import { Links } from "../Misc/Links.tsx";
+
 
 export default function ArtistProfilePublic() {
   useAuth(-1);
@@ -139,6 +140,18 @@ function ArtistMiddle(props: ArtistProps) {
       ) : (
         "Nothing to show"
       )}
+      </div>
+      <div
+        className={"mt-3"}
+        style={{
+          overflowX: "auto",
+          display: "inline-block",
+          width: "100%",
+          maxWidth: "100%",
+          whiteSpace:"nowrap",
+        }}
+      >
+        <Links item={props.artist} />
       </div>
     </Col>
   );

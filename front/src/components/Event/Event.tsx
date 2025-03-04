@@ -63,23 +63,27 @@ function EventPage() {
 }
 
 export function AllEvents() {
-  const [list, setList] = useState<Event[]>();
+  useAuth(-1);
+  const [list, setList] = useState<Event[]>([]);
   const [filteredList, setFilteredList] = useState<Event[]>([]);
   const [filters, setFilters] = useState<Filter>({
     name: { value: "", label: "Search by name", type: "text" },
     address: { value: "", label: "Address", type: "text" },
     age: { value: false, label: "Age restriction (18+) ", type: "checkbox" },
   } as const);
+  const [offset, setOffset] = useState(0);
+
+  async function getData() {
+    const a = await getRequest<Event[]>(`${paths.event.all}?offset=${offset}`);
+    if (a.isSuccess()) {
+      const upcoming = a.response.filter(b => b);
+      setList((prev) => [...prev, ...upcoming]);
+      setFilteredList([...list, ...upcoming]);
+      setOffset(prev => prev + upcoming.length);
+    }
+  }
 
   useEffect(() => {
-    async function getData() {
-      const a = await getRequest<Event[]>(`${paths.event.all}`);
-      if (a.isSuccess()) {
-        const upcoming = a.response.filter(b => b);
-        setList(upcoming);
-        setFilteredList(upcoming);
-      }
-    }
     getData();
   }, []);
 
@@ -130,8 +134,11 @@ export function AllEvents() {
       {list ? (
         <Grid header={"Events"} wideColumnIndex={1}>
           <ListFilter filters={filters} setFilters={setFilters} onFilter={onFilter}/>
-          <div style={{ textAlign: "center" }}>
+          <div style={{ textAlign: "center", maxHeight: "50vh" }}>
             <EventCalendar events={filteredList} />
+            <Button className="mt-3" onClick={async () => {
+              await getData();
+            }}>Show more</Button>
           </div>
           <div></div>
         </Grid>
@@ -155,14 +162,14 @@ function RenderEvent({ event }: { event: Event }) {
   );
   const artistReview = useMemo(() => {
     const relevant = u && u.type === 1;
-    const other = event.Artists.find(a => a.id === u.id)
+    const other = event.Artists.find(a => a.id === u?.id)
     const date = new Date(event.end) < new Date();
     return relevant && other && date;
   }, [u, event]);
 
   const venueReview = useMemo(() => {
     const relevant = u && u.type === 2;
-    const other = event.Venue.id === u.id;
+    const other = event.Venue.id === u?.id;
     const date = new Date(event.end) < new Date();
     return relevant && other && date;
   }, [u, event])
