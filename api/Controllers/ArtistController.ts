@@ -129,7 +129,7 @@ async function updatePostImages(c: Context) {
   const files = c.var.files["media[]"];
   const postId = c.req.param("postId");
   const payload = c.get("tokenPayload");
-
+  if (!files) return c.json(Ok());
   try {
     const ret = await updateImages(Post, files, postId, {
       parentModelId: payload.id,
@@ -178,6 +178,7 @@ async function updatePost(c: Context) {
 async function updatePoster(c: Context) {
   const file = c.var.files["poster"];
   const payload = c.get("tokenPayload");
+  if (!file) return c.json(Ok());
   try {
     const ret = await updateImages(Artist, file, payload.id, {
       isPoster: true,
@@ -323,7 +324,7 @@ async function getEventAndStatistics(c: Context) {}
 async function uploadMedia(c: Context) {
   const files = c.var.files["media[]"];
   const payload = c.get("tokenPayload");
-
+  if (!files) return c.json(Ok());
   try {
     const ret = await updateImages(Artist, files, payload.id, {
       parentModelId: payload.id,

@@ -112,7 +112,7 @@ async function deleteEvent(c: Context) {
 async function uploadMedia(c: Context) {
   const files = c.var.files["media[]"];
   const payload = c.get("tokenPayload");
-
+  if (!files) return c.json(Ok());
   try {
     const ret = await updateImages(Venue, files, payload.id);
     return c.json(ret);
@@ -228,7 +228,7 @@ async function addEventPoster(c: Context) {
   const file = c.var.files["poster"];
   const payload = c.get("tokenPayload");
   const eventId = c.req.param("eventId");
-
+  if (!file) return c.json(Ok());
   try {
     const ret = await updateImages(Event, file, eventId, {
       parentModelId: payload.id,
@@ -358,7 +358,7 @@ async function rateArtist(c: Context) {
 async function updatePoster(c: Context) {
   const file = c.var.files["poster"];
   const payload = c.get("tokenPayload");
-
+  if (!file) return c.json(Ok());
   try {
     const ret = await updateImages(Venue, file, payload.id, { isPoster: true });
     return c.json(ret);

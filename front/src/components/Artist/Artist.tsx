@@ -170,8 +170,6 @@ function ArtistViewProfile({ artist, subState, updateSubState }: { artist: Artis
       }
       updated = true;
     }
-
-    console.log(updated);
     return updated;
   }
   function reset() {
@@ -199,7 +197,11 @@ function ArtistViewProfile({ artist, subState, updateSubState }: { artist: Artis
   const onImagesChange = (imageList: ImageListType) => {
     setImages(imageList);
   }
-
+  function toastErrors(errors) {
+    errors.maxFileSize && toast.warning("Selected file size exceed maxFileSize")
+    errors.maxFileSize = false;
+    return <></>
+  }
   return (
     <>
     <EditableProfileHeaders subState={subState} updateSubState={updateSubState} submit={submit} reset={reset} />
@@ -212,6 +214,7 @@ function ArtistViewProfile({ artist, subState, updateSubState }: { artist: Artis
                 value={poster}
                 onChange={onChange}
                 maxNumber={1}
+                maxFileSize={10_000}
                 dataURLKey="data_url"
               >
                 {({
@@ -221,9 +224,13 @@ function ArtistViewProfile({ artist, subState, updateSubState }: { artist: Artis
                   onImageRemove,
                   isDragging,
                   dragProps,
+                  errors,
                   }: ExportInterface) => (
                   // write your building UI
                   <div className="upload__image-wrapper">
+                    {errors ?
+                      toastErrors(errors)
+                      : null}
                     {(edit && poster.length === 0) ? (
                       <>
                         <Button
