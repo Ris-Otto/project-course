@@ -7,8 +7,6 @@ import { Loading } from "../../utilities/Loading.tsx";
 import { artistFollowing, refetchFollowedArtists, refetchFollowedVenues, venueFollowing } from "../../store.ts";
 import { useAtom } from "jotai";
 import { ListWrapper } from "../Misc/CustomStyles.tsx";
-import { ArtistInList } from "../Artist/AllArtists.tsx";
-import { VenueInList } from "../Venue/VenuePublic.tsx";
 import { ObservableListItem } from "../Misc/ObservableListItem.tsx";
 import { followArtist, followVenue, unfollowArtist, unfollowVenue } from "../../api/Common.ts";
 import { UnderwaveHeader } from "../../utilities/Functions.tsx";

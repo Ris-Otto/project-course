@@ -173,17 +173,19 @@ async function publishEvent(c: Context) {
 
 async function addEvent(c: Context) {
   const payload = c.get("tokenPayload");
+  const venue = await Venue.findByPk(payload.id);
+  if (!venue) return c.json(NotFound());
   const event = await c.req.json();
   const {
     name,
     start,
     end,
     bio,
-    /*poster,
+    //poster,
     address,
     city,
     zip,
-    capacity,*/
+    //capacity,
     artists,
     /*type,
     tags,*/
@@ -191,6 +193,7 @@ async function addEvent(c: Context) {
     amount,
     paymentMethod,
     age,
+    location,
   } = event;
 
   const bioRes = await Bio.create({ description: bio }).then(
@@ -203,6 +206,8 @@ async function addEvent(c: Context) {
     currency: "EUR",
   });
 
+  const loc = location && address !== venue.address;
+
   const eventRes = await Event.create({
     name: name,
     age: age,
@@ -213,6 +218,10 @@ async function addEvent(c: Context) {
     BioId: bioRes.id,
     PricingId: pricingRes.id,
     published: published,
+    address: address,
+    zip: zip,
+    city: city,
+    location: loc,
   }).then((data) => data.get({ plain: true }));
 
   for (const artist of artists) {
@@ -251,16 +260,17 @@ async function addEventPoster(c: Context) {
 
 async function updateEvent(c: Context) {
   const payload = c.get("tokenPayload");
-
+  const venue = await Venue.findByPk(payload.id);
+  if (!venue) return c.json(NotFound());
   const data = await c.req.json();
   const {
     name,
     start,
     end,
     bio,
-    //address,
-    //city,
-    //zip,
+    address,
+    city,
+    zip,
     //capacity,
     artists,
     //type,
@@ -269,6 +279,7 @@ async function updateEvent(c: Context) {
     amount,
     paymentMethod,
     age,
+    location,
   } = data;
 
   const eventId = c.req.param("eventId");
@@ -289,12 +300,19 @@ async function updateEvent(c: Context) {
     description: bio ? bio : bioRes?.description || "",
     media: data.bio.media || null,
   };
+
+  const loc = location && address !== venue.address;
+
   await event.update({
     name: name,
     age: age,
     start: start,
     end: end,
     published: published ? published : event.published,
+    address: address,
+    zip: zip,
+    city: city,
+    location: loc,
   });
 
   await pricing?.update({ ...newPricing });

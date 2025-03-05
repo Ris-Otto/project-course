@@ -33,7 +33,7 @@ export function AddEvent({
   const [removedArtists, setRemovedArtists] = useState<SearchArtist[]>([]);
   const [artists, setArtists] = useState<SearchArtist[]>([]);
   const [cost, scost] = useState(0);
-  const [pm, spm] = useState(-1);
+  const [pm, spm] = useState(0);
   const [start, setStart] = useState(new Date());
   const [end, setEnd] = useState(new Date());
   const [bio, sbio] = useState("");
@@ -99,6 +99,7 @@ export function AddEvent({
       amount: cost,
       age: age,
       paymentMethod: pm,
+      location: loc,
     })
 
     const ret = res.isSuccess();

@@ -29,9 +29,9 @@ function EditEvent({ event, updateSubState }: {
   const [addedArtists, setAddedArtists] = useState<SearchArtist[]>(event.Artists.map(a => { return {value: a.id, label: a.name}}));
   const [removedArtists, setRemovedArtists] = useState<SearchArtist[]>([]);
   const [artists, setArtists] = useState<SearchArtist[]>(event.Artists.map(a => { return {value: a.id, label: a.name}}));
-  const [addr, saddr] = useState(() => event.Venue.address);
-  const [zip, szip] = useState(() => event.Venue.zip);
-  const [city, scity] = useState(() => event.Venue.city);
+  const [addr, saddr] = useState(() => event.address);
+  const [zip, szip] = useState(() => event.zip);
+  const [city, scity] = useState(() => event.city);
   const [bio, sbio] = useState(() => (event.Bio ? event.Bio.description : ""));
   const [start, setStart] = useState(() => convertToDateTimeLocalString(new Date(event.start)));
   const [end, setEnd] = useState(() => convertToDateTimeLocalString(new Date(event.end)));
@@ -67,6 +67,8 @@ function EditEvent({ event, updateSubState }: {
       return false;
     }
 
+    const location = loc && addr !== event.Venue.address;
+
     const res = await postRequest<Event>(`${paths.venue.event.update}/${event.id}`, {
       name: name,
       start: start,
@@ -74,6 +76,7 @@ function EditEvent({ event, updateSubState }: {
       bio: bio,
       poster: image,
       address: addr,
+      location: loc,
       city: city,
       zip: zip,
       capacity: capacity,

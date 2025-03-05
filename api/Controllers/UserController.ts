@@ -140,6 +140,7 @@ async function getEvents(c: Context) {
         ],
       }),
       includeBio(),
+      includeArtist(),
     ],
     attributes: {
       exclude: ["VenueId", "PricingId", "createdAt", "updatedAt"],

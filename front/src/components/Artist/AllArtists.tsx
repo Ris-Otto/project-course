@@ -60,37 +60,47 @@ function AllArtists() {
     return fuse.search(String(filters[key].value))
   }
 
+  function reset() {
+    setFilteredList(artists.response ? artists.response : []);
+    setFilters({
+      name: {
+        value: "",
+        label: "Name",
+        type: "text"
+      },
+      genre: {
+        value: "",
+        label: "Genre",
+        type: "text"
+      },
+    })
+  }
+
   function onFilter() {
+    let finalFiltered: Artist[] = artists.response ? artists.response : [];
     for (const [k, v] of ObjectEntries(filters)) {
       switch (k) {
         case "name":
           if (v.value !== "") {
-            setTimeout(() => {
-              setFilteredList(fuseText(filteredList, "name").map((a) => a.item)
-              );
-            }, 200);
-            return;
+            finalFiltered = fusetText(finalFiltered, "name").map(a => a.item);
           }
           break;
         case "genre":
           if (v.value !== "") {
-            setTimeout(() => {
-              setFilteredList(fuseText(filteredList, "genre").map((a) => a.item));
-            }, 0);
-            return;
+            finalFiltered = fuseText(finalFiltered, "genre").map((a) => a.item)
           }
           break;
         default:
           break;
       }
     }
-    setFilteredList(artists.response ? artists.response : []);
+    setFilteredList(finalFiltered);
   }
 
 
   return (
     <Grid narrowColumnIndex={0} header={"Artists"}>
-      <ListFilter filters={filters} setFilters={setFilters} onFilter={onFilter}/>
+      <ListFilter filters={filters} setFilters={setFilters} onFilter={onFilter} reset={reset}/>
       <ListWrapper>
         <div className="row-wrap-start" >
           {filteredList.map((a, idx) =>

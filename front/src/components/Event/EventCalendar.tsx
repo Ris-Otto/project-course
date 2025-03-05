@@ -172,7 +172,7 @@ function CalendarInfo({
       {start} - {end}
       <br />
       <IoLocationSharp />
-      {event.Venue.address}
+      {event.address}
     </div>
   );
 }
@@ -180,7 +180,6 @@ function CalendarInfo({
 function EventHover({ event, rect }: { event: Event, rect: DOMRect | undefined }) {
   const pos = useMemo(() => {
     if(!rect) return {x: 0, y: 0}
-
     if(rect.right + 300 > globalThis.innerWidth) {
       return {
         x: Math.abs(rect.x - (globalThis.innerWidth - rect.width)*0.6),
@@ -193,7 +192,6 @@ function EventHover({ event, rect }: { event: Event, rect: DOMRect | undefined }
     }
   }, [rect])
 
-  console.log(pos);
   return (
     <div
       style={{

@@ -13,6 +13,7 @@ import { refetchFollowedVenues, venueFollowing } from "../../store.ts";
 import { useAtom } from "jotai";
 import { followVenue, unfollowVenue } from "../../api/Common.ts";
 import Fuse from "fuse.js";
+import { IoLocationSharp } from "react-icons/io5";
 
 function AllVenues() {
   useAuth(-1);
@@ -27,7 +28,7 @@ function AllVenues() {
       label: "Address",
       type: "text"
     }
-  } as const);
+  });
 
   const [filteredList, setFilteredList] = useState<Venue[]>([]);
 
@@ -39,30 +40,40 @@ function AllVenues() {
   }
 
   function onFilter() {
+    let finalFiltered: Venue[] = venues.response ? venues.response : [];
     for (const [k, v] of ObjectEntries(filters)) {
       switch (k) {
         case "name":
           if (v.value !== "") {
-            setTimeout(() => {
-              setFilteredList(fuseText(filteredList, "name").map((a) => a.item)
-              );
-            }, 0);
-            return;
+            finalFiltered = fuseText(finalFiltered, "name").map((a) => a.item)
           }
           break;
         case "address":
           if (v.value !== "") {
-            setTimeout(() => {
-              setFilteredList(fuseText(filteredList, "address").map((a) => a.item));
-            }, 0);
-            return;
+            finalFiltered = fuseText(finalFiltered, "address").map((a) => a.item)
           }
           break;
         default:
           break;
       }
     }
+    setFilteredList(finalFiltered);
+  }
+
+  function reset() {
     setFilteredList(venues.response ? venues.response : []);
+    setFilters({
+      name: {
+        value: "",
+        label: "Name",
+        type: "text"
+      },
+      address: {
+        value: "",
+        label: "Address",
+        type: "text"
+      }
+    })
   }
 
   const [, setRefetch] = useAtom(refetchFollowedVenues)
@@ -78,7 +89,7 @@ function AllVenues() {
 
   return (
     <Grid narrowColumnIndex={0} header={"Venues"}>
-      <ListFilter filters={filters} setFilters={setFilters} onFilter={onFilter} />
+      <ListFilter filters={filters} setFilters={setFilters} onFilter={onFilter} reset={reset} />
       <ListWrapper>
         <div className="row-wrap-start" >
           {filteredList.map((a, idx) =>
@@ -90,7 +101,14 @@ function AllVenues() {
               navigatePath={"/venues/public?venueId"}
               follow={followVenue}
               unfollow={unfollowVenue}
-            />
+            >
+              {a.address ? (
+              <div>
+                <IoLocationSharp size={30} style={{ marginRight: "5px" }} />
+                {a.address}
+              </div>
+              ) : null}
+            </ObservableListItem>
           )}
         </div>
       </ListWrapper>

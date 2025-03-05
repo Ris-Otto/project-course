@@ -29,9 +29,10 @@ import { FlexCol} from "../Misc/CustomStyles.tsx";
 import { parseTextWithPossibleLineBreaks } from "../../utilities/Functions.tsx";
 import { ArtistImage } from "../Artist/Artist.tsx";
 import { ThemeContext } from "styled-components";
+import { toast } from "react-toastify";
 import { MapContainer, TileLayer, useMap, Marker } from 'react-leaflet'
 import { OpenStreetMapProvider } from 'leaflet-geosearch';
-import { toast } from "react-toastify";
+
 
 
 
@@ -49,7 +50,7 @@ function MapPlaceholder() {
   )
 }
 
-function MapWithPlaceholder({center}: { center?: [number, number]}) {
+export function MapWithPlaceholder({center}: { center?: [number, number]}) {
 
   return (
     <MapContainer

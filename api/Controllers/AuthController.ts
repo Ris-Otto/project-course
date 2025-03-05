@@ -100,7 +100,6 @@ async function registerUser(c: Context) {
   }
 }
 
-//TODO Split
 async function login(c: Context) {
   const { email, password } = await c.req.json<User>();
 

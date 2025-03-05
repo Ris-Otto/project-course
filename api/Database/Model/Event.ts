@@ -37,6 +37,7 @@ class Event extends Model {
   declare zip: string;
   declare city: string;
   declare poster?: string;
+  declare location?: boolean;
   declare getArtists: () => Promise<Artist[]>;
   declare getVenue: () => Promise<Venue>;
   declare getBio: () => Promise<Bio>;
@@ -73,6 +74,10 @@ Event.init(
     published: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
+    },
+    location: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
     },
     address: {
       type: DataTypes.STRING,
