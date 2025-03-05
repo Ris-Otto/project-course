@@ -23,7 +23,11 @@ import { PlayRequest } from "../Database/Model/PlayRequest.ts";
 import { Review } from "../Database/Model/Review.ts";
 import { Post } from "../Database/Model/Post.ts";
 import { storage } from "../storage.ts";
-import { updateImages } from "./Extensions/Extensions.ts";
+import {
+  updateImages,
+  updateLinks,
+  updateMembers,
+} from "./Extensions/Extensions.ts";
 
 const artistController = new Hono();
 artistController.get("/all", getArtists);
@@ -40,11 +44,6 @@ artistController.post(
   updatePostImages,
 );
 
-artistController.post(
-  "/members/update",
-  tokenMiddleware.verifyIsBand,
-  updateMembers,
-);
 artistController.post("/update", tokenMiddleware.verifyIsBand, updateArtist);
 artistController.post(
   "/rate/:eventId/:venueId",
@@ -95,34 +94,44 @@ artistController.get(
 );
 
 async function getPosts(c: Context) {
-  const artistId = c.req.param("artistId");
+  try {
+    const artistId = c.req.param("artistId");
 
-  const posts = await Post.findAll({
-    where: {
-      ArtistId: artistId,
-    },
-    include: [includeBio()],
-  });
+    const posts = await Post.findAll({
+      where: {
+        ArtistId: artistId,
+      },
+      include: [includeBio()],
+    });
 
-  return c.json(Ok(posts));
+    return c.json(Ok(posts));
+  } catch (e) {
+    console.log(e);
+    return c.json(InternalError());
+  }
 }
 
 async function getPost(c: Context) {
-  const artistId = c.req.param("artistId");
-  const postId = c.req.param("postId");
-  const post = await Post.findOne({
-    where: {
-      id: postId,
-      ArtistId: artistId,
-    },
-    include: [includeBio()],
-  });
+  try {
+    const artistId = c.req.param("artistId");
+    const postId = c.req.param("postId");
+    const post = await Post.findOne({
+      where: {
+        id: postId,
+        ArtistId: artistId,
+      },
+      include: [includeBio()],
+    });
 
-  if (!post) {
-    return c.json(NotFound());
+    if (!post) {
+      return c.json(NotFound());
+    }
+
+    return c.json(Ok(post.get({ plain: true })));
+  } catch (e) {
+    console.log(e);
+    return c.json(InternalError());
   }
-
-  return c.json(Ok(post.get({ plain: true })));
 }
 
 async function updatePostImages(c: Context) {
@@ -158,21 +167,26 @@ async function updatePostImages(c: Context) {
 }
 
 async function updatePost(c: Context) {
-  const postId = c.req.param("postId");
-  const payload = c.get("tokenPayload");
-  const { text, name, published } = await c.req.json();
+  try {
+    const postId = c.req.param("postId");
+    const payload = c.get("tokenPayload");
+    const { text, name, published } = await c.req.json();
 
-  const [updated] = await Post.upsert({
-    id: postId,
-    ArtistId: payload.id,
-    text: text,
-    name: name,
-    published: published,
-  });
+    const [updated] = await Post.upsert({
+      id: postId,
+      ArtistId: payload.id,
+      text: text,
+      name: name,
+      published: published,
+    });
 
-  if (!updated) return c.json(Ok());
+    if (!updated) return c.json(Ok());
 
-  return c.json(Ok(updated.get({ plain: true })));
+    return c.json(Ok(updated.get({ plain: true })));
+  } catch (e) {
+    console.log(e);
+    return c.json(InternalError());
+  }
 }
 
 async function updatePoster(c: Context) {
@@ -197,101 +211,94 @@ async function updatePoster(c: Context) {
 }
 
 async function getArtists(c: Context) {
-  const artists = (await Artist.findAll({
-    include: [includeBio()],
-    attributes: {
-      exclude: ["password", "createdAt", "updatedAt"],
-    },
-  })).map((e) => e.get({ plain: true }));
-  return c.json(Ok(artists));
+  try {
+    const artists = (await Artist.findAll({
+      include: [includeBio()],
+      attributes: {
+        exclude: ["password", "createdAt", "updatedAt"],
+      },
+    })).map((e) => e.get({ plain: true }));
+    return c.json(Ok(artists));
+  } catch (e) {
+    console.log(e);
+    return c.json(InternalError());
+  }
 }
 
 async function publishAnnouncement(c: Context) {
-  const { text, name } = await c.req.json();
-  const payload = c.get("tokenPayload");
+  try {
+    const { text, name } = await c.req.json();
+    const payload = c.get("tokenPayload");
 
-  const bio = await Bio.create({});
+    const bio = await Bio.create({});
 
-  const post = await Post.create({
-    text: text,
-    ArtistId: payload.id,
-    BioId: bio.id,
-    name: name,
-    published: true,
-  });
+    const post = await Post.create({
+      text: text,
+      ArtistId: payload.id,
+      BioId: bio.id,
+      name: name,
+      published: true,
+    });
 
-  return c.json(Ok(post.get({ plain: true })));
+    return c.json(Ok(post.get({ plain: true })));
+  } catch (e) {
+    console.log(e);
+    return c.json(InternalError());
+  }
 }
 
-async function updateMembers(c: Context) {}
-
 async function updateArtist(c: Context) {
-  const payload = c.get("tokenPayload");
-  const data = await c.req.json();
-  const {
-    name,
-    email,
-    bio,
-    members,
-    genre,
-    links,
-  } = data;
+  try {
+    const payload = c.get("tokenPayload");
+    const data = await c.req.json();
+    const {
+      name,
+      email,
+      bio,
+      members,
+      genre,
+      links,
+    } = data;
 
-  const artist = await Artist.findByPk(payload.id);
+    const artist = await Artist.findByPk(payload.id);
 
-  if (!artist) {
-    return c.json(NotFound());
-  }
-
-  const artistUpdateRes = await artist.update({
-    name: name,
-    email: email,
-    genre: genre,
-  });
-
-  const bioRes = await artistUpdateRes.getBio();
-  if (!bioRes) {
-    const newBio = await Bio.create({ description: bio });
-    await artistUpdateRes.update({ BioId: newBio.id });
-    for (const link of links) {
-      await Link.upsert({
-        BioId: newBio.id,
-        url: link.url,
-      });
+    if (!artist) {
+      return c.json(NotFound());
     }
-  } else {
-    await bioRes.update({ description: bio });
-    for (const link of links) {
-      await Link.upsert({
-        BioId: bioRes.id,
-        url: link.url,
-      });
-    }
-  }
 
-  for (const member of members) {
-    const [inserted] = await Member.upsert(
-      {
-        name: member.name,
-        id: member.id,
-      },
-    );
-    await Role.upsert({
-      MemberId: inserted.id,
-      ArtistId: artist.id,
-      role: member.role,
+    const artistUpdateRes = await artist.update({
+      name: name,
+      email: email,
+      genre: genre,
     });
-  }
 
-  return c.json(
-    Ok(
-      await artistUpdateRes.reload({
-        include: [Member, Event, { model: Bio, include: [Media, Link] }],
-      }).then((a) => {
-        return (a.get({ plain: true }));
-      }),
-    ),
-  );
+    const bioRes = await artistUpdateRes.getBio();
+    if (!bioRes) {
+      const newBio = await Bio.create({ description: bio });
+      await artistUpdateRes.update({ BioId: newBio.id });
+      const oldLinks = await newBio.getLinks();
+      await updateLinks(newBio.id, links, oldLinks);
+    } else {
+      await bioRes.update({ description: bio });
+      const oldLinks = await bioRes.getLinks();
+      await updateLinks(bioRes.id, links, oldLinks);
+    }
+    const oldMembers = await artist.getMembers();
+    await updateMembers(oldMembers, members, payload.id);
+
+    return c.json(
+      Ok(
+        await artistUpdateRes.reload({
+          include: [Member, Event, { model: Bio, include: [Media, Link] }],
+        }).then((a) => {
+          return (a.get({ plain: true }));
+        }),
+      ),
+    );
+  } catch (e) {
+    console.log(e);
+    return c.json(InternalError());
+  }
 }
 
 async function rateVenue(c: Context) {
@@ -356,66 +363,81 @@ async function uploadMedia(c: Context) {
 async function registerForEvent(c: Context) {}
 
 async function getArtistProfile(c: Context) {
-  const pk = c.req.param("artistId");
-  const artist = await Artist.findByPk(pk, {
-    include: [includeEvent(), includeBio(), Member, {
-      model: Post,
-      include: [includeBio()],
-    }],
-    attributes: {
-      exclude: ["password", "createdAt", "updatedAt"],
-    },
-  });
-  if (artist === null) {
-    return c.json(NotFound());
-  }
+  try {
+    const pk = c.req.param("artistId");
+    const artist = await Artist.findByPk(pk, {
+      include: [includeEvent(), includeBio(), Member, {
+        model: Post,
+        include: [includeBio()],
+      }],
+      attributes: {
+        exclude: ["password", "createdAt", "updatedAt"],
+      },
+    });
+    if (artist === null) {
+      return c.json(NotFound());
+    }
 
-  return c.json(
-    Ok(artist.get({ plain: true })),
-  );
+    return c.json(
+      Ok(artist.get({ plain: true })),
+    );
+  } catch (e) {
+    console.log(e);
+    return c.json(InternalError());
+  }
 }
 
 async function self(c: Context) {
-  const payload = c.get("tokenPayload");
-  const artist = await Artist.findOne({
-    where: {
-      email: payload.email,
-      id: payload.id,
-    },
-    include: [Member, includeBio(), includeEvent(), PlayRequest, Review],
-    attributes: { exclude: ["password", "verified"] },
-  }).then((a) => (a === null ? null : a.get({ plain: true })));
-  if (!artist) {
-    deleteCookie(c, "access_token");
+  try {
+    const payload = c.get("tokenPayload");
+    const artist = await Artist.findOne({
+      where: {
+        email: payload.email,
+        id: payload.id,
+      },
+      include: [Member, includeBio(), includeEvent(), PlayRequest, Review],
+      attributes: { exclude: ["password", "verified"] },
+    }).then((a) => (a === null ? null : a.get({ plain: true })));
+    if (!artist) {
+      deleteCookie(c, "access_token");
 
-    return c.json(Unauthorized());
+      return c.json(Unauthorized());
+    }
+
+    return c.json(
+      Ok(artist),
+    );
+  } catch (e) {
+    console.log(e);
+    return c.json(InternalError());
   }
-
-  return c.json(
-    Ok(artist),
-  );
 }
 
 async function searchArtists(c: Context) {
-  const body = await c.req.json();
-  const lookupValue = body.searchValue;
+  try {
+    const body = await c.req.json();
+    const lookupValue = body.searchValue;
 
-  const results = await Artist.findAll({
-    limit: 10,
-    where: {
-      name: sequelize.where(
-        sequelize.fn("LOWER", sequelize.col("name")),
-        "LIKE",
-        "%" + lookupValue + "%",
-      ),
-    },
-  });
+    const results = await Artist.findAll({
+      limit: 10,
+      where: {
+        name: sequelize.where(
+          sequelize.fn("LOWER", sequelize.col("name")),
+          "LIKE",
+          "%" + lookupValue + "%",
+        ),
+      },
+    });
 
-  if (results.length === 0) return c.json(NotFound());
-  const ret = results.map((a) => {
-    return { value: a.id, label: a.name };
-  });
-  return c.json(Ok(ret));
+    if (results.length === 0) return c.json(NotFound());
+    const ret = results.map((a) => {
+      return { value: a.id, label: a.name };
+    });
+    return c.json(Ok(ret));
+  } catch (e) {
+    console.log(e);
+    return c.json(InternalError());
+  }
 }
 
 export default artistController;

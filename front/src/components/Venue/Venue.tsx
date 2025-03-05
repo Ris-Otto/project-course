@@ -490,10 +490,12 @@ export function VenueViewProfile({
       update = true;
     }
     const venueLinks = venue.Bio?.Links;
-    if(!venueLinks && links.length > 0) return true;
-
-    for (let i = 0; i < links.length; i++) {
-      if(venueLinks.find(l => l.url !== links[i].url)) {
+    const newLinks = links.filter(a => a.url.length > 0);
+    if(venueLinks.length !== newLinks.length) {
+      update = true;
+    }
+    for (let i = 0; i < newLinks.length; i++) {
+      if(venueLinks.find(l => l.url !== newLinks[i].url)) {
         update = true;
         break;
       }
@@ -518,7 +520,7 @@ export function VenueViewProfile({
     //Submit bio-specific details
     // media, links, description
     if(checkBio()) {
-      const bioUpdate = await postRequest<Bio>(paths.venue.bio.update, { bio, links });
+      const bioUpdate = await postRequest<Bio>(paths.venue.bio.update, { bio, links: links.filter(a => a.url.length > 0) });
       if(bioUpdate.isSuccess()) {
         toast.success("Bio details updated")
       } else {
@@ -748,21 +750,22 @@ export function VenueViewProfile({
                 </FlexCol>
               </div>
             </div>
-            <div style={{overflowX: "auto", maxWidth: "50%", whiteSpace: "nowrap"}}>
+            <div style={{overflowX: "auto", maxWidth: "50%", whiteSpace: "nowrap"}} className={"mb-3"}>
             <UnderwaveHeader header="Images" as="h3" color={t.redBrown} disabled={!edit} />
             {/*@ts-ignore bah*/}
             <ProfileImages edit={edit} images={images} onImagesChange={onImagesChange} />
             </div>
             <DynamicListForm
-                disabled={!edit}
-                header={"Links"}
-                as={"h3"}
-                array={links}
-                name={"links"}
-                setArray={slinks}
-                pattern={urlPattern}
-                template={{ url: "" }}
-                color={t.redBrown}
+              requiredKeys={["url"]}
+              disabled={!edit}
+              header={"Links"}
+              as={"h3"}
+              array={links}
+              name={"links"}
+              setArray={slinks}
+              pattern={urlPattern}
+              template={{ url: "" }}
+              color={t.redBrown}
             />
           </div>
         </Grid>

@@ -22,7 +22,7 @@ import { Link } from "../Database/Model/Link.ts";
 import { OpeningHour } from "../Database/Model/OpeningHour.ts";
 import { Artist } from "../Database/Model/Artist.ts";
 import { storage } from "../storage.ts";
-import { updateImages } from "./Extensions/Extensions.ts";
+import { updateImages, updateLinks } from "./Extensions/Extensions.ts";
 import { PlayRequest } from "../Database/Model/PlayRequest.ts";
 import { Review } from "../Database/Model/Review.ts";
 
@@ -92,21 +92,26 @@ venueController.post(
 );
 
 async function deleteEvent(c: Context) {
-  const payload = c.get("tokenPayload");
-  const eventId = c.req.param("eventId");
+  try {
+    const payload = c.get("tokenPayload");
+    const eventId = c.req.param("eventId");
 
-  const del = await Event.destroy({
-    where: {
-      id: eventId,
-      VenueId: payload.id,
-      published: 0,
-    },
-  });
+    const del = await Event.destroy({
+      where: {
+        id: eventId,
+        VenueId: payload.id,
+        published: 0,
+      },
+    });
 
-  if (del !== 1) {
-    return c.json(Unauthorized());
+    if (del !== 1) {
+      return c.json(Unauthorized());
+    }
+    return c.json(Ok());
+  } catch (e) {
+    console.log(e);
+    return c.json(InternalError());
   }
-  return c.json(Ok());
 }
 
 async function uploadMedia(c: Context) {
@@ -139,98 +144,118 @@ async function uploadMedia(c: Context) {
 }
 
 async function getVenues(c: Context) {
-  const venues = (await Venue.findAll({
-    include: [includeBio()],
-    attributes: {
-      exclude: ["password", "createdAt", "updatedAt"],
-    },
-  })).map((e) => e.get({ plain: true }));
+  try {
+    const venues = (await Venue.findAll({
+      include: [includeBio()],
+      attributes: {
+        exclude: ["password", "createdAt", "updatedAt"],
+      },
+    })).map((e) => e.get({ plain: true }));
 
-  return c.json(Ok(venues));
+    return c.json(Ok(venues));
+  } catch (e) {
+    console.log(e);
+    return c.json(InternalError());
+  }
 }
 
 async function requestArtist(c: Context) {
-  const payload = c.get("tokenPayload");
-  const venue = await Venue.findOne({
-    where: { id: payload.id },
-  });
-  if (!venue) return c.json(NotFound());
+  try {
+    const payload = c.get("tokenPayload");
+    const venue = await Venue.findOne({
+      where: { id: payload.id },
+    });
+    if (!venue) return c.json(NotFound());
+  } catch (e) {
+    console.log(e);
+    return c.json(InternalError());
+  }
 }
 
 async function publishEvent(c: Context) {
-  const eventId = c.req.param("eventId");
+  try {
+    const eventId = c.req.param("eventId");
 
-  await Event.update({
-    published: 1,
-  }, {
-    where: {
-      id: eventId,
-    },
-  });
+    await Event.update({
+      published: 1,
+    }, {
+      where: {
+        id: eventId,
+      },
+    });
 
-  return c.json(Ok());
+    return c.json(Ok());
+  } catch (e) {
+    console.log(e);
+    return c.json(InternalError());
+  }
 }
 
 async function addEvent(c: Context) {
-  const payload = c.get("tokenPayload");
-  const venue = await Venue.findByPk(payload.id);
-  if (!venue) return c.json(NotFound());
-  const event = await c.req.json();
-  const {
-    name,
-    start,
-    end,
-    bio,
-    //poster,
-    address,
-    city,
-    zip,
-    //capacity,
-    artists,
-    /*type,
+  try {
+    const payload = c.get("tokenPayload");
+    const venue = await Venue.findByPk(payload.id);
+    if (!venue) return c.json(NotFound());
+    const event = await c.req.json();
+    const {
+      name,
+      start,
+      end,
+      bio,
+      //poster,
+      address,
+      city,
+      zip,
+      //capacity,
+      artists,
+      /*type,
     tags,*/
-    published,
-    amount,
-    paymentMethod,
-    age,
-    location,
-  } = event;
+      published,
+      amount,
+      paymentMethod,
+      age,
+      location,
+    } = event;
 
-  const bioRes = await Bio.create({ description: bio }).then(
-    (data) => data.get({ plain: true }),
-  );
+    const bioRes = await Bio.create({ description: bio }).then(
+      (data) => data.get({ plain: true }),
+    );
 
-  const pricingRes = await Pricing.create({
-    amount: amount,
-    type: paymentMethod,
-    currency: "EUR",
-  });
+    const pricingRes = await Pricing.create({
+      amount: amount,
+      type: paymentMethod,
+      currency: "EUR",
+    });
 
-  const loc = location && address !== venue.address;
+    const loc = location && address !== venue.address;
 
-  const eventRes = await Event.create({
-    name: name,
-    age: age,
-    start: start,
-    end: end,
-    cancelled: 0,
-    VenueId: payload.id,
-    BioId: bioRes.id,
-    PricingId: pricingRes.id,
-    published: published,
-    address: address,
-    zip: zip,
-    city: city,
-    location: loc,
-  }).then((data) => data.get({ plain: true }));
+    const eventRes = await Event.create({
+      name: name,
+      age: age,
+      start: start,
+      end: end,
+      cancelled: 0,
+      VenueId: payload.id,
+      BioId: bioRes.id,
+      PricingId: pricingRes.id,
+      published: published,
+      address: address,
+      zip: zip,
+      city: city,
+      location: loc,
+    }).then((data) => data.get({ plain: true }));
 
-  for (const artist of artists) {
-    const artistRes = await Artist.findByPk(artist);
-    if (!artistRes) continue;
-    await artistRes.addEvent(eventRes.id);
+    for (const artist of artists) {
+      const artistRes = await Artist.findByPk(artist);
+      if (!artistRes) continue;
+      await artistRes.addEvent(eventRes.id);
+    }
+
+    return c.json(Ok(eventRes));
+  } catch (e) {
+    console.log(e);
+    return c.json(InternalError());
   }
-
-  return c.json(Ok(eventRes));
 }
 
 async function addEventPoster(c: Context) {
@@ -259,118 +284,133 @@ async function addEventPoster(c: Context) {
 }
 
 async function updateEvent(c: Context) {
-  const payload = c.get("tokenPayload");
-  const venue = await Venue.findByPk(payload.id);
-  if (!venue) return c.json(NotFound());
-  const data = await c.req.json();
-  const {
-    name,
-    start,
-    end,
-    bio,
-    address,
-    city,
-    zip,
-    //capacity,
-    artists,
-    //type,
-    //tags,
-    published,
-    amount,
-    paymentMethod,
-    age,
-    location,
-  } = data;
+  try {
+    const payload = c.get("tokenPayload");
+    const venue = await Venue.findByPk(payload.id);
+    if (!venue) return c.json(NotFound());
+    const data = await c.req.json();
+    const {
+      name,
+      start,
+      end,
+      bio,
+      address,
+      city,
+      zip,
+      //capacity,
+      artists,
+      //type,
+      //tags,
+      published,
+      amount,
+      paymentMethod,
+      age,
+      location,
+    } = data;
 
-  const eventId = c.req.param("eventId");
-  const event = await Event.findOne({ where: { id: eventId } });
-  if (!event) return c.json(NotFound());
-  if (event.VenueId != payload.id) return c.json(Unauthorized());
+    const eventId = c.req.param("eventId");
+    const event = await Event.findOne({ where: { id: eventId } });
+    if (!event) return c.json(NotFound());
+    if (event.VenueId != payload.id) return c.json(Unauthorized());
 
-  const pricing = await Pricing.findByPk(event.PricingId);
-  const bioRes = await Bio.findByPk(event.BioId);
+    const pricing = await Pricing.findByPk(event.PricingId);
+    const bioRes = await Bio.findByPk(event.BioId);
 
-  const newPricing = {
-    currency: pricing?.currency ? pricing.currency : "EUR",
-    amount: amount || pricing?.amount,
-    type: paymentMethod || pricing?.type,
-  };
+    const newPricing = {
+      currency: pricing?.currency ? pricing.currency : "EUR",
+      amount: amount || pricing?.amount,
+      type: paymentMethod || pricing?.type,
+    };
 
-  const newBio = {
-    description: bio ? bio : bioRes?.description || "",
-    media: data.bio.media || null,
-  };
+    const newBio = {
+      description: bio ? bio : bioRes?.description || "",
+      media: data.bio.media || null,
+    };
 
-  const loc = location && address !== venue.address;
+    const loc = location && address !== venue.address;
 
-  await event.update({
-    name: name,
-    age: age,
-    start: start,
-    end: end,
-    published: published ? published : event.published,
-    address: address,
-    zip: zip,
-    city: city,
-    location: loc,
-  });
+    await event.update({
+      name: name,
+      age: age,
+      start: start,
+      end: end,
+      published: published ? published : event.published,
+      address: address,
+      zip: zip,
+      city: city,
+      location: loc,
+    });
 
-  await pricing?.update({ ...newPricing });
-  await bioRes?.update({ description: newBio.description });
+    await pricing?.update({ ...newPricing });
+    await bioRes?.update({ description: newBio.description });
 
-  //DISCLAIMER for below: Probably shit
-  const a = await event.getArtists();
-  const artistIds = a.map((a) => a.id);
+    //DISCLAIMER for below: Probably shit
+    const a = await event.getArtists();
+    const artistIds = a.map((a) => a.id);
 
-  //First, add artists to event that are present in request but not present in DB
-  for (const artist of artists) {
-    const artistRes = await Artist.findByPk(artist);
-    if (!artistRes) continue;
-    if (!artistIds.includes(artist)) {
-      await artistRes.addEvent(eventId);
+    //First, add artists to event that are present in request but not present in DB
+    for (const artist of artists) {
+      const artistRes = await Artist.findByPk(artist);
+      if (!artistRes) continue;
+      if (!artistIds.includes(artist)) {
+        await artistRes.addEvent(eventId);
+      }
     }
-  }
 
-  //Then, remove artists from that are present in DB but not present in request
-  for (const aa of a) {
-    if (!artists.includes(aa.id)) {
-      await aa.removeEvent(eventId);
+    //Then, remove artists from that are present in DB but not present in request
+    for (const aa of a) {
+      if (!artists.includes(aa.id)) {
+        await aa.removeEvent(eventId);
+      }
     }
-  }
 
-  return c.json(Ok(event));
+    return c.json(Ok(event));
+  } catch (e) {
+    console.log(e);
+    return c.json(InternalError());
+  }
 }
 
 async function cancelEvent(c: Context) {
-  const payload = c.get("tokenPayload");
+  try {
+    const payload = c.get("tokenPayload");
 
-  const eventId = c.req.param("eventId");
-  const event = await Event.findOne({ where: { id: eventId } });
+    const eventId = c.req.param("eventId");
+    const event = await Event.findOne({ where: { id: eventId } });
 
-  if (!event) return c.json(NotFound(null, "found no event"));
-  if (event.VenueId != payload.id) {
-    return c.json(Unauthorized("does not own the event"));
+    if (!event) return c.json(NotFound(null, "found no event"));
+    if (event.VenueId != payload.id) {
+      return c.json(Unauthorized("does not own the event"));
+    }
+
+    const updatedEvent = await event.update({ cancelled: 1 });
+    return c.json(Ok(updatedEvent));
+  } catch (e) {
+    console.log(e);
+    return c.json(InternalError());
   }
-
-  const updatedEvent = await event.update({ cancelled: 1 });
-  return c.json(Ok(updatedEvent));
 }
 
 async function rateArtist(c: Context) {
-  const payload = c.get("tokenPayload");
-  const artistId = c.req.param("artistId");
-  const eventId = c.req.param("eventId");
-  const { description, score } = await c.req.json();
+  try {
+    const payload = c.get("tokenPayload");
+    const artistId = c.req.param("artistId");
+    const eventId = c.req.param("eventId");
+    const { description, score } = await c.req.json();
 
-  const [response] = await Review.upsert({
-    VenueId: payload.id,
-    ArtistId: artistId,
-    EventId: eventId,
-    score: score,
-    description: description,
-    reviewer_type: 0,
-  });
-  return c.json(Ok(response, "Review submitted"));
+    const [response] = await Review.upsert({
+      VenueId: payload.id,
+      ArtistId: artistId,
+      EventId: eventId,
+      score: score,
+      description: description,
+      reviewer_type: 0,
+    });
+    return c.json(Ok(response, "Review submitted"));
+  } catch (e) {
+    console.log(e);
+    return c.json(InternalError());
+  }
 }
 
 async function updatePoster(c: Context) {
@@ -395,131 +435,136 @@ async function updatePoster(c: Context) {
 }
 
 async function updateBio(c: Context) {
-  const payload = c.get("tokenPayload");
-  const data = await c.req.json();
-  const venue = await Venue.findOne({
-    where: { id: payload.id },
-  });
-  if (!venue) return c.json(NotFound());
-  if (venue.BioId === null) {
-    const bio = await Bio.create({ description: data.bio });
-    await venue.update({ BioId: bio.id });
-    return c.json(Ok(bio));
-  } else {
-    const bio = await Bio.findOne({
-      where: {
-        id: venue.BioId,
-      },
+  try {
+    const payload = c.get("tokenPayload");
+    const data = await c.req.json();
+    const venue = await Venue.findOne({
+      where: { id: payload.id },
     });
-    if (bio === null) return c.json(NotFound());
-    const updatedBio = await bio.update({ description: data.bio });
-    const reloadedBio = await updatedBio.reload({ include: [Media, Link] });
-    return c.json(Ok(reloadedBio));
-  }
-}
-
-async function _updateMediaAndLinks<
-  TData extends { media: { data_url: string }[]; urls: { url: string }[] },
->(data: TData, bioId: number) {
-  if (data.media) {
-    for (const media of data.media) {
-      await Media.upsert({
-        internal: false,
-        href: media.data_url,
-        BioId: bioId,
+    if (!venue) return c.json(NotFound());
+    if (venue.BioId === null) {
+      const bio = await Bio.create({ description: data.bio });
+      await venue.update({ BioId: bio.id });
+      return c.json(Ok(bio));
+    } else {
+      const bio = await Bio.findOne({
+        where: {
+          id: venue.BioId,
+        },
       });
+      if (bio === null) return c.json(NotFound());
+
+      const oldLinks = await bio.getLinks();
+      await updateLinks(bio.id, data, oldLinks);
+
+      const updatedBio = await bio.update({ description: data.bio });
+      const reloadedBio = await updatedBio.reload({ include: [Media, Link] });
+      return c.json(Ok(reloadedBio));
     }
-  }
-  if (data.urls) {
-    for (const link of data.urls) {
-      await Link.create({ url: link.url, BioId: bioId });
-    }
+  } catch (e) {
+    console.log(e);
+    return c.json(InternalError());
   }
 }
 
 async function getVenue(c: Context) {
-  const payload = c.get("tokenPayload");
-  const venue = await Venue.findOne({
-    where: {
-      email: payload.email,
-      id: payload.id,
-    },
-    include: [
-      includeBio(),
-      includeOpeningHours(),
-      includeEvent(),
-      PlayRequest,
-      Review,
-    ],
-    attributes: {
-      exclude: ["createdAt", "updatedAt", "password"],
-    },
-  });
-  if (venue === null) return c.json(NotFound());
+  try {
+    const payload = c.get("tokenPayload");
+    const venue = await Venue.findOne({
+      where: {
+        email: payload.email,
+        id: payload.id,
+      },
+      include: [
+        includeBio(),
+        includeOpeningHours(),
+        includeEvent(),
+        PlayRequest,
+        Review,
+      ],
+      attributes: {
+        exclude: ["createdAt", "updatedAt", "password"],
+      },
+    });
+    if (venue === null) return c.json(NotFound());
 
-  return c.json(
-    Ok(venue.get({ plain: true })),
-  );
+    return c.json(
+      Ok(venue.get({ plain: true })),
+    );
+  } catch (e) {
+    console.log(e);
+    return c.json(InternalError());
+  }
 }
 
 async function getVenueProfile(c: Context) {
-  const pk = c.req.param("venueId");
-  const venue = await Venue.findByPk(pk, {
-    include: [includeBio(), includeEvent(), OpeningHour],
-    attributes: {
-      exclude: ["password", "createdAt", "updatedAt"],
-    },
-  });
-  if (venue === null) {
-    return c.json(NotFound());
-  }
+  try {
+    const pk = c.req.param("venueId");
+    const venue = await Venue.findByPk(pk, {
+      include: [includeBio(), includeEvent(), OpeningHour],
+      attributes: {
+        exclude: ["password", "createdAt", "updatedAt"],
+      },
+    });
+    if (venue === null) {
+      return c.json(NotFound());
+    }
 
-  const ret = venue.get({ plain: true });
-  return c.json(Ok(ret));
+    const ret = venue.get({ plain: true });
+    return c.json(Ok(ret));
+  } catch (e) {
+    console.log(e);
+    return c.json(InternalError());
+  }
 }
 
 async function updateVenue(c: Context) {
-  const payload = c.get("tokenPayload");
-  const body = await c.req.json();
-  const { name, addr, zip, city, hrs, phone } = body;
+  try {
+    const payload = c.get("tokenPayload");
+    const body = await c.req.json();
+    const { name, addr, zip, city, hrs, phone } = body;
 
-  const venue = await Venue.findOne({
-    where: {
-      email: payload.email,
-      id: payload.id,
-    },
-  });
-  if (!venue) return c.json(NotFound());
+    const venue = await Venue.findOne({
+      where: {
+        email: payload.email,
+        id: payload.id,
+      },
+    });
+    if (!venue) return c.json(NotFound());
 
-  const venueUpdate = await venue.update({
-    name: name,
-    address: addr,
-    zip: zip,
-    city: city,
-    phone: phone,
-  });
+    const venueUpdate = await venue.update({
+      name: name,
+      address: addr,
+      zip: zip,
+      city: city,
+      phone: phone,
+    });
 
-  await upsertOpeningHours(venue.id, {
-    monStart: hrs.mon.from,
-    monEnd: hrs.mon.to,
-    tueStart: hrs.tue.from,
-    tueEnd: hrs.tue.to,
-    wedStart: hrs.wed.from,
-    wedEnd: hrs.wed.to,
-    thuStart: hrs.thu.from,
-    thuEnd: hrs.thu.to,
-    friStart: hrs.fri.from,
-    friEnd: hrs.fri.to,
-    satStart: hrs.sat.from,
-    satEnd: hrs.sat.to,
-    sunStart: hrs.sun.from,
-    sunEnd: hrs.sun.to,
-  });
-  const ret = await venueUpdate.reload({
-    include: [includeBio(), includeEvent(), OpeningHour],
-  });
+    await upsertOpeningHours(venue.id, {
+      monStart: hrs.mon.from,
+      monEnd: hrs.mon.to,
+      tueStart: hrs.tue.from,
+      tueEnd: hrs.tue.to,
+      wedStart: hrs.wed.from,
+      wedEnd: hrs.wed.to,
+      thuStart: hrs.thu.from,
+      thuEnd: hrs.thu.to,
+      friStart: hrs.fri.from,
+      friEnd: hrs.fri.to,
+      satStart: hrs.sat.from,
+      satEnd: hrs.sat.to,
+      sunStart: hrs.sun.from,
+      sunEnd: hrs.sun.to,
+    });
+    const ret = await venueUpdate.reload({
+      include: [includeBio(), includeEvent(), OpeningHour],
+    });
 
-  return c.json(Ok(ret));
+    return c.json(Ok(ret));
+  } catch (e) {
+    console.log(e);
+    return c.json(InternalError());
+  }
 }
 async function upsertOpeningHours(
   venueId: string,

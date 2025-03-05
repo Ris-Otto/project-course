@@ -11,6 +11,7 @@ class Bio extends Model {
   declare createdAt: Date;
   declare updatedAt: Date;
   declare getMedia: () => Promise<Media[]>;
+  declare getLinks: () => Promise<Link[]>;
 }
 
 type BioRead = {

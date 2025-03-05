@@ -1,5 +1,5 @@
 ﻿import { Media } from "../../Database/Model/Media.ts";
-import { Artist } from "../../Database/Model/Artist.ts";
+import { Artist, Role } from "../../Database/Model/Artist.ts";
 import { Venue } from "../../Database/Model/Venue.ts";
 import Event from "../../Database/Model/Event.ts";
 import { Post } from "../../Database/Model/Post.ts";
@@ -7,6 +7,8 @@ import readFileSync = Deno.readFileSync;
 import { ModelStatic } from "npm:sequelize";
 import { Bio } from "../../Database/Model/Bio.ts";
 import { NotFound, Ok } from "../../../Shared/Result.ts";
+import { Link } from "../../Database/Model/Link.ts";
+import { Member } from "../../Database/Model/Member.ts";
 
 export function getPoster<
   T extends { Bio?: { Media?: Media[] }; [index: string]: any },
@@ -146,4 +148,70 @@ export async function updateImages<T extends ModelStatic<BioModel>>(
   );
 
   return Ok();
+}
+
+export async function updateLinks(
+  bioId: number,
+  newLinks: Link[],
+  oldLinks: Link[],
+) {
+  for (const link of newLinks) {
+    await Link.upsert({
+      BioId: bioId,
+      url: link.url,
+      sample: link.sample,
+    });
+  }
+
+  for (const link of oldLinks) {
+    if (link.sample) continue;
+    let remove = true;
+    for (const dlink of newLinks) {
+      if (link.url === dlink.url) {
+        remove = false;
+      }
+    }
+    if (remove) {
+      Link.destroy({
+        where: {
+          id: link.id,
+        },
+      });
+    }
+  }
+}
+
+export async function updateMembers(oldMembers, newMembers, artistId) {
+  for (const member of newMembers) {
+    const [inserted] = await Member.upsert(
+      {
+        name: member.name,
+        id: member.id,
+      },
+    );
+    await Role.upsert({
+      MemberId: inserted.id,
+      ArtistId: artistId,
+      role: member.role,
+    });
+  }
+
+  for (const member of oldMembers) {
+    let remove = true;
+    for (const newMember of newMembers) {
+      if (member.name === newMember.name) {
+        remove = false;
+        break;
+      }
+    }
+    if (remove) {
+      await Role.destroy({
+        where: {
+          id: member.Role.id,
+          ArtistId: artistId,
+          MemberId: member.id,
+        },
+      });
+    }
+  }
 }

@@ -111,7 +111,17 @@ export const StyledHeaderField = styled.div<{
     margin-bottom: 1px;
     letter-spacing: 1px;
   }
+    
+  
 `;
+
+export const StyledSubHeader = styled.div<{
+  color: string;
+  disabled?: boolean;
+}>`
+    color: ${({ color, theme, disabled }) =>
+            disabled ? "grey" : color ? color : theme.teal};
+`
 
 export const StyledDynamicList = styled.div`
   .indented-input {
@@ -208,7 +218,9 @@ export function DynamicListForm<T extends ObjectWithKeys>({
   disabled
 }: DynamicListProps<T>) {
   //An internal array that keeps track of how long the array should be for the user to be able to input a value
+  const original = useMemo(() => array, []);
   const { arrStates, add, update, remove, reset } = useStateArrayFactory(array);
+
   const internalTemplate = useMemo(() => { return { ...template, isNewEntry: true }}, []);
   function testPatternAgainstRequiredKeys<T extends ObjectWithKeys>(
     obj: T,
@@ -222,7 +234,10 @@ export function DynamicListForm<T extends ObjectWithKeys>({
     }
     return ret;
   }
-  const prevEditState = usePrevious(disabled)
+
+  useEffect(() => {
+    reset()
+  }, [disabled]);
 
   const t = useMemo(() => new Theme(), []);
 
@@ -237,10 +252,6 @@ export function DynamicListForm<T extends ObjectWithKeys>({
       remove(arrStates.length - 1);
     }
   }, [disabled])
-
-  useEffect(() => {
-    reset()
-  }, [disabled]);
 
   useEffect(() => {
     setArray(arrStates);
@@ -369,23 +380,24 @@ export function UnderwaveHeader({
           {required ? ` (*)` : null}
         </Component>
       </BOOTSTRAP_FORM.Label>
-      <UnderwaveSubHeader>{notes}</UnderwaveSubHeader>
+      <UnderwaveSubHeader color={color} disabled={disabled}>{notes}</UnderwaveSubHeader>
     </StyledHeaderField>
   );
 }
 
 export declare type UnderwaveSubHeaderProps = {
+  disabled?: boolean;
   children?: React.ReactNode;
+  color?: string;
 };
 
-export function UnderwaveSubHeader({ children }: UnderwaveSubHeaderProps) {
+export function UnderwaveSubHeader({ color, disabled, children }: UnderwaveSubHeaderProps) {
   return (
     <>
       {children ? (
-        <>
-          <br />
-          <BOOTSTRAP_FORM.Text>{children}</BOOTSTRAP_FORM.Text>
-        </>
+        <StyledSubHeader color={color} disabled={disabled}>
+          <small>{children}</small>
+        </StyledSubHeader>
       ) : null}
     </>
   );

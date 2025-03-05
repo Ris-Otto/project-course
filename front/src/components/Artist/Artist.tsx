@@ -24,7 +24,6 @@ import ReactImageUploading, { ImageListType } from "react-images-uploading";
 import { ExportInterface } from "react-images-uploading/dist/typings.d.ts";
 import { VenueEvent } from "../Venue/Venue.tsx";
 import { Posts } from "../Misc/Posts.tsx";
-import { SingleImage } from "../Misc/CreatePost.tsx";
 import { ProfileImages } from "../Misc/ProfileImages.tsx";
 
 declare type ArtistProfileProps = {
@@ -81,32 +80,15 @@ function ArtistViewProfile({ artist, subState, updateSubState }: { artist: Artis
     }) :
     []
   );
-  const [sample, setSample] = useState(artist.Bio?.Links?.filter(a => a.sample))
+  const [sample, setSample] = useState(artist.Bio?.Links?.find(a => a.sample)?.url)
   const [links, setLinks] = useState<Link[]>(artist.Bio?.Links ? artist.Bio.Links : []);
-
-  function checkBio() {
-    let update = false;
-    if(bio !== artist.Bio?.description) {
-      update = true;
-    }
-    const artistLinks = artist.Bio?.Links;
-    if(!artistLinks && links.length > 0) return true;
-
-    for (let i = 0; i < links.length; i++) {
-      if(artistLinks.find(l => l.url !== links[i].url)) {
-        update = true;
-        break;
-      }
-    }
-    return update;
-  }
 
   function checkArtist() {
     let update = false;
     if(name !== artist.name) {
       update = true;
     }
-    if(genre !== artist.address) {
+    if(genre !== artist.genre) {
       update = true;
     }
 
@@ -117,13 +99,18 @@ function ArtistViewProfile({ artist, subState, updateSubState }: { artist: Artis
       update = true;
     }
     const artistLinks = artist.Bio?.Links;
-    if(!artistLinks && links.length > 0) return true;
+    const newLinks = links.filter(l => l.url.length > 0);
+    if(artistLinks.length !== newLinks.length) return true;
 
-    for (let i = 0; i < links.length; i++) {
-      if(artistLinks.find(l => l.url !== links[i].url)) {
+    for (let i = 0; i < newLinks.length; i++) {
+      if(artistLinks.find(l => l.url !== newLinks[i].url)) {
         update = true;
         break;
       }
+    }
+
+    if(sample !== artistLinks?.find(a => a.sample)?.url) {
+      update = true;
     }
 
     return update;
@@ -138,7 +125,7 @@ function ArtistViewProfile({ artist, subState, updateSubState }: { artist: Artis
         bio: bio,
         members: members.filter(m => m.name.length > 0),
         genre: genre,
-        links: links.filter(l => l.url.length > 0)
+        links: links.filter(l => l.url.length > 0).concat({ url: sample, sample: true})
       }
       const res = await postRequest<Artist>(paths.artist.update, data);
       if(res.isSuccess()) {
@@ -269,6 +256,7 @@ function ArtistViewProfile({ artist, subState, updateSubState }: { artist: Artis
             <Row justifycontent="start">
             <FlexCol>
               <DynamicListForm
+                notes={"It is recommended that you use the persons preferred or well-known alias/full name in case they are also linked to another band"}
                 requiredKeys={["name"]}
                 array={members}
                 header={"Members"}
@@ -282,6 +270,19 @@ function ArtistViewProfile({ artist, subState, updateSubState }: { artist: Artis
               />
               <Control
                 header={"Sample"}
+                notes={
+                  <>
+                    Supported media:
+                    <br/>
+                    <a
+                      href={"https://github.com/CookPete/react-player?tab=readme-ov-file#supported-media"}
+                      rel="noopener noreferrer"
+                      target="_blank"
+                    >
+                      ReactPlayer (Github)
+                    </a>
+                    , Spotify
+                  </>}
                 as={"h3"}
                 state={sample}
                 setState={edit ? setSample : undefined}

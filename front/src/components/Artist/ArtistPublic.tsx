@@ -18,6 +18,8 @@ import { ViewableListPost } from "../Misc/Posts.tsx";
 import { ArtistImage } from "./Artist.tsx";
 import { ThemeContext } from "styled-components";
 import { Links } from "../Misc/Links.tsx";
+import ReactPlayer from "react-player";
+import { Spotify } from "react-spotify-embed";
 
 
 export default function ArtistProfilePublic() {
@@ -121,6 +123,7 @@ function ArtistLeft({ artist }: ArtistProps) {
 }
 
 function ArtistMiddle(props: ArtistProps) {
+  const isSpotify = useMemo(() => props.artist.Bio?.Links?.find(a => a.sample)?.url.includes("open.spotify.com/track"), [])
   const theme = useContext(ThemeContext);
   return (
     <Col style={{boxShadow: "0 0 10px 2px", borderRadius: "10px", padding: "5%", backgroundColor: theme.darkCream}}>
@@ -153,6 +156,22 @@ function ArtistMiddle(props: ArtistProps) {
       >
         <Links item={props.artist} />
       </div>
+      {isSpotify ? (
+        <Spotify
+          style={{
+            width: "100%",
+            maxWidth: "100%",
+          }}
+          link={props.artist.Bio?.Links?.find(a => a.sample)?.url}
+        />) :
+        (
+          <ReactPlayer
+            style={{
+              width: "100%",
+              maxWidth: "100%",
+            }}
+            url={props.artist.Bio?.Links?.find(a => a.sample)?.url}
+          />)}
     </Col>
   );
 }

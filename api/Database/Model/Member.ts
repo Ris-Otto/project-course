@@ -10,6 +10,7 @@ class Member extends Model {
   declare Roles: Role[];
   declare Role: Role;
   declare Artists: Artist[];
+  declare getRoles: () => Promise<Role[]>;
 }
 
 Member.init(
