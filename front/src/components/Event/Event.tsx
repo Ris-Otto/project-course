@@ -1,8 +1,8 @@
 ﻿import { createSearchParams, useNavigate, useParams } from "react-router-dom";
-import Event from "../../../../api/Database/Model/Event.ts";
+import type Event from "../../../../api/Database/Model/Event.ts";
 import { getRequest, postRequest } from "../../api/APITemplate.ts";
 import paths from "../../../../Shared/paths.ts";
-import { Filter, ObjectEntries, paymentMethods } from "../../utilities/Types.tsx";
+import { type Filter, ObjectEntries, paymentMethods } from "../../utilities/Types.tsx";
 import {
   ExtractHoursMinutes,
   parseTextWithPossibleLineBreaks,
@@ -27,11 +27,11 @@ import { Row } from "../Misc/CustomStyles.tsx";
 import { Theme } from "../../theme.ts";
 import { EventPicture } from "../Venue/Venue.tsx";
 import { EditButton } from "../User/StyledProfile.tsx";
-import { EventInterest } from "../../../../api/Database/Model/EventInterest.ts";
-import { Tabs, Tab } from "react-bootstrap";
+import { type EventInterest } from "../../../../api/Database/Model/EventInterest.ts";
 import { MapWithPlaceholder } from "../Venue/VenuePublic.tsx";
 import { OpenStreetMapProvider} from "leaflet-geosearch";
-import { SearchResult } from "leaflet-geosearch/dist/providers/provider.d.ts";
+import { type SearchResult } from "leaflet-geosearch/dist/providers/provider.d.ts";
+import { type Artist } from "../../../../api/Database/Model/Artist.ts";
 
 
 function EventPage() {
@@ -67,7 +67,7 @@ export function AllEvents() {
   useAuth(-1);
   const [list, setList] = useState<Event[]>([]);
   const [filteredList, setFilteredList] = useState<Event[]>([]);
-  const [filters, setFilters] = useState<Filter<Event>>({
+  const [filters, setFilters] = useState<Filter>({
     name: { value: "", label: "Search by name", type: "text" },
     start: { value: "", label: "Date", type: "date" },
     address: { value: "", label: "Address", type: "text" },
@@ -103,11 +103,11 @@ export function AllEvents() {
       keys: ["start"],
       threshold: 0
     });
-    console.log(fuse.search(new Date(filters["start"].value).toISOString().split("T")[0]))
-    return fuse.search(new Date(filters["start"].value).toISOString().split("T")[0])
+    console.log(fuse.search(new Date(filters["start"].value as string).toISOString().split("T")[0]))
+    return fuse.search(new Date(filters["start"].value as string).toISOString().split("T")[0])
   }
 
-  function fuseGenre<T extends object>(list: T[]) {
+  function fuseGenre<T extends { Artists: Artist[] }>(list: T[]) {
     const mapped = list.map((x) => {
       return {
         ...x,
@@ -178,7 +178,7 @@ export function AllEvents() {
   return (
     <>
       {list ? (
-        <Grid header={"Events"} wideColumnIndex={1}>
+        <Grid header="Events" wideColumnIndex={1}>
           <ListFilter filters={filters} setFilters={setFilters} onFilter={onFilter} reset={reset}/>
           <div style={{ textAlign: "center", maxHeight: "50vh" }}>
             <EventCalendar events={filteredList} />
@@ -230,11 +230,11 @@ function RenderEvent({ event }: { event: Event }) {
             event.Pricing.currency,
           )}, ${resolveBitmask(event.Pricing.type, paymentMethods)}
         `}
-         as={"h3"}
+         as="h3"
       />
 
-      <UnderwaveHeader header={`@${!event.location ? (event.Venue.name + ", ") : ""}${event.address}, ${event.zip} ${event.city}`} as={"h3"} />
-      <Button className={"mb-3"} onClick={() => setMap(s => !s)}>
+      <UnderwaveHeader header={`@${!event.location ? (event.Venue.name + ", ") : ""}${event.address}, ${event.zip} ${event.city}`} as="h3" />
+      <Button className="mb-3" onClick={() => setMap(s => !s)}>
         { map ? "Hide" : "Show on map"}
       </Button>
       {map ? (
@@ -243,7 +243,7 @@ function RenderEvent({ event }: { event: Event }) {
           <br/>
         </>
       ) : null}
-      <UnderwaveHeader header={`${new Date(event.start).toDateString()} ${start} - ${end}`} as={"h3"}/>
+      <UnderwaveHeader header={`${new Date(event.start).toDateString()} ${start} - ${end}`} as="h3"/>
       <hr />
           <>
 
@@ -251,23 +251,19 @@ function RenderEvent({ event }: { event: Event }) {
               <>
                 {u.type === 0 ? (
                   <EventInterestButtons event={event} interest={userInterest.response} refetch={userInterest.refetch} />
-                ): u.type === 1 ? (
-                  <></>
-                ): u.type === 2 ? (
-                  <></>
                 ) : null}
               </>
             ): null}
             <Grid>
-              <EventPicture image={poster} onImageLoad={handleImageLoad} dimensions={dimensions} name={""} />
+              <EventPicture image={poster} onImageLoad={handleImageLoad} dimensions={dimensions} name="" />
               {parseTextWithPossibleLineBreaks(event.Bio?.description ? event.Bio.description : "")}
             </Grid>
-            <UnderwaveHeader header={"Artists"} as={"h3"} color={t.orange} />
-            <Row justifycontent={"start"} flexwrap={"wrap"} >
+            <UnderwaveHeader header="Artists" as="h3" color={t.orange} />
+            <Row justifycontent="start" flexwrap="wrap" >
               {event.Artists?.map((a, idx) => {
                 return (
-                  <SimpleObservableListItem key={idx} item={a} navigatePath={"/artists/public?artistId"}>
-                    <>
+                  <SimpleObservableListItem key={idx} item={a} navigatePath="/artists/public?artistId">
+
                       {venueReview ? (
                         <Button onClick={() => navigate(
                           {
@@ -287,22 +283,22 @@ function RenderEvent({ event }: { event: Event }) {
                           Review
                         </Button>
                       ): null}
-                    </>
+
                   </SimpleObservableListItem>
 
                 );
               })}
             </Row>
-            <UnderwaveHeader header={"Venue"} as={"h3"} color={t.orange}/>
-            <Row justifycontent={"start"} flexwrap={"wrap"}>
-              <SimpleObservableListItem item={event.Venue} navigatePath={"/venues/public?venueId"} >
-                <>
+            <UnderwaveHeader header="Venue" as="h3" color={t.orange}/>
+            <Row justifycontent="start" flexwrap="wrap">
+              <SimpleObservableListItem item={event.Venue} navigatePath="/venues/public?venueId" >
+
                   <IoLocationSharp />
                   {event.Venue.address}
                   {artistReview ? (
                     <>
                       <br/>
-                      <Button className={"mt-3"} onClick={() => navigate(
+                      <Button className="mt-3" onClick={() => navigate(
                         {
                           pathname: `/events/review/${event.id}`,
                           search: createSearchParams(
@@ -322,7 +318,7 @@ function RenderEvent({ event }: { event: Event }) {
 
                     </>
                   ): null}
-                </>
+
               </SimpleObservableListItem>
             </Row>
           </>

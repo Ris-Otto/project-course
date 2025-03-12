@@ -198,8 +198,8 @@ export const VenuePageStates: VenuePageState[] = [
 export type ArtistPageState = "profile" | "events" | "posts" | "requests";
 export type VenuePageState = "profile" | "events" | "requests";
 export type SubState = "view" | "edit" | "add";
-export type Filter<T = any> = {
-  [key: keyof T]: {
+export type Filter = {
+  [key: string]: {
     value: string | boolean | number;
     label: string;
     type: string;

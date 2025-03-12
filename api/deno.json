@@ -17,7 +17,7 @@
     "sequelize": "npm:sequelize@^6.37.4"
   },
   "tasks": {
-    "start": "deno run --allow-net --allow-read --allow-write --allow-env main.ts"
+    "dev": "deno run --allow-net --allow-read --allow-write --allow-env main.ts"
   },
   "lint": {
     "indent-width": 2,

@@ -53,7 +53,7 @@ function AllArtists() {
       return <div style={{ marginTop: "60px" }}>{artists.isError}</div>;
 
 
-  function fuseText<T extends object>(list: T[], key: keyof Filter) {
+  function fuseText<T extends object>(list: T[], key: string) {
     const fuse = new Fuse(list, {
       keys: [String(key)],
     });
@@ -144,7 +144,7 @@ function ArtistInList({artist}: {artist: Artist}) {
               item={artist}
               dimensions={dimensions}
               handleImageLoad={handleImageLoad}
-              showName={true}
+              showName
             />
             <div
               className="description mt-3 mb-3"
