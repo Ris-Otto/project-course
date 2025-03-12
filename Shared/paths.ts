@@ -7,6 +7,7 @@ const Paths = {
     logout: "/auth/logout",
     login: "/auth/login",
     events: "/user/events",
+    goingOrInterested: "user/events/interested",
     self: "/user",
     artists: "user/artists/following",
     venues: "user/venues/following",

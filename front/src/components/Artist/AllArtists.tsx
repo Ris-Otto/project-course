@@ -82,7 +82,7 @@ function AllArtists() {
       switch (k) {
         case "name":
           if (v.value !== "") {
-            finalFiltered = fusetText(finalFiltered, "name").map(a => a.item);
+            finalFiltered = fuseText(finalFiltered, "name").map(a => a.item);
           }
           break;
         case "genre":

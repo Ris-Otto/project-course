@@ -106,10 +106,13 @@ const refetchFollowing = atom(false);
 
 const refetchFollowedVenues = atom(false);
 const refetchFollowedArtists = atom(false);
+const refetchEventInterest = atom(false);
 
 const events = atom<Event[]>([]);
 
 const user = atom<UserPayload | null>(null);
+
+const eventInterest = atom<Event[]>([]);
 
 store.set(events, []);
 store.set(user, null);
@@ -119,8 +122,10 @@ const open = atom(false);
 export {
   artistFollowing,
   artistRegisterAtom,
+  eventInterest,
   events,
   open,
+  refetchEventInterest,
   refetchFollowedArtists,
   refetchFollowedVenues,
   refetchFollowing,

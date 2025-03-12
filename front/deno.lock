@@ -22,6 +22,7 @@
     "npm:leaflet@^1.9.4": "1.9.4",
     "npm:lodash@^4.17.21": "4.17.21",
     "npm:react-bootstrap@^2.10.7": "2.10.7_@types+react@18.3.18_react@18.3.1_react-dom@18.3.1__react@18.3.1",
+    "npm:react-calendar@^5.1.0": "5.1.0_@types+react@18.3.18_react@18.3.1_react-dom@18.3.1__react@18.3.1",
     "npm:react-dom@19": "19.0.0_react@19.0.0",
     "npm:react-dom@^18.2.0": "18.3.1_react@18.3.1",
     "npm:react-helmet@^6.1.0": "6.1.0_react@18.3.1",
@@ -1031,6 +1032,18 @@
         "warning"
       ]
     },
+    "react-calendar@5.1.0_@types+react@18.3.18_react@18.3.1_react-dom@18.3.1__react@18.3.1": {
+      "integrity": "sha512-09o/rQHPZGEi658IXAJtWfra1N69D1eFnuJ3FQm9qUVzlzNnos1+GWgGiUeSs22QOpNm32aoVFOimq0p3Ug9Eg==",
+      "dependencies": [
+        "@types/react",
+        "@wojtekmaj/date-utils",
+        "clsx",
+        "get-user-locale",
+        "react@18.3.1",
+        "react-dom@18.3.1_react@18.3.1",
+        "warning"
+      ]
+    },
     "react-clock@5.1.0_@types+react@18.3.18_react@18.3.1_react-dom@18.3.1__react@18.3.1": {
       "integrity": "sha512-DKmr29VOK6M8wpbzGUZZa9PwGnG9uC6QXtDLwGwcc2r3vdS/HxNhf5xMMjudXLk7m096mNJQf7AgfjiDpzAYYw==",
       "dependencies": [
@@ -1403,6 +1416,7 @@
       "npm:leaflet@^1.9.4",
       "npm:lodash@^4.17.21",
       "npm:react-bootstrap@^2.10.7",
+      "npm:react-calendar@^5.1.0",
       "npm:react-dom@19",
       "npm:react-helmet@^6.1.0",
       "npm:react-icons@^5.3.0",

@@ -79,6 +79,12 @@ userController.get(
   getEventInterest,
 );
 
+userController.get(
+  "/user/events/interested/:start/:end",
+  tokenMiddleware.verifyIsUser,
+  getInterestedEvents,
+);
+
 async function getEventInterest(c: Context) {
   const payload = c.get("tokenPayload");
   const eventId = c.req.param("eventId");
@@ -114,6 +120,60 @@ async function getRecentPosts(c: Context) {
   });
 
   return c.json(Ok(posts));
+}
+
+async function getInterestedEvents(c: Context) {
+  const payload = c.get("tokenPayload");
+  const start = c.req.param("start");
+  const end = c.req.param("end");
+  const whereOptions = {
+    start: {
+      [Op.gte]: new Date(start),
+      [Op.lte]: new Date(end),
+    },
+    published: true,
+  };
+
+  const interested = await EventInterest.findAll({
+    where: {
+      UserId: payload.id,
+    },
+  }).then((a) => a.map((b) => b.EventId));
+
+  const events = await Event.findAll({
+    include: [
+      includeModel({
+        model: Pricing,
+        exclude: ["createdAt", "updatedAt"],
+      }),
+      includeModel({
+        model: Venue,
+        exclude: [
+          "password",
+          "verified",
+          "contactEmail",
+          "contactName",
+          "createdAt",
+          "updatedAt",
+        ],
+      }),
+      includeBio(),
+      includeArtist(),
+    ],
+    attributes: {
+      exclude: ["VenueId", "PricingId", "createdAt", "updatedAt"],
+    },
+    limit: 31,
+    order: [["start", "ASC"]],
+    where: {
+      ...whereOptions,
+      id: {
+        [Op.in]: interested,
+      },
+    },
+  });
+  const ret = events.map((event) => event.get({ plain: true }));
+  return c.json(Ok(ret));
 }
 
 async function getEvents(c: Context) {
