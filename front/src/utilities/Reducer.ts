@@ -33,7 +33,6 @@ export type DefaultAction<TState extends ObjectWithKeys> = {
   set: React.Dispatch<FormAction<TState>>;
 };
 /**
- *
  * @param reducer the return value of the `useReducer`-hook
  * @returns an object containing the state and the reducer-function
  */
@@ -132,8 +131,8 @@ export function TValidate<
         [action.type]: !stateIsValid,
       },
 
-      isFormValid:
-        stateIsValid && checkObjectValidity(state, action.type, stateIsValid),
+      isFormValid: stateIsValid &&
+        checkObjectValidity(state, action.type, stateIsValid),
     },
   };
   return ret;

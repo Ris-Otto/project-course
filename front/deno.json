@@ -1,8 +1,10 @@
 {
+  "name": "@scope/front",
+  "exports": "",
   "tasks": {
     "dev": "deno run -A --node-modules-dir npm:vite",
     "build": "deno run -A --node-modules-dir npm:vite build",
-    "preview": "deno run -A --node-modules-dir npm:vite preview",
+    "preview": "deno run -A --node-modules-dir=/front/node_modules npm:vite preview",
     "serve": "deno run --allow-net --allow-read https://deno.land/std@0.157.0/http/file_server.ts dist/"
   },
   "lint": {
@@ -11,13 +13,6 @@
       "tags": ["recommended"],
       "no-explicit-any": false
     }
-  },
-  "compilerOptions": {
-    "jsx": "react-jsx",
-    "jsxImportSource": "npm:react",
-    "jsxImportSourceTypes": "npm:@types/react",
-    "lib": ["dom", "dom.iterable", "dom.asynciterable", "deno.ns"],
-    "noImplicitAny": false
   },
   "imports": {
     "@smastrom/react-rating": "npm:@smastrom/react-rating@^1.5.0",

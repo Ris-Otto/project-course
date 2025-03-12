@@ -3,7 +3,19 @@
     "@types/react-icons": "npm:@types/react-icons@^3.0.0"
   },
   "compilerOptions": {
-    "no-implicit-any": false,
-    "no-explicit-any": false
-  }
+    "jsx": "react-jsx",
+    "jsxImportSource": "npm:react",
+    "jsxImportSourceTypes": "npm:@types/react",
+    "lib": ["dom", "dom.iterable", "dom.asynciterable", "deno.ns"],
+    "noImplicitAny": false
+  },
+  "tasks": {
+    "start:front": "deno task -f front dev",
+    "start:api": "deno task -f api start",
+    "start": "deno task start:front & deno task start:api"
+  },
+  "workspace": ["./front", "./api"],
+  "nodeModulesDir": "auto"
+
+
 }

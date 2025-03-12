@@ -1,5 +1,6 @@
 {
-  "nodeModulesDir": "auto",
+  "name": "@scope/api",
+  "exports": "./main.ts",
   "imports": {
     "@hono-storage/core": "npm:@hono-storage/core@^0.0.14",
     "@hono-storage/node-disk": "npm:@hono-storage/node-disk@^0.0.16",
@@ -24,8 +25,5 @@
       "tags": ["recommended"],
       "no-explicit-any": false
     }
-  },
-  "compilerOptions": {
-    "noImplicitAny": false
   }
 }
