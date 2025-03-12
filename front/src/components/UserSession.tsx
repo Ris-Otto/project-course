@@ -7,15 +7,14 @@ import {
   artistFollowing,
   venueFollowing,
   refetchFollowedArtists,
-  refetchFollowedVenues, user, eventInterest, refetchEventInterest,
+  refetchFollowedVenues, user
 } from "../store.ts";
 import NavMenu from "../Navigation/NavMenu.tsx";
 import { Menu } from "./Misc/Menu.tsx";
 import { useOnClickOutside, useRequest } from "../Hooks.ts";
 import paths from "../../../Shared/paths.ts";
-import { Artist } from "../../../api/Database/Model/Artist.ts";
-import { Venue } from "../../../api/Database/Model/Venue.ts";
-import Event from "../../../api/Database/Model/Event.ts";
+import { type Artist } from "../../../api/Database/Model/Artist.ts";
+import { type Venue } from "../../../api/Database/Model/Venue.ts";
 
 export function UserSession() {
   const [, setOpen] = useAtom(open);

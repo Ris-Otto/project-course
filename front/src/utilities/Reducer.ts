@@ -123,7 +123,7 @@ export function TValidate<
   const stateIsValid = action.validator
     ? action.validator(action.payload)
     : true;
-  const ret = {
+  return {
     ...state,
     ...{
       errors: {
@@ -135,7 +135,6 @@ export function TValidate<
         checkObjectValidity(state, action.type, stateIsValid),
     },
   };
-  return ret;
 }
 
 /**

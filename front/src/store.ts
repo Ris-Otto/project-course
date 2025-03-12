@@ -3,14 +3,8 @@ import type { UserPayload } from "../../Shared/Types.ts";
 import Event from "../../api/Database/Model/Event.ts";
 // @deno-types="npm:@types/react"
 import { useCallback } from "react";
-import {
-  ArtistFollowing,
-  VenueFollowing,
-} from "../../api/Database/Model/Following.ts";
-import Pricing from "../../api/Database/Model/Pricing.ts";
 import { Artist } from "../../api/Database/Model/Artist.ts";
 import { Venue } from "../../api/Database/Model/Venue.ts";
-import { User } from "../../api/Database/Model/User.ts";
 
 declare interface UserRegister {
   email: string;

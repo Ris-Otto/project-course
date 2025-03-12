@@ -157,31 +157,6 @@ function ArtistInList({artist}: {artist: Artist}) {
     )
 }
 
-type ArtistPictureProps = {
-    artist: Artist
-} & PictureProps
 
-function ArtistPicture({artist, image, dimensions, handleImageLoad}: ArtistPictureProps) {
-
-    return (
-        <div className="picture">
-            <h4 className="picture-name">{artist.name}</h4>
-            <img
-                onLoad={handleImageLoad}
-                style={{
-                    borderRadius: "10px",
-                    width: `${dimensions.width}px`,
-                    height: `${dimensions.height}px`,
-                }}
-                onError={({ currentTarget }) => {
-                    currentTarget.onerror = null; // prevents looping
-                    currentTarget.src = cd;
-                }}
-                src={image.href}
-                alt={"Poster"}
-            />
-        </div>
-    )
-}
 
 export {AllArtists, ArtistInList}
