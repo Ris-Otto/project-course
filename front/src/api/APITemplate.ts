@@ -1,6 +1,10 @@
 ﻿// @deno-types="npm:@types/axios"
 import axios from "axios";
-import { ResponseData, Result, ResultCode } from "../../../Shared/Result.ts";
+import {
+  type ResponseData,
+  Result,
+  ResultCode,
+} from "../../../Shared/Result.ts";
 import { toast } from "react-toastify";
 import { Method } from "../utilities/Types.tsx";
 
